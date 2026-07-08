@@ -1,0 +1,21 @@
+engagement_lead:
+  name: ""
+  role: ""
+  email: ""
+
+members:
+  - name: ""
+    role: ""
+    email: ""
+
+
+reviewer:
+  name: ""
+  role: ""
+  email: ""
+
+
+notes: >
+  Review evidence may be captured through Git review, comments, emails, or signed documents. AuditFlow should not require manual review status fields unless they are part of the organization's formal workflow.
+
+

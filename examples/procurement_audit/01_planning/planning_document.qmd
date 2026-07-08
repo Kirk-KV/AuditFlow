@@ -1,0 +1,614 @@
+---
+title: "Planning Document — Procurement Process Audit"
+---
+
+```{python}
+#| label: setup
+#| echo: false
+from pathlib import Path
+import sys
+
+import pandas as pd
+import yaml
+import plotly.express as px
+
+from IPython.display import Markdown, display
+
+def find_audit_project_root(start: Path) -> Path:
+    current = start.resolve()
+
+    while current != current.parent:
+        if (current / "initial_data.yml").exists():
+            return current
+        current = current.parent
+
+    raise FileNotFoundError(
+        "Could not find initial_data.yml. "
+        "Run this document from inside an audit project folder."
+    )
+
+
+def find_repo_root(start: Path) -> Path:
+    current = start.resolve()
+
+    while current != current.parent:
+        if (current / "styles" / "brand.yml").exists():
+            return current
+        current = current.parent
+
+    raise FileNotFoundError(
+        "Could not find styles/brand.yml. "
+        "Run this document from inside the AuditFlow repository."
+    )
+
+
+audit_project_root = find_audit_project_root(Path.cwd())
+repo_root = find_repo_root(audit_project_root)
+
+styles_dir = repo_root / "styles"
+sys.path.append(str(styles_dir))
+
+from auditflow_theme import apply_auditflow_plotly_theme
+
+apply_auditflow_plotly_theme(repo_root)
+
+initial_data_path = audit_project_root / "initial_data.yml"
+evidence_dir = audit_project_root / "04_evidence"
+raw_dir = evidence_dir / "02_raw_data"
+generated_dir = evidence_dir / "99_generated"
+planning_dir = audit_project_root / "01_planning"
+
+generated_dir.mkdir(parents=True, exist_ok=True)
+```
+
+```{python}
+import yaml
+
+initial_data = yaml.safe_load(initial_data_path.read_text(encoding="utf-8"))
+
+audit = initial_data["audit"]
+annual_plan = initial_data["annual_plan"]
+period = initial_data["period"]
+risks = pd.DataFrame(initial_data["risks"])
+scope = initial_data["scope"]
+
+Markdown(
+    f"""
+**Audit ID:** {audit['id']}  
+**Audit title:** {audit['title']}  
+**Company:** {audit['company']}  
+**Audit period:** {period['from']} — {period['to']}  
+
+**Why included in the annual plan:**  
+{annual_plan['why_included']}
+"""
+)
+```
+
+---
+
+## 1. General Description
+
+
+Risks and scope from the annual plan:
+
+```{python}
+risks[["id", "title", "preliminary_rating", "source"]]
+```
+
+```{python}
+md = "**In scope**\n\n"
+md += "\n".join(f"- {item}" for item in scope["in_scope"])
+
+md += "\n\n**Out of scope**\n\n"
+md += "\n".join(f"- {item}" for item in scope["out_of_scope"])
+
+display(Markdown(md))
+```
+
+```{python}
+notes = initial_data.get("notes") or {}
+
+necessary = notes.get("necessary_to_take") or []
+keep = notes.get("keep_in_mind") or []
+
+if necessary or keep:
+    md = "### Notes\n\n"
+
+    if necessary:
+        md += "**Necessary to take**\n\n"
+        md += "\n".join(f"- {item}" for item in necessary)
+        md += "\n\n"
+
+    if keep:
+        md += "**Keep in mind**\n\n"
+        md += "\n".join(f"- {item}" for item in keep)
+        md += "\n"
+
+    display(Markdown(md))
+```
+
+### EDA
+
+The synthetic extraction logic is stored in:
+
+```text
+04_evidence/02_raw_data/scripts/extract_procurement_data.sql
+```
+
+The raw CSV files are stored in:
+
+```text
+04_evidence/02_raw_data/
+```
+
+```{python}
+csv_files = sorted(raw_dir.glob("*.csv"))
+file_inventory = pd.DataFrame([{"file": path.name, "dataset": path.stem, "size_kb": round(path.stat().st_size / 1024, 1)} for path in csv_files])
+file_inventory
+```
+
+```{python}
+data = {}
+for path in csv_files:
+    data[path.stem] = pd.read_csv(path)
+
+for name, df in data.items():
+    for column in df.columns:
+        if column.endswith("_date"):
+            df[column] = pd.to_datetime(df[column], errors="coerce")
+```
+
+
+
+**Data Extraction** (a synthetic [SQL extraction script](..\04_evidence\02_raw_data\scripts\extract_procurement_data.sql)).
+
+Dataset overview
+
+```{python}
+overview = pd.DataFrame([{"dataset": name, "rows": len(df), "columns": df.shape[1], "column_names": ", ".join(df.columns)} for name, df in data.items()]).sort_values("dataset")
+overview.to_csv(generated_dir / "planning_dataset_overview.csv", index=False)
+overview
+```
+
+
+::: {.conclusion-box}
+Data is sufficient
+:::
+
+**Date Range Review**
+
+```{python}
+date_rows = []
+for name, df in data.items():
+    for column in df.columns:
+        if pd.api.types.is_datetime64_any_dtype(df[column]):
+            date_rows.append({"dataset": name, "field": column, "min_date": df[column].min().date().isoformat(), "max_date": df[column].max().date().isoformat(), "missing_dates": int(df[column].isna().sum())})
+
+date_ranges = pd.DataFrame(date_rows).sort_values(["dataset", "field"])
+date_ranges.to_csv(generated_dir / "planning_date_ranges.csv", index=False)
+date_ranges
+```
+
+
+::: {.conclusion-box}
+```{python}
+po_created = date_ranges[(date_ranges["dataset"] == "purchase_orders") & (date_ranges["field"] == "created_date")].iloc[0]
+Markdown(f"""Purchase order creation dates run from **{po_created.min_date}** to **{po_created.max_date}**. Purchase order creation date should be used as the primary population boundary. Downstream events such as approval, goods receipt, invoice posting, and payment may occur after PO creation and should not automatically be treated as out-of-period records.""")
+```
+:::
+
+**Data Linkage Review**
+
+```{python}
+purchase_orders = data["purchase_orders"]
+approval_workflow = data["approval_workflow"]
+goods_receipts = data["goods_receipts"]
+invoices = data["invoices"]
+payments = data["payments"]
+users = data["users"]
+suppliers = data["suppliers"]
+
+linkage_checks = pd.DataFrame([
+    {"check": "Purchase orders without approval workflow", "count": len(set(purchase_orders["po_id"]) - set(approval_workflow["po_id"])), "planning_relevance": "R-001 / approval testing"},
+    {"check": "Approval workflow records without purchase order", "count": len(set(approval_workflow["po_id"]) - set(purchase_orders["po_id"])), "planning_relevance": "Data completeness"},
+    {"check": "Invoices without purchase order", "count": len(set(invoices["po_id"]) - set(purchase_orders["po_id"])), "planning_relevance": "Invoice-to-PO linkage"},
+    {"check": "Payments without invoice", "count": len(set(payments["invoice_id"]) - set(invoices["invoice_id"])), "planning_relevance": "Payment-to-invoice linkage"},
+    {"check": "Purchase orders without goods receipt", "count": len(set(purchase_orders["po_id"]) - set(goods_receipts["po_id"])), "planning_relevance": "R-004 / goods receipt before payment"},
+])
+linkage_checks.to_csv(generated_dir / "planning_linkage_checks.csv", index=False)
+linkage_checks
+```
+
+::: {.conclusion-box}
+```{python}
+po_without_gr = int(linkage_checks.loc[linkage_checks["check"] == "Purchase orders without goods receipt", "count"].iloc[0])
+Markdown(f"""The datasets appear usable for testing R-001, R-002, and R-003. Goods receipt linkage is incomplete: **{po_without_gr:,}** purchase orders do not have a linked goods receipt record. This supports excluding R-004 from the current synthetic audit scope.""")
+```
+:::
+---
+
+**Transaction Volume by Month**
+
+```{python}
+monthly_po = purchase_orders.copy()
+monthly_po["month"] = monthly_po["created_date"].dt.to_period("M").astype(str)
+monthly_po = monthly_po.groupby("month").agg(po_count=("po_id", "count"), total_amount=("amount", "sum"), average_amount=("amount", "mean")).reset_index()
+monthly_po.to_csv(generated_dir / "planning_po_volume_by_month.csv", index=False)
+monthly_po
+```
+
+```{python}
+import plotly.express as px
+
+fig = px.bar(
+    monthly_po,
+    x="month",
+    y="po_count",
+    title="Purchase orders by month",
+    labels={
+        "month": "Month",
+        "po_count": "PO count"
+    },
+)
+
+fig
+```
+
+::: {.conclusion-box}
+The population is spread across the audit period and does not indicate an obvious single-period concentration that would require narrowing the audit period. Full-population data analysis remains appropriate for planning.
+:::
+
+---
+
+**Unauthorized Purchases: Purchase orders released before approval**
+
+```{python}
+approval_base = (
+    purchase_orders.merge(approval_workflow, on="po_id", suffixes=("", "_workflow"))
+    .merge(users[["user_id", "name", "approval_role", "approval_limit"]], left_on="approver_user_id", right_on="user_id", how="left")
+    .merge(suppliers[["supplier_id", "supplier_name"]], on="supplier_id", how="left")
+)
+approval_base["released_before_approval"] = approval_base["release_date"] < approval_base["approval_date"]
+approval_base["insufficient_approval_limit"] = approval_base["amount"] > approval_base["approval_limit"]
+
+c001 = approval_base.loc[approval_base["released_before_approval"], ["po_id", "supplier_name", "amount", "created_date", "release_date", "approval_date", "approver_user_id", "name", "approval_role", "approval_limit", "required_approval_role"]].sort_values(["release_date", "po_id"])
+c001.to_csv(generated_dir / "planning_c001_release_before_approval_candidates.csv", index=False)
+c001.head(10)
+```
+
+::: {.conclusion-box}
+Data available, keys validated, no missing values. Tables have "po_id", "supplier_name", "amount", "created_date", "release_date", "approval_date", "approver_user_id", "name", "approval_role", "approval_limit", "required_approval_role", so the testing is possible
+::: 
+
+**Approval authority check**
+
+```{python}
+c002 = approval_base.loc[approval_base["insufficient_approval_limit"], ["po_id", "supplier_name", "amount", "approval_date", "approver_user_id", "name", "approval_role", "approval_limit", "required_approval_role"]].sort_values(["approval_date", "po_id"])
+c002.to_csv(generated_dir / "planning_c002_approval_authority_exceptions.csv", index=False)
+c002.head(20)
+```
+
+::: {.conclusion-box}
+```{python}
+Markdown(f"""Planning data identified **{len(c002):,}** approval authority exceptions. C-002 is described in the regulation and is testable. Because no planning exceptions were identified, the audit program should include this as a key control test and retain evidence that the control operated effectively.""")
+```
+::: 
+
+---
+
+**Duplicate Payment Indicators**
+
+```{python}
+duplicate_invoice_groups = invoices.groupby(["supplier_id", "invoice_number"]).size().reset_index(name="invoice_count").query("invoice_count > 1").merge(suppliers[["supplier_id", "supplier_name"]], on="supplier_id", how="left").sort_values(["supplier_id", "invoice_number"])
+duplicate_invoice_groups.to_csv(generated_dir / "planning_duplicate_invoice_groups.csv", index=False)
+duplicate_invoice_groups.head(10)
+```
+
+```{python}
+if duplicate_invoice_groups.empty:
+    duplicate_invoice_records = invoices.head(0).copy()
+else:
+    duplicate_invoice_records = invoices.merge(duplicate_invoice_groups[["supplier_id", "invoice_number"]], on=["supplier_id", "invoice_number"], how="inner").merge(suppliers[["supplier_id", "supplier_name"]], on="supplier_id", how="left").sort_values(["supplier_id", "invoice_number", "invoice_date"])
+duplicate_invoice_records.to_csv(generated_dir / "planning_duplicate_invoice_candidate_records.csv", index=False)
+duplicate_invoice_records.head(10)
+```
+
+```{python}
+repeated_payment_amount_groups = payments.groupby(["supplier_id", "amount"]).agg(payment_count=("payment_id", "count"), payment_ids=("payment_id", lambda values: ", ".join(values))).reset_index().query("payment_count > 1").merge(suppliers[["supplier_id", "supplier_name"]], on="supplier_id", how="left").sort_values(["supplier_id", "amount"])
+repeated_payment_amount_groups.to_csv(generated_dir / "planning_repeated_payment_amount_groups.csv", index=False)
+repeated_payment_amount_groups.head(10)
+```
+
+::: {.conclusion-box}
+```{python}
+Markdown(f"""Planning data identified **{len(duplicate_invoice_groups):,}** exact duplicate invoice-number groups and **{len(repeated_payment_amount_groups):,}** repeated payment-amount groups. R-002 should remain in scope. However, the duplicate invoice review described in the regulation has weak design: it does not define matching fields, tolerance, similar-invoice logic, or system blocking. Therefore, the audit program should include duplicate payment analysis, not formal operating-effectiveness testing of C-003.""")
+```
+:::
+
+
+**Split Purchase Red Flags**
+
+The planning rule used here is intentionally simple:
+
+- same supplier;
+- same requester;
+- at least 3 purchase orders;
+- created within 3 days;
+- each purchase order below 100,000;
+- combined amount above 100,000.
+
+```{python}
+threshold = 100_000
+window_days = 3
+min_po_count = 3
+rows = []
+
+for (supplier_id, requester_user_id), group in purchase_orders.sort_values("created_date").groupby(["supplier_id", "requester_user_id"]):
+    group = group.sort_values("created_date")
+    for _, row in group.iterrows():
+        window_start = row["created_date"]
+        window_end = window_start + pd.Timedelta(days=window_days)
+        window = group[(group["created_date"] >= window_start) & (group["created_date"] <= window_end)]
+        if len(window) >= min_po_count and window["amount"].max() < threshold and window["amount"].sum() > threshold:
+            rows.append({"supplier_id": supplier_id, "requester_user_id": requester_user_id, "window_start": window_start.date().isoformat(), "window_end": window_end.date().isoformat(), "po_ids": ", ".join(window["po_id"].tolist()), "po_count": len(window), "total_amount": round(window["amount"].sum(), 2), "max_single_amount": round(window["amount"].max(), 2)})
+
+split_candidates = pd.DataFrame(rows)
+if not split_candidates.empty:
+    split_candidates = split_candidates.drop_duplicates(subset=["supplier_id", "requester_user_id", "po_ids"])
+    split_candidates = split_candidates.merge(suppliers[["supplier_id", "supplier_name"]], on="supplier_id", how="left").merge(users[["user_id", "name"]], left_on="requester_user_id", right_on="user_id", how="left").rename(columns={"name": "requester_name"}).sort_values(["supplier_id", "window_start"])
+split_candidates.to_csv(generated_dir / "planning_split_purchase_candidates.csv", index=False)
+split_candidates.head(10)
+```
+
+::: {.conclusion-box}
+```{python}
+Markdown(f"""Planning data identified **{len(split_candidates):,}** split purchase candidate groups. R-003 should remain in scope as red-flag analysis. The regulation does not describe a formal control to prevent or detect purchase splitting, so this should not be framed as operating-effectiveness testing of a non-existent control.""")
+```
+:::
+
+
+*Normally, there will be much more EDA and code blocks.*
+
+
+### Process
+The process is described in the procurement [regulation](../04_evidence/01_regulations/procurement_process_regulation.md). The regulation describes the standard purchase-to-pay flow:
+
+1. purchase request initiation;
+2. purchase order creation;
+3. purchase order approval;
+4. purchase order release;
+5. goods receipt;
+6. invoice processing;
+7. payment approval.
+
+The regulation is useful, but incomplete. Control issues identified from the Regulation:
+
+```{python}
+control_design = pd.DataFrame([
+    {
+        "control_id": "C-001",
+        "control": "PO release after approval",
+        "risk": "R-001",
+        "design_assessment": "Efficient",
+        "planning_approach": "Test operating effectiveness using PO and approval workflow data.",
+    },
+    {
+        "control_id": "C-002",
+        "control": "Approval authority check",
+        "risk": "R-001",
+        "design_assessment": "Efficient",
+        "planning_approach": "Test using PO amount, approval role, and approval matrix.",
+    },
+    {
+        "control_id": "C-003",
+        "control": "Duplicate invoice review",
+        "risk": "R-002",
+        "design_assessment": "Inefficient",
+        "planning_approach": "Do not test as a formal control; perform data analysis.",
+    },
+    {
+        "control_id": "N/A",
+        "control": "Purchase splitting prevention/detection",
+        "risk": "R-003",
+        "design_assessment": "Control gap",
+        "planning_approach": "No formal control to test; use red-flag analysis.",
+    },
+])
+control_design
+```
+
+
+---
+
+## 2. Information from Prior Audits
+
+There were no prior P2P audits in this synthetic example.
+
+::: {.conclusion-box}
+No prior-audit issues change the current audit scope.
+:::
+
+
+---
+
+## 3. Information from the 2nd Line
+
+No relevant second-line input was identified in this synthetic example.
+
+::: {.conclusion-box}
+No second-line information changes the current audit scope.
+:::
+
+
+---
+
+## 4. IT part
+
+The process is supported by the ERP system.
+
+Planning questions considered:
+
+- Is purchase order approval automated?
+- Does the ERP workflow prevent release before approval?
+- Does the system compare purchase order amount with approval authority?
+- Does the system block duplicate invoices?
+- Are approval workflow logs available?
+- Are user roles and approval limits available?
+- Can purchase orders, invoices, and payments be linked reliably?
+
+Initial conclusion:
+
+The ERP system and its workflow logs should be included in the audit scope to the extent necessary to test procurement approval controls and data-driven risk indicators.
+
+A separate IT general controls review is not planned as part of this synthetic audit.
+
+::: {.conclusion-box}
+The ERP system and workflow logs are relevant to the audit scope. A separate IT general controls review is not planned for this synthetic audit, but the reliability and completeness of extracted workflow data should be considered during fieldwork.
+:::
+
+---
+
+## 5. Fraud Red Flags
+
+We performed preliminary red flag analysis over the available data - see points above:
+
+38 purchase orders released before approval, 8 duplicate invoice-number groups and 12 repeated payment-amount groups,  12 split purchase candidate groups.
+
+::: {.conclusion-box}
+The audit program should include procedures to assess these indicators and determine whether they represent control failures, process issues, or potential fraud red flags.
+:::
+
+---
+
+## 6. Risks
+
+| Risk | Planning assessment | Proposed approach |
+|---|---|---|
+| R-001 Unauthorized purchases | Relevant. Controls are described and testable. Initial data indicates release-before-approval candidates. | Include in audit program. Test C-001 and C-002. |
+| R-002 Duplicate payments | Relevant, but duplicate review control design is weak. | Do not test C-003 as a formal control. Perform data analysis and follow up selected candidates. |
+| R-003 Split purchases below approval threshold | Relevant. No formal control described in regulation. | Use data analysis to identify red flags. Do not frame as operating effectiveness testing of a non-existent control. |
+| R-004 Incomplete goods receipt before invoice payment | Relevant but out of current scope. Data linkage is incomplete. | Exclude from current scope. Consider future audit or monitoring topic. |
+
+---
+
+## 7. Scope
+
+### Audit objectives
+
+The audit objectives are to:
+
+1. assess whether selected procurement approval controls are designed and operating effectively;
+2. identify transactions with elevated fraud, compliance, or financial loss risk;
+3. assess whether available data can support repeatable procurement monitoring.
+
+### In scope
+
+The audit scope should include:
+
+- purchase order approval before release;
+- approval authority for purchase orders;
+- duplicate invoice and payment indicators;
+- split purchase red flags below approval thresholds.
+
+### Out of scope
+
+The audit scope should not include:
+
+- strategic sourcing;
+- supplier performance management;
+- contract negotiation;
+- inventory valuation;
+- tax treatment of purchases;
+- full goods receipt before payment testing.
+
+---
+
+## 8. Proposed Audit Approach
+
+The final audit approach is documented by the auditor in planning_decision.yml (by hand, based on the analysis above).
+Here we include the summary from this document.
+
+
+```{python}
+#| label: load-planning-decision
+#| echo: false
+#| output: false
+
+planning_decision_path = planning_dir / "planning_decision.yml"
+
+if not planning_decision_path.exists():
+    raise FileNotFoundError(
+        f"Planning decision file not found: {planning_decision_path}"
+    )
+
+planning_decision = yaml.safe_load(
+    planning_decision_path.read_text(encoding="utf-8")
+)
+```
+
+**Overall conclusion:**
+```{python}
+#| label: render-planning-decision-conclusion
+#| echo: false
+#| results: asis
+
+overall_conclusion = planning_decision.get(
+    "overall_conclusion",
+    "Planning decision is documented in planning_decision.yml."
+)
+
+print(f"{overall_conclusion}")
+```
+
+**risks summary:**
+```{python}
+#| label: render-risk-scope-decision
+#| echo: false
+
+risk_decision_rows = []
+
+for item in planning_decision.get("included_risks", []):
+    risk_decision_rows.append({
+        "Risk ID": item["id"],
+        "Risk": item["title"],
+        "Decision": "Include",
+        "Rationale": item["reasoning"],
+    })
+
+for item in planning_decision.get("excluded_risks", []):
+    risk_decision_rows.append({
+        "Risk ID": item["id"],
+        "Risk": item["title"],
+        "Decision": "Exclude",
+        "Rationale": item["reasoning"],
+    })
+
+risk_decision_summary = pd.DataFrame(risk_decision_rows)
+
+risk_decision_summary
+```
+
+**controls summary:**
+```{python}
+#| label: render-control-planning-approach
+#| echo: false
+
+control_planning_summary = pd.DataFrame(
+    planning_decision.get("controls", [])
+)
+
+control_planning_summary
+```
+
+**recommended tests summary:**
+```{python}
+#| label: render-recommended-tests
+#| echo: false
+
+recommended_tests_summary = pd.DataFrame(
+    planning_decision.get("recommended_tests", [])
+)
+
+recommended_tests_summary
+```

@@ -1,0 +1,35 @@
+observation_id: OBS-003
+status: draft
+source_workpaper: WP-R-003-NO-CONTROL
+source_file: 05_workpapers/WP-R-003-NO-CONTROL.qmd
+test_id: T-004
+risk_id: R-003
+risk_title: Split purchases below approval threshold
+control_id: null
+control_description: Purchase splitting prevention/detection
+control_owner: Procurement Department
+title: No formal monitoring of split purchases below approval thresholds
+severity: Medium
+condition: 'The audit identified 12 split-purchase candidate groups. After review, 6 groups remained unresolved red flags.
+  These groups involved the same supplier and requester within a short period, with individual purchase orders below the approval
+  threshold and combined values exceeding the threshold.
+
+  '
+criteria: 'The procurement policy prohibits splitting purchases to remain below approval thresholds".
+
+  '
+cause: 'No formal control or periodic monitoring process is defined for detecting purchases that may be split below approval
+  thresholds.
+
+  '
+risk_effect: 'Approval thresholds may be bypassed without timely detection, increasing the risk of unauthorized procurement
+  and weakening spend governance.
+
+  '
+recommendation: Implement a formal split-purchase monitoring control using defined thresholds, time windows, grouping criteria,
+  exception ownership, and documented resolution of candidate cases.
+management_action_plan:
+- action_id: MAP-001
+  action: ''
+  responsible_name: ''
+  due_date: ''

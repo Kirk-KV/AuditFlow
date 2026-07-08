@@ -1,0 +1,468 @@
+---
+title: "Audit Story"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: false
+    smooth-scroll: true
+    code-fold: true
+    theme: cosmo
+    css: audit_story.css
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+<!-- AUTO:COVER START -->
+```{=html}
+<div class="archive-cover">
+  <div class="archive-kicker">AuditFlow archive</div>
+  <h1>Audit story: <span>Procurement Process Audit</span></h1>
+  <div class="archive-meta">
+    <span class="meta-pill">Lanninster-Soprano Joint Company (LSJC)</span>
+    <span class="meta-pill">Period: 2026-01-01 to 2026-04-01</span>
+    <span class="meta-pill">Archive created: 2026-07-04</span>
+  </div>
+</div>
+```
+<!-- AUTO:COVER END -->
+
+# One-page audit story
+
+<!-- AUTO:ONE_PAGE_STORY START -->
+```{=html}
+<div class="story-grid">
+  <div class="story-card">
+    <div class="story-number">4</div>
+    <div class="story-label">risks initially considered</div>
+  </div>
+  <div class="story-card">
+    <div class="story-number">3</div>
+    <div class="story-label">risks selected after planning</div>
+  </div>
+  <div class="story-card">
+    <div class="story-number">4</div>
+    <div class="story-label">tests in audit program</div>
+  </div>
+  <div class="story-card">
+    <div class="story-number">3</div>
+    <div class="story-label">observations generated</div>
+  </div>
+</div>
+
+<div class="section-note">
+  <strong>Planning conclusion.</strong>
+  Planning procedures confirmed that the audit should focus on purchase approval discipline, duplicate payment indicators, and split purchase red flags. Goods receipt before invoice payment remains out of scope.
+
+</div>
+```
+<!-- AUTO:ONE_PAGE_STORY END -->
+
+# What we started with
+
+<!-- AUTO:INITIAL_ASSUMPTIONS START -->
+```{=html}
+<div class="flow">
+  <div class="panel">
+    <div class="panel-title">Annual plan input</div>
+    <p><strong>Original topic:</strong> Procurement / Purchase-to-Pay</p>
+    <p><strong>Why included:</strong></p>
+    <p>Procurement was included in the annual audit plan due to high transaction volume, decentralized purchasing, recent ERP workflow changes, and prior concerns about approval discipline.</p>
+  </div>
+  <div class="flow-arrow">→</div>
+  <div class="panel">
+    <div class="panel-title">Initial scope</div>
+    <p><strong>In scope</strong></p>
+    <ul class='item-list'><li>Purchase order approval</li><li>Invoice matching</li><li>Payment approval</li></ul>
+    <p><strong>Out of scope</strong></p>
+    <ul class='item-list'><li>Goods receipt</li><li>Supplier master data changes relevant to payments</li><li>Strategic sourcing</li><li>Supplier performance management</li></ul>
+  </div>
+</div>
+
+<h3>Initial risks considered</h3>
+
+<div class="decision-card">
+  <div class="card-title">R-001 — Unauthorized purchases</div>
+  <div class="card-meta"><span class='badge badge-high'>high</span></div>
+  <p>Purchases may be created, approved, or released without proper authority.  This risk is relevant because purchasing is decentralized and recent ERP workflow changes may have affected approval discipline.</p>
+</div>
+
+<div class="decision-card">
+  <div class="card-title">R-002 — Duplicate payments</div>
+  <div class="card-meta"><span class='badge badge-medium'>medium</span></div>
+  <p>Invoices may be paid more than once due to duplicate invoice records, weak matching controls, manual payment processing, or inconsistent supplier master data.</p>
+</div>
+
+<div class="decision-card">
+  <div class="card-title">R-003 — Split purchases below approval threshold</div>
+  <div class="card-meta"><span class='badge badge-medium'>medium</span></div>
+  <p>Purchases may be split into smaller transactions to avoid higher approval thresholds. This risk is relevant where approval limits are based on transaction amount and purchasing is decentralized.</p>
+</div>
+
+<div class="decision-card">
+  <div class="card-title">R-004 — Incomplete goods receipt before invoice payment</div>
+  <div class="card-meta"><span class='badge badge-medium'>medium</span></div>
+  <p>Previous audits revealed several issues regarding payments for incomplete goods. We need to check controls and assess the risk</p>
+</div>
+```
+<!-- AUTO:INITIAL_ASSUMPTIONS END -->
+
+# What changed during planning and why
+
+<!-- AUTO:PLANNING_DECISIONS START -->
+```{=html}
+<div class="section-note">
+  <strong>What changed during planning.</strong>
+  The planning decision converted initial audit inputs into a final scope, selected risks,
+  excluded risks, control assessment, and recommended tests.
+</div>
+
+<h3>Risks selected for audit work</h3>
+
+<div class="decision-card">
+  <div class="card-title">R-001 — Unauthorized purchases</div>
+  <div class="card-meta"><span class="badge">Selected</span></div>
+  <p>Controls are described and testable. Data indicates release-before-approval candidates.</p>
+</div>
+
+<div class="decision-card">
+  <div class="card-title">R-002 — Duplicate payments</div>
+  <div class="card-meta"><span class="badge">Selected</span></div>
+  <p>Duplicate indicators exist, but C-003 has weak design. Use data analysis, not formal control testing.</p>
+</div>
+
+<div class="decision-card">
+  <div class="card-title">R-003 — Split purchases below approval threshold</div>
+  <div class="card-meta"><span class="badge">Selected</span></div>
+  <p>No formal control is described. Use red-flag analysis.</p>
+</div>
+
+
+<h3>Risks excluded from current audit work</h3>
+
+<div class="decision-card">
+  <div class="card-title">R-004 — Incomplete goods receipt before invoice payment</div>
+  <div class="card-meta"><span class="badge">Excluded</span></div>
+  <p>Goods receipt linkage is incomplete and the current audit scope is intentionally focused.</p>
+</div>
+
+
+<details open>
+  <summary>Control assessment and planning approach</summary>
+  <table class="trace-table">
+    <thead>
+      <tr>
+        <th>Control</th>
+        <th>Description</th>
+        <th>Risk</th>
+        <th>Design assessment</th>
+        <th>Planning approach</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>C-001</td><td>PO release after approval</td><td>R-001</td><td>Testable</td><td>Test operating effectiveness using PO and approval workflow data.</td></tr><tr><td>C-002</td><td>Approval authority check</td><td>R-001</td><td>Testable</td><td>Test using PO amount, approval role, and approval matrix.</td></tr><tr><td>C-003</td><td>Duplicate invoice review</td><td>R-002</td><td>Weak design</td><td>Do not test as a formal control; perform data analysis.</td></tr><tr><td>N/A</td><td>Purchase splitting prevention/detection</td><td>R-003</td><td>Control gap</td><td>No formal control to test; use red-flag analysis.</td></tr>
+    </tbody>
+  </table>
+</details>
+
+<details>
+  <summary>Recommended tests from planning</summary>
+  <table class="trace-table">
+    <thead>
+      <tr>
+        <th>Test</th>
+        <th>Title</th>
+        <th>Risk</th>
+        <th>Control</th>
+        <th>Type</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>T-001</td><td>Test purchase orders released before approval</td><td>R-001</td><td>C-001</td><td>control_operating_effectiveness</td></tr><tr><td>T-002</td><td>Test approval authority for purchase orders</td><td>R-001</td><td>C-002</td><td>control_operating_effectiveness</td></tr><tr><td>T-003</td><td>Analyze duplicate payment candidates</td><td>R-002</td><td>C-003</td><td>data_analysis</td></tr><tr><td>T-004</td><td>Analyze split purchase candidates below approval threshold</td><td>R-003</td><td></td><td>red_flag_analysis</td></tr>
+    </tbody>
+  </table>
+</details>
+```
+<!-- AUTO:PLANNING_DECISIONS END -->
+
+# Scope and risk evolution
+
+<!-- AUTO:SCOPE_RISK_EVOLUTION START -->
+```{=html}
+<div class="flow">
+  <div class="panel">
+    <div class="panel-title">Initial scope</div>
+    <p><strong>In scope</strong></p>
+    <ul class='item-list'><li>Purchase order approval</li><li>Invoice matching</li><li>Payment approval</li></ul>
+    <p><strong>Out of scope</strong></p>
+    <ul class='item-list'><li>Goods receipt</li><li>Supplier master data changes relevant to payments</li><li>Strategic sourcing</li><li>Supplier performance management</li></ul>
+  </div>
+  <div class="flow-arrow">→</div>
+  <div class="panel">
+    <div class="panel-title">Final planning scope</div>
+    <p><strong>In scope</strong></p>
+    <ul class='item-list'><li>Purchase order approval</li><li>Invoice matching</li><li>Payment approval</li></ul>
+    <p><strong>Out of scope</strong></p>
+    <ul class='item-list'><li>Goods receipt</li><li>Supplier master data changes relevant to payments</li><li>Strategic sourcing</li><li>Supplier performance management</li></ul>
+    <p><strong>Rationale</strong></p>
+    <ul class='item-list'><li>this is a synthetic audit and I don&#x27;t need a lot of processes in scope</li></ul>
+  </div>
+</div>
+
+<div class="story-grid">
+  <div class="story-card">
+    <div class="story-number">4</div>
+    <div class="story-label">initial risks</div>
+  </div>
+  <div class="story-card">
+    <div class="story-number">3</div>
+    <div class="story-label">selected risks</div>
+  </div>
+  <div class="story-card">
+    <div class="story-number">1</div>
+    <div class="story-label">excluded risks</div>
+  </div>
+  <div class="story-card">
+    <div class="story-number">4</div>
+    <div class="story-label">audit program rows</div>
+  </div>
+</div>
+```
+<!-- AUTO:SCOPE_RISK_EVOLUTION END -->
+
+# What we tested and what we concluded
+
+<!-- AUTO:TESTING_TRACEABILITY START -->
+```{=html}
+<table class="trace-table">
+  <thead>
+    <tr>
+      <th>Test</th>
+      <th>Risk</th>
+      <th>Control</th>
+      <th>Workpaper</th>
+      <th>Conclusion</th>
+      <th>Observation</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>T-001</td><td>R-001 — Unauthorized purchases</td><td>C-001</td><td>WP-C-001</td><td>C-001 did not operate effectively for the tested period. Purchase orders were not always released only after required approval was completed.
+
+This should be raised as an observation because the exception pattern creates a risk of unauthorized purchases and weakens approval discipline in the procurement process.</td><td>Purchase orders released before required approval</td></tr><tr><td>T-002</td><td>R-001 — Unauthorized purchases</td><td>C-002</td><td>WP-C-002</td><td>C-002 operated effectively for the tested period, based on the data available for audit testing.
+
+No observation is required for approval authority. The result supports reliance on the approval authority component of the procurement approval process.</td><td>No observation</td></tr><tr><td>T-003</td><td>R-002 — Duplicate payments</td><td>C-003</td><td>WP-C-003</td><td>Duplicate payment indicators were confirmed. Because C-003 is weakly designed, the conclusion is not that a well-defined control failed in operation; rather, the process lacks a sufficiently clear and evidenced duplicate review mechanism.
+
+This should be raised as an observation focused on strengthening duplicate invoice/payment review criteria, evidence retention, and automated matching rules.</td><td>Weak duplicate invoice and payment review</td></tr><tr><td>T-004</td><td>R-003 — Split purchases below approval threshold</td><td></td><td>WP-G-004</td><td>Split purchase red flags were confirmed. Since no formal control is defined, this should be treated as a control gap rather than an operating effectiveness failure of a specific control.
+
+An observation should be raised to introduce a formal split-purchase monitoring control and periodic exception review.</td><td>No formal monitoring of split purchases below approval thresholds</td></tr>
+  </tbody>
+</table>
+
+<details>
+  <summary>Workpaper details</summary>
+  
+<details>
+  <summary>WP-C-001 — workpaper result and conclusion</summary>
+  <h4>Results</h4>
+  <p>The test identified 38 purchase orders where the recorded release timestamp preceded the approval completion timestamp. After removing obvious technical false positives, 31 cases remained as confirmed or unresolved exceptions.
+
+The confirmed exceptions were not evenly distributed across the population. Several were concentrated around urgent purchases and a small number of requesters. Management explained that some purchases were released early due to operational urgency; however, documented emergency approval evidence was not available for all reviewed cases.
+
+The exception pattern indicates that the control exists and is technically traceable, but it did not operate consistently throughout the audit period.</p>
+  <h4>Conclusion</h4>
+  <p>C-001 did not operate effectively for the tested period. Purchase orders were not always released only after required approval was completed.
+
+This should be raised as an observation because the exception pattern creates a risk of unauthorized purchases and weakens approval discipline in the procurement process.</p>
+</details>
+
+<details>
+  <summary>WP-C-002 — workpaper result and conclusion</summary>
+  <h4>Results</h4>
+  <p>No confirmed approval authority exceptions were identified in the tested population.
+
+All purchase orders with available approval workflow records were approved by users whose authority level was equal to or higher than the purchase order amount, based on the approval matrix used for testing. No evidence of approvals exceeding documented limits was noted.</p>
+  <h4>Conclusion</h4>
+  <p>C-002 operated effectively for the tested period, based on the data available for audit testing.
+
+No observation is required for approval authority. The result supports reliance on the approval authority component of the procurement approval process.</p>
+</details>
+
+<details>
+  <summary>WP-C-003 — workpaper result and conclusion</summary>
+  <h4>Results</h4>
+  <p>The analysis identified 8 exact duplicate invoice-number groups and 12 repeated payment-amount groups for further review. After removing obvious false positives and records with sufficient business explanation, 3 candidate cases remained unresolved.
+
+The unresolved cases had the same supplier, similar invoice/payment attributes, and insufficient evidence in the provided data to demonstrate that the repeated payments were valid. Finance indicated that additional source documents may exist outside the provided data set, but these were not available at the time of workpaper completion.
+
+The results confirm that duplicate payment indicators exist and that the current duplicate review process is not sufficiently evidenced.</p>
+  <h4>Conclusion</h4>
+  <p>Duplicate payment indicators were confirmed. Because C-003 is weakly designed, the conclusion is not that a well-defined control failed in operation; rather, the process lacks a sufficiently clear and evidenced duplicate review mechanism.
+
+This should be raised as an observation focused on strengthening duplicate invoice/payment review criteria, evidence retention, and automated matching rules.</p>
+</details>
+
+<details>
+  <summary>WP-G-004 — workpaper result and conclusion</summary>
+  <h4>Results</h4>
+  <p>The analysis identified 12 split-purchase candidate groups. After review, 6 groups remained as unresolved red flags.
+
+The unresolved groups involved the same supplier and requester within a short period, with individual purchase orders below the approval threshold and combined values exceeding the threshold. Procurement provided explanations for some cases, but the available evidence did not consistently demonstrate that the purchases represented separate business needs.
+
+The results indicate that split purchase monitoring is not formally embedded in the process and that the current control environment may allow threshold avoidance without timely detection.</p>
+  <h4>Conclusion</h4>
+  <p>Split purchase red flags were confirmed. Since no formal control is defined, this should be treated as a control gap rather than an operating effectiveness failure of a specific control.
+
+An observation should be raised to introduce a formal split-purchase monitoring control and periodic exception review.</p>
+</details>
+
+</details>
+```
+<!-- AUTO:TESTING_TRACEABILITY END -->
+
+# Observations and final outcome
+
+<!-- AUTO:OBSERVATIONS_OUTCOME START -->
+```{=html}
+<table class="outcome-table">
+  <thead>
+    <tr>
+      <th>Observation</th>
+      <th>Severity</th>
+      <th>Supported by</th>
+      <th>Management action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Purchase orders released before required approval</td><td><span class='badge badge-high'>High</span></td><td>WP-C-001</td><td>Management action plan not documented</td></tr><tr><td>Weak duplicate invoice and payment review</td><td><span class='badge badge-medium'>Medium</span></td><td>WP-C-003</td><td>Management action plan not documented</td></tr><tr><td>No formal monitoring of split purchases below approval thresholds</td><td><span class='badge badge-medium'>Medium</span></td><td>WP-G-004</td><td>Management action plan not documented</td></tr>
+  </tbody>
+</table>
+
+<details open>
+  <summary>Observation details</summary>
+  
+<div class="observation-card">
+  <div class="card-title">Purchase orders released before required approval</div>
+  <div class="card-meta"><span class='badge badge-high'>High</span> Source: WP-C-001</div>
+  <h4>Condition</h4>
+  <p>The audit identified 38 purchase orders where the recorded release timestamp preceded approval completion. After removing obvious technical false positives, 31 cases remained confirmed or unresolved. Several cases were concentrated around urgent purchases and a small number of requesters, and documented emergency approval evidence was not available for all reviewed cases.</p>
+  <h4>Risk / Effect</h4>
+  <p>Purchases may be committed without proper authorization, weakening approval discipline and increasing the risk of unauthorized or inappropriate procurement activity.</p>
+  <h4>Internal audit recommendation</h4>
+  <p>Configure the procurement workflow to prevent release before required approval, define and evidence any emergency approval process, and implement periodic monitoring of release-before-approval exceptions with assigned ownership for review and remediation.</p>
+  <h4>Management action plan</h4>
+  <p>Management action plan not documented</p>
+</div>
+
+<div class="observation-card">
+  <div class="card-title">Weak duplicate invoice and payment review</div>
+  <div class="card-meta"><span class='badge badge-medium'>Medium</span> Source: WP-C-003</div>
+  <h4>Condition</h4>
+  <p>The duplicate payment analysis identified 8 exact duplicate invoice-number groups and 12 repeated payment-amount groups. After removing obvious false positives and records with sufficient business explanations, 3 candidate cases remained unresolved. The available evidence did not consistently demonstrate that the repeated payments were valid.</p>
+  <h4>Risk / Effect</h4>
+  <p>Duplicate or erroneous payments may be processed and not detected in a timely manner, potentially resulting in financial loss and increased manual recovery effort.</p>
+  <h4>Internal audit recommendation</h4>
+  <p>Define duplicate invoice and payment matching criteria, implement automated duplicate alerts or blocking rules where feasible, require documented review evidence, and assign clear ownership and frequency for duplicate candidate review.</p>
+  <h4>Management action plan</h4>
+  <p>Management action plan not documented</p>
+</div>
+
+<div class="observation-card">
+  <div class="card-title">No formal monitoring of split purchases below approval thresholds</div>
+  <div class="card-meta"><span class='badge badge-medium'>Medium</span> Source: WP-G-004</div>
+  <h4>Condition</h4>
+  <p>The audit identified 12 split-purchase candidate groups. After review, 6 groups remained unresolved red flags. These groups involved the same supplier and requester within a short period, with individual purchase orders below the approval threshold and combined values exceeding the threshold.</p>
+  <h4>Risk / Effect</h4>
+  <p>Approval thresholds may be bypassed without timely detection, increasing the risk of unauthorized procurement and weakening spend governance.</p>
+  <h4>Internal audit recommendation</h4>
+  <p>Implement a formal split-purchase monitoring control using defined thresholds, time windows, grouping criteria, exception ownership, and documented resolution of candidate cases.</p>
+  <h4>Management action plan</h4>
+  <p>Management action plan not documented</p>
+</div>
+
+</details>
+```
+<!-- AUTO:OBSERVATIONS_OUTCOME END -->
+
+# Evidence and document map
+
+<!-- AUTO:EVIDENCE_MAP START -->
+```{=html}
+<div class="section-note">
+  This section is an archive index. It does not replace source documents;
+  it explains where each key conclusion can be traced.
+</div>
+
+
+<div class="file-card">
+  <div class="card-title">Initial audit input</div>
+  <div class="card-meta">initial_data.yml · exists</div>
+</div>
+
+<div class="file-card">
+  <div class="card-title">Planning decision</div>
+  <div class="card-meta">01_planning/planning_decision.yml · exists</div>
+</div>
+
+<div class="file-card">
+  <div class="card-title">Audit program</div>
+  <div class="card-meta">03_audit_program/audit_program.yml · exists</div>
+</div>
+
+<div class="file-card">
+  <div class="card-title">Final report</div>
+  <div class="card-meta">07_reporting/report.qmd · exists</div>
+</div>
+
+<div class="file-card">
+  <div class="card-title">Workpaper</div>
+  <div class="card-meta">05_workpapers/WP-C-001.qmd · exists</div>
+</div>
+
+<div class="file-card">
+  <div class="card-title">Workpaper</div>
+  <div class="card-meta">05_workpapers/WP-C-002.qmd · exists</div>
+</div>
+
+<div class="file-card">
+  <div class="card-title">Workpaper</div>
+  <div class="card-meta">05_workpapers/WP-C-003.qmd · exists</div>
+</div>
+
+<div class="file-card">
+  <div class="card-title">Workpaper</div>
+  <div class="card-meta">05_workpapers/WP-G-004.qmd · exists</div>
+</div>
+
+<div class="file-card">
+  <div class="card-title">Observation</div>
+  <div class="card-meta">06_observations/OBS-001.yml · exists</div>
+</div>
+
+<div class="file-card">
+  <div class="card-title">Observation</div>
+  <div class="card-meta">06_observations/OBS-002.yml · exists</div>
+</div>
+
+<div class="file-card">
+  <div class="card-title">Observation</div>
+  <div class="card-meta">06_observations/OBS-003.yml · exists</div>
+</div>
+```
+<!-- AUTO:EVIDENCE_MAP END -->
+
+# Lessons learned
+
+<!-- MANUAL:LESSONS_LEARNED START -->
+::: {.manual-block}
+**Manual section.** Add lessons learned after the engagement is complete.
+
+Suggested prompts:
+
+- Which planning assumptions turned out to be wrong?
+- Which analytics or scripts should be reused in the next audit?
+- Which data limitations should be resolved before future monitoring?
+- What would the team do differently next time?
+:::
+<!-- MANUAL:LESSONS_LEARNED END -->

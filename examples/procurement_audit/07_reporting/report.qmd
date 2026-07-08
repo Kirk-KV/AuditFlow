@@ -1,0 +1,333 @@
+---
+title: "Internal Audit Report"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: false
+    smooth-scroll: true
+    code-fold: true
+    theme: cosmo
+    css: report.css
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+```{python}
+#| label: setup-for-manual-appendix
+#| echo: false
+
+from pathlib import Path
+
+import pandas as pd
+
+try:
+    import plotly.express as px
+except Exception:
+    px = None
+
+audit_project_root = Path.cwd()
+while audit_project_root != audit_project_root.parent:
+    if (audit_project_root / "07_reporting").exists():
+        break
+    audit_project_root = audit_project_root.parent
+
+reporting_dir = audit_project_root / "07_reporting"
+figures_dir = reporting_dir / "figures"
+assets_dir = reporting_dir / "assets"
+```
+
+<!-- AUTO:COVER START -->
+```{=html}
+<div class="report-cover">
+<div class="cover-top">
+<div class="cover-logo"><img class="report-logo" src="assets/company_logo.svg" alt="Company logo"></div>
+<div class="cover-company">Lanninster-Soprano Joint Company (LSJC)</div>
+</div>
+<div class="cover-title-block">
+<h1>Internal audit report: <span>Procurement Process Audit</span></h1>
+</div>
+</div>
+```
+<!-- AUTO:COVER END -->
+
+<!-- MANUAL:DRAFT_NOTICE START -->
+::: {.draft-banner}
+**Draft report.** Delete this block before issuing the final report.
+:::
+<!-- MANUAL:DRAFT_NOTICE END -->
+
+# Executive summary
+
+<!-- AUTO:AUDIT_FACTS START -->
+```{=html}
+<div class="executive-facts-card">
+<div class="fact-row">
+<div class="fact-label">Audit objective</div>
+<div class="fact-value"><ul class="scope-list"><li>Assess whether selected procurement controls are designed and operating effectively.</li><li>Identify transactions with elevated fraud, compliance, or financial loss risk.</li><li>Assess whether available data is sufficient to support repeatable procurement monitoring.</li></ul></div>
+</div>
+<div class="fact-row">
+<div class="fact-label">Scope</div>
+<div class="fact-value">
+<div class="scope-block">
+<div><strong>In scope</strong><ul class="scope-list"><li>Purchase order approval</li><li>Invoice matching</li><li>Payment approval</li></ul></div>
+<div><strong>Out of scope</strong><ul class="scope-list"><li>Goods receipt</li><li>Supplier master data changes relevant to payments</li><li>Strategic sourcing</li><li>Supplier performance management</li></ul></div>
+</div>
+</div>
+</div>
+<div class="fact-row">
+<div class="fact-label">Period reviewed</div>
+<div class="fact-value">2026-01-01 to 2026-04-01</div>
+</div>
+</div>
+```
+<!-- AUTO:AUDIT_FACTS END -->
+
+## Process overview and key process indicators
+
+<!-- MANUAL:PROCESS_OVERVIEW START -->
+::: {.manual-block}
+**Manual section.** Add process overview and key process indicators here.
+:::
+<!-- MANUAL:PROCESS_OVERVIEW END -->
+
+## Overall conclusion
+
+<!-- MANUAL:OVERALL_CONCLUSION START -->
+::: {.manual-block}
+**Manual section.** Add overall audit conclusion here.
+:::
+<!-- MANUAL:OVERALL_CONCLUSION END -->
+
+## Summary of observations
+
+<!-- AUTO:SUMMARY_OBSERVATIONS START -->
+```{=html}
+<ol class="summary-observation-list">
+<li class="summary-observation-item">
+<div class="summary-observation-main">
+<div class="summary-observation-title">Purchase orders released before required approval</div>
+<div class="summary-observation-meta"><span class="severity-badge severity-high">High</span></div>
+</div>
+<div class="summary-observation-text">
+Executive summary wording to be completed by auditor.
+</div>
+</li>
+
+<li class="summary-observation-item">
+<div class="summary-observation-main">
+<div class="summary-observation-title">Weak duplicate invoice and payment review</div>
+<div class="summary-observation-meta"><span class="severity-badge severity-medium">Medium</span></div>
+</div>
+<div class="summary-observation-text">
+Executive summary wording to be completed by auditor.
+</div>
+</li>
+
+<li class="summary-observation-item">
+<div class="summary-observation-main">
+<div class="summary-observation-title">No formal monitoring of split purchases below approval thresholds</div>
+<div class="summary-observation-meta"><span class="severity-badge severity-medium">Medium</span></div>
+</div>
+<div class="summary-observation-text">
+Executive summary wording to be completed by auditor.
+</div>
+</li>
+</ol>
+```
+<!-- AUTO:SUMMARY_OBSERVATIONS END -->
+
+# Detailed observations
+
+<!-- AUTO:DETAILED_OBSERVATIONS START -->
+```{=html}
+<section class="observation-card">
+<div class="observation-header">
+<h3>Purchase orders released before required approval</h3>
+<div><span class="severity-badge severity-high">High</span></div>
+</div>
+<div class="observation-body">
+<h4>Criteria</h4>
+<p>Purchase orders should be released only after the required approval has been completed, except where a formally defined and evidenced emergency approval process applies.</p>
+<h4>Condition</h4>
+<p>The audit identified 38 purchase orders where the recorded release timestamp preceded approval completion. After removing obvious technical false positives, 31 cases remained confirmed or unresolved. Several cases were concentrated around urgent purchases and a small number of requesters, and documented emergency approval evidence was not available for all reviewed cases.</p>
+<div class="two-column-section">
+<div>
+<h4>Cause</h4>
+<p>The workflow allowed purchase orders to be released before approval completion, and the emergency purchase process was not consistently evidenced or monitored.</p>
+</div>
+<div>
+<h4>Risk / Effect</h4>
+<p>Purchases may be committed without proper authorization, weakening approval discipline and increasing the risk of unauthorized or inappropriate procurement activity.</p>
+</div>
+</div>
+<h4>Internal audit recommendation</h4>
+<div class="recommendation-box">
+<p>Configure the procurement workflow to prevent release before required approval, define and evidence any emergency approval process, and implement periodic monitoring of release-before-approval exceptions with assigned ownership for review and remediation.</p>
+</div>
+
+<div class="map-box map-not-agreed">
+<div class="map-title">Management action plan</div>
+<p><em>Management action plan has not yet been documented or agreed.</em></p>
+</div>
+
+</div>
+</section>
+
+
+<section class="observation-card">
+<div class="observation-header">
+<h3>Weak duplicate invoice and payment review</h3>
+<div><span class="severity-badge severity-medium">Medium</span></div>
+</div>
+<div class="observation-body">
+<h4>Criteria</h4>
+<p>Duplicate invoices and payments should be detected before payment using defined matching criteria, documented review procedures, and retained evidence of review and resolution.</p>
+<h4>Condition</h4>
+<p>The duplicate payment analysis identified 8 exact duplicate invoice-number groups and 12 repeated payment-amount groups. After removing obvious false positives and records with sufficient business explanations, 3 candidate cases remained unresolved. The available evidence did not consistently demonstrate that the repeated payments were valid.</p>
+<div class="two-column-section">
+<div>
+<h4>Cause</h4>
+<p>The duplicate invoice review control is weakly defined. The regulation does not specify clear matching rules, review criteria, evidence requirements, ownership, or automated blocking / alert logic.</p>
+</div>
+<div>
+<h4>Risk / Effect</h4>
+<p>Duplicate or erroneous payments may be processed and not detected in a timely manner, potentially resulting in financial loss and increased manual recovery effort.</p>
+</div>
+</div>
+<h4>Internal audit recommendation</h4>
+<div class="recommendation-box">
+<p>Define duplicate invoice and payment matching criteria, implement automated duplicate alerts or blocking rules where feasible, require documented review evidence, and assign clear ownership and frequency for duplicate candidate review.</p>
+</div>
+
+<div class="map-box map-not-agreed">
+<div class="map-title">Management action plan</div>
+<p><em>Management action plan has not yet been documented or agreed.</em></p>
+</div>
+
+</div>
+</section>
+
+
+<section class="observation-card">
+<div class="observation-header">
+<h3>No formal monitoring of split purchases below approval thresholds</h3>
+<div><span class="severity-badge severity-medium">Medium</span></div>
+</div>
+<div class="observation-body">
+<h4>Criteria</h4>
+<p>The procurement Policy states that &quot;it is not allowed to split purchases to stay in the current approval threshold&quot;.</p>
+<h4>Condition</h4>
+<p>The audit identified 12 split-purchase candidate groups. After review, 6 groups remained unresolved red flags. These groups involved the same supplier and requester within a short period, with individual purchase orders below the approval threshold and combined values exceeding the threshold.</p>
+<div class="two-column-section">
+<div>
+<h4>Cause</h4>
+<p>No formal control or periodic monitoring process is defined for detecting purchases that may be split below approval thresholds.</p>
+</div>
+<div>
+<h4>Risk / Effect</h4>
+<p>Approval thresholds may be bypassed without timely detection, increasing the risk of unauthorized procurement and weakening spend governance.</p>
+</div>
+</div>
+<h4>Internal audit recommendation</h4>
+<div class="recommendation-box">
+<p>Implement a formal split-purchase monitoring control using defined thresholds, time windows, grouping criteria, exception ownership, and documented resolution of candidate cases.</p>
+</div>
+
+<div class="map-box map-not-agreed">
+<div class="map-title">Management action plan</div>
+<p><em>Management action plan has not yet been documented or agreed.</em></p>
+</div>
+
+</div>
+</section>
+```
+<!-- AUTO:DETAILED_OBSERVATIONS END -->
+
+# Appendix
+
+## Audit methodology
+
+<!-- MANUAL:AUDIT_METHODOLOGY START -->
+::: {.manual-block}
+**Manual section.** Add methodology, limitations, and workpaper references here.
+:::
+<!-- MANUAL:AUDIT_METHODOLOGY END -->
+
+## Supporting charts and analysis
+
+<!-- MANUAL:SUPPORTING_CHARTS START -->
+::: {.manual-block}
+**Manual section.** Add Plotly charts or supporting visual analysis here.
+
+Example:
+
+```{python}
+# if px is not None:
+#     fig = px.bar(...)
+#     fig.show()
+```
+:::
+<!-- MANUAL:SUPPORTING_CHARTS END -->
+
+## Additional supporting information
+
+<!-- MANUAL:ADDITIONAL_SUPPORT START -->
+::: {.manual-block}
+**Manual section.** Add additional supporting information here.
+:::
+<!-- MANUAL:ADDITIONAL_SUPPORT END -->
+
+# Report distribution and audit team
+
+<!-- AUTO:DISTRIBUTION_TEAM START -->
+```{=html}
+<section class="distribution-section">
+<h2>Report recipients</h2>
+<div class="people-grid">
+
+<div class="person-card">
+<div class="person-name">Christian Wolff</div>
+<div class="person-meta">Chief Financial Officer · c.wolff@lsjc.com</div>
+</div>
+
+<div class="person-card">
+<div class="person-name">Chinese Dan</div>
+<div class="person-meta">Head of Procurement · c.dan@lsjc.com</div>
+</div>
+
+<div class="person-card">
+<div class="person-name">Tyrion Lannister</div>
+<div class="person-meta">Treasury Manager · t.lannister@lsjc.com</div>
+</div>
+
+</div>
+<h2>Audit team</h2>
+<div class="people-grid">
+
+<div class="person-card">
+<div class="person-name">Harvey Specter</div>
+<div class="person-meta">Engagement Lead</div>
+</div>
+
+<div class="person-card">
+<div class="person-name">Alan Turing</div>
+<div class="person-meta">Data Analyst</div>
+</div>
+
+<div class="person-card">
+<div class="person-name">Benoit Blanc</div>
+<div class="person-meta">Internal Auditor</div>
+</div>
+
+<div class="person-card">
+<div class="person-name">Mike Ehrmantraut</div>
+<div class="person-meta">Head of Internal Audit</div>
+</div>
+
+</div>
+</section>
+```
+<!-- AUTO:DISTRIBUTION_TEAM END -->

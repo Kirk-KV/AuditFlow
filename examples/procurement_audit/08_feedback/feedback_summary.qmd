@@ -1,0 +1,115 @@
+---
+title: "Feedback Summary"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: false
+    theme: cosmo
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+# Feedback summary
+
+**Audit:** Procurement Process Audit
+
+**Generated:** 2026-07-05
+
+## Executive view
+
+| Metric | Value |
+|---|---:|
+| Requests sent | 2 |
+| Responses received | 2 |
+| Responses not received | 0 |
+| Overall average score | 3.44 |
+
+## Response status by recipient
+
+| Name | Role | Email | Request sent | Response status | Received date | Average score | Original response file |
+|---|---|---|---|---|---|---:|---|
+| Chinese Dan | Head of Procurement | c.dan@lsjc.com | Yes | Received (inferred) |  | 4.33 |  |
+| Antony Soprano | Head of Accounts Payable | a.soprano@lsjc.com | Yes | Received (inferred) |  | 2.56 |  |
+
+## Results by question
+
+| Question ID | Question | Responses | Average score | Comments |
+|---|---|---:|---:|---|
+| Q01 | The audit objectives, scope, and expected outcome were clear. | 2 | 4.00 |  |
+| Q02 | The audit was planned and organized in a way that made the required involvement clear in advance. | 2 | 3.50 |  |
+| Q03 | Communication throughout the audit was timely and effective. | 2 | 3.00 | Antony Soprano: I was not informed |
+| Q04 | Internal Audit demonstrated a good understanding of our business process, risks, and controls. | 2 | 2.50 | Antony Soprano: Not at all |
+| Q05 | Information requests were clear, reasonable, and proportionate to the audit objectives. | 2 | 4.50 |  |
+| Q06 | Facts, comments, and your point of view were properly considered when preparing the audit report. | 2 | 4.00 |  |
+| Q07 | Audit observations and recommendations were practical, realistic, and likely to improve the process or control environment. | 2 | 3.50 |  |
+| Q08 | The audit focused on the areas that mattered most. | 2 | 3.00 | Antony Soprano: No and I told them |
+| Q09 | If another audit were performed in our area, you would welcome Internal Audit involvement again. | 2 | 3.00 |  |
+
+## Detailed answers
+
+| Recipient | Response received | Question ID | Question | Score | Comment |
+|---|---|---|---|---|---|
+| Chinese Dan | Yes | Q01 | The audit objectives, scope, and expected outcome were clear. | 5 |  |
+| Chinese Dan | Yes | Q02 | The audit was planned and organized in a way that made the required involvement clear in advance. | 4 |  |
+| Chinese Dan | Yes | Q03 | Communication throughout the audit was timely and effective. | 4 |  |
+| Chinese Dan | Yes | Q04 | Internal Audit demonstrated a good understanding of our business process, risks, and controls. | 4 |  |
+| Chinese Dan | Yes | Q05 | Information requests were clear, reasonable, and proportionate to the audit objectives. | 5 |  |
+| Chinese Dan | Yes | Q06 | Facts, comments, and your point of view were properly considered when preparing the audit report. | 4 |  |
+| Chinese Dan | Yes | Q07 | Audit observations and recommendations were practical, realistic, and likely to improve the process or control environment. | 4 |  |
+| Chinese Dan | Yes | Q08 | The audit focused on the areas that mattered most. | 4 |  |
+| Chinese Dan | Yes | Q09 | If another audit were performed in our area, you would welcome Internal Audit involvement again. | 5 |  |
+| Antony Soprano | Yes | Q01 | The audit objectives, scope, and expected outcome were clear. | 3 |  |
+| Antony Soprano | Yes | Q02 | The audit was planned and organized in a way that made the required involvement clear in advance. | 3 |  |
+| Antony Soprano | Yes | Q03 | Communication throughout the audit was timely and effective. | 2 | I was not informed |
+| Antony Soprano | Yes | Q04 | Internal Audit demonstrated a good understanding of our business process, risks, and controls. | 1 | Not at all |
+| Antony Soprano | Yes | Q05 | Information requests were clear, reasonable, and proportionate to the audit objectives. | 4 |  |
+| Antony Soprano | Yes | Q06 | Facts, comments, and your point of view were properly considered when preparing the audit report. | 4 |  |
+| Antony Soprano | Yes | Q07 | Audit observations and recommendations were practical, realistic, and likely to improve the process or control environment. | 3 |  |
+| Antony Soprano | Yes | Q08 | The audit focused on the areas that mattered most. | 2 | No and I told them |
+| Antony Soprano | Yes | Q09 | If another audit were performed in our area, you would welcome Internal Audit involvement again. | 1 |  |
+
+## Open feedback
+
+
+### Chinese Dan
+
+
+**What was most useful in this audit?**
+
+Timing
+
+**What should Internal Audit improve in future audits?**
+
+Less requests
+
+**Is there anything you expected from this audit but did not receive?**
+
+No
+
+
+### Antony Soprano
+
+
+**What was most useful in this audit?**
+
+Nothing
+
+
+
+## Requests without response
+
+_All requested responses were received._
+
+## Validation notes
+
+- Chinese Dan: response was treated as received because the template contains entered scores/comments, but `response.received` is still `false`.
+- Antony Soprano: response was treated as received because the template contains entered scores/comments, but `response.received` is still `false`.
+
+## Notes for auditor
+
+This summary is generated from YAML response templates in `08_feedback/response/`.
+
+Original replies should be saved in `08_feedback/response/original/` and referenced in `response.original_response_file` inside each response template.

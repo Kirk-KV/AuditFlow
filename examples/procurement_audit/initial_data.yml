@@ -1,0 +1,88 @@
+audit:
+  id: "2026-001"
+  title: "Procurement Process Audit"
+  company: "Lanninster-Soprano Joint Company (LSJC)"
+  type: "assurance"
+  source: "annual_audit_plan"
+
+annual_plan:
+  year: 2026
+  original_topic: "Procurement / Purchase-to-Pay"
+  why_included: >
+    Procurement was included in the annual audit plan due to high transaction volume, decentralized purchasing, recent ERP workflow changes, and prior concerns about approval discipline.
+  expected_value: >
+    The audit should provide useful assurance over selected procurement controls and identify data-driven indicators of control failure, process leakage, or potential financial loss.
+
+objectives:
+  - id: "OBJ-001"
+    statement: "Assess whether selected procurement controls are designed and operating effectively."
+  - id: "OBJ-002"
+    statement: "Identify transactions with elevated fraud, compliance, or financial loss risk."
+  - id: "OBJ-003"
+    statement: "Assess whether available data is sufficient to support repeatable procurement monitoring."
+
+period:
+  from: "2026-01-01"
+  to: "2026-04-01"
+
+scope:
+  in_scope:
+    - "Purchase order approval"
+    - "Invoice matching"
+    - "Payment approval"
+  out_of_scope:
+    - "Goods receipt"
+    - "Supplier master data changes relevant to payments"
+    - "Strategic sourcing"
+    - "Supplier performance management"
+  rationale:
+    - this is a synthetic audit and I don't need a lot of processes in scope
+
+risks:
+  - id: "R-001"
+    title: "Unauthorized purchases"
+    source: "annual_plan"
+    preliminary_rating: "high"
+    rationale: >
+      Purchases may be created, approved, or released without proper authority. 
+      This risk is relevant because purchasing is decentralized and recent ERP workflow changes may have affected approval discipline.
+    possible_audit_focus:
+      - "Purchase orders released before approval"
+      - "Approvals performed by unauthorized users"
+      - "Purchase orders approved after goods receipt or invoice receipt"
+
+  - id: "R-002"
+    title: "Duplicate payments"
+    source: "annual_plan"
+    preliminary_rating: "medium"
+    rationale: >
+      Invoices may be paid more than once due to duplicate invoice records, weak matching controls, manual payment processing, or inconsistent supplier master data.
+    possible_audit_focus:
+      - "Duplicate invoice number and supplier"
+      - "Same amount paid multiple times to the same supplier"
+      - "Payments with similar invoice references"
+
+  - id: "R-003"
+    title: "Split purchases below approval threshold"
+    source: "annual_plan"
+    preliminary_rating: "medium"
+    rationale: >
+      Purchases may be split into smaller transactions to avoid higher approval thresholds. This risk is relevant where approval limits are based on transaction amount and purchasing is decentralized.
+    possible_audit_focus:
+      - "Multiple purchase orders to the same supplier below approval threshold"
+      - "Purchase orders created by the same requester within a short period"
+      - "Repeated purchases with similar descriptions"
+
+  - id: "R-004"
+    title: "Incomplete goods receipt before invoice payment"
+    source: "annual_plan"
+    preliminary_rating: "medium"
+    rationale: >
+      Previous audits revealed several issues regarding payments for incomplete goods. We need to check controls and assess the risk
+
+
+notes:
+  necessary_to_take: 
+    - "one, two, three"
+  keep_in_mind: 
+    - "something"

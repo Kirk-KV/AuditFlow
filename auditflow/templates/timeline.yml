@@ -1,0 +1,21 @@
+timeline:
+  plan:
+    start: ""
+    notification: ""
+    planning_document: ""
+    audit_program: ""
+    fieldwork_end: ""
+    draft_report: ""
+    final_report: ""
+  fact:
+    start: ""
+    notification: ""
+    planning_document: ""
+    audit_program: ""
+    fieldwork_end: ""
+    draft_report: ""
+    final_report: ""
+
+
+notes: >
+  These are target dates for planning purposes. Actual evidence of communication, review, and completion should be preserved through documents, emails, Git history, or generated archive materials where practical.

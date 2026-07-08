@@ -1,0 +1,187 @@
+---
+title: "WP-C-001 — PO release after approval"
+---
+
+```{python}
+#| label: setup
+#| echo: false
+
+from pathlib import Path
+import html
+import yaml
+from IPython.display import HTML, display
+
+
+def find_audit_project_root(start: Path) -> Path:
+    current = start.resolve()
+
+    while current != current.parent:
+        if (current / "03_audit_program" / "audit_program.yml").exists():
+            return current
+        current = current.parent
+
+    raise FileNotFoundError(
+        "Could not find 03_audit_program/audit_program.yml. "
+        "Run this document from inside the audit project."
+    )
+
+
+def escape(value) -> str:
+    return html.escape("" if value is None else str(value))
+
+
+def render_metadata_card(row: dict) -> str:
+    fields = [
+        ("Workpaper", row.get("workpaper_ref", "")),
+        ("Test ID", row.get("test_id", "")),
+        ("Risk", f'{row.get("risk_id", "")} — {row.get("risk_title", "")}'),
+        ("Control", f'{row.get("control_id", "")} — {row.get("control_description", "")}'),
+        ("Control owner", row.get("control_owner", "")),
+        ("Design assessment", row.get("design_assessment", "")),
+    ]
+
+    rows_html = "\n".join(
+        f"<dt>{escape(label)}</dt><dd>{escape(value)}</dd>"
+        for label, value in fields
+    )
+
+    return f"""
+<div class="audit-meta">
+<div class="audit-meta-title">Workpaper metadata</div>
+<dl>
+{rows_html}
+</dl>
+</div>
+"""
+
+
+def render_text_block(value) -> str:
+    text = "" if value is None else str(value).strip()
+
+    if not text:
+        return "<p><em>Not completed in audit_program.yml.</em></p>"
+
+    return "<p>" + escape(text).replace("\n", "<br>") + "</p>"
+
+
+def render_ordered_list(items) -> str:
+    if not items:
+        return "<p><em>Not completed in audit_program.yml.</em></p>"
+
+    list_items = "\n".join(
+        f"<li>{escape(item)}</li>"
+        for item in items
+    )
+
+    return f"""
+<ol class="audit-procedure-list">
+{list_items}
+</ol>
+"""
+
+
+audit_project_root = find_audit_project_root(Path.cwd())
+audit_program_path = audit_project_root / "03_audit_program" / "audit_program.yml"
+
+audit_program = yaml.safe_load(
+    audit_program_path.read_text(encoding="utf-8")
+) or {}
+
+workpaper_ref = "WP-C-001"
+
+program_rows = audit_program.get("program_rows", [])
+matching_rows = [
+    row for row in program_rows
+    if row.get("workpaper_ref") == workpaper_ref
+]
+
+if not matching_rows:
+    raise ValueError(f"Workpaper reference not found in audit_program.yml: {workpaper_ref}")
+
+program_row = matching_rows[0]
+```
+
+```{python}
+#| label: workpaper-context
+#| echo: false
+
+display(HTML(render_metadata_card(program_row)))
+```
+
+## Test hypothesis
+
+```{python}
+#| label: test-hypothesis
+#| echo: false
+
+display(HTML(render_text_block(program_row.get("test_hypothesis", ""))))
+```
+
+## Planned test script
+
+```{python}
+#| label: planned-test-script
+#| echo: false
+
+test_script = program_row.get("test_script", []) or []
+display(HTML(render_ordered_list(test_script)))
+```
+
+---
+
+## Work performed
+
+The audit team performed a data-based operating effectiveness test of the purchase order release approval control. The population was defined as purchase orders created during the audit period and linked to approval workflow records.
+
+The team loaded `purchase_orders.csv` and `approval_workflow.csv`, checked the completeness of key fields, and joined purchase orders to approval workflow records using the purchase order identifier. For each purchase order, the release timestamp was compared with the approval completion timestamp. Candidate exceptions were identified where the release timestamp was earlier than the required approval completion timestamp.
+
+The candidate listing was reviewed for obvious false positives, including cancelled records, missing workflow timestamps, and records where the release event was a technical re-release after prior approval. High-value and unusual cases were selected for follow-up with the Procurement Department.
+
+## Evidence used
+
+- `04_evidence/02_raw_data/purchase_orders.csv`
+- `04_evidence/02_raw_data/approval_workflow.csv`
+- Generated exception listing: `04_evidence/99_generated/release_before_approval_candidates.csv`
+- Follow-up correspondence with the Procurement Department
+- Planning analysis documented in `01_planning/planning_document.qmd`
+
+## Results
+
+The test identified 38 purchase orders where the recorded release timestamp preceded the approval completion timestamp. After removing obvious technical false positives, 31 cases remained as confirmed or unresolved exceptions.
+
+The confirmed exceptions were not evenly distributed across the population. Several were concentrated around urgent purchases and a small number of requesters. Management explained that some purchases were released early due to operational urgency; however, documented emergency approval evidence was not available for all reviewed cases.
+
+The exception pattern indicates that the control exists and is technically traceable, but it did not operate consistently throughout the audit period.
+
+## Conclusion
+
+C-001 did not operate effectively for the tested period. Purchase orders were not always released only after required approval was completed.
+
+This should be raised as an observation because the exception pattern creates a risk of unauthorized purchases and weakens approval discipline in the procurement process.
+
+## Potential observation
+
+```yaml
+status: proposed
+title: Purchase orders released before required approval
+severity: High
+condition: >
+  The audit identified 38 purchase orders where the recorded release timestamp preceded
+  approval completion. After removing obvious technical false positives, 31 cases remained
+  confirmed or unresolved. Several cases were concentrated around urgent purchases and a
+  small number of requesters, and documented emergency approval evidence was not available
+  for all reviewed cases.
+criteria: >
+  Purchase orders should be released only after the required approval has been completed,
+  except where a formally defined and evidenced emergency approval process applies.
+cause: >
+  The workflow allowed purchase orders to be released before approval completion, and the
+  emergency purchase process was not consistently evidenced or monitored.
+risk_effect: >
+  Purchases may be committed without proper authorization, weakening approval discipline
+  and increasing the risk of unauthorized or inappropriate procurement activity.
+recommendation: >
+  Configure the procurement workflow to prevent release before required approval, define
+  and evidence any emergency approval process, and implement periodic monitoring of
+  release-before-approval exceptions with assigned ownership for review and remediation.
+```

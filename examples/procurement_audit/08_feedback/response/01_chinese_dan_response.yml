@@ -1,0 +1,66 @@
+audit:
+  title: Procurement Process Audit
+recipient:
+  name: Chinese Dan
+  role: Head of Procurement
+  email: c.dan@lsjc.com
+  source: auditee
+request:
+  sent: true
+  sent_date: ''
+  request_file: request\01_chinese_dan_request.txt
+response:
+  received: false
+  received_date: ''
+  original_response_file: ''
+  notes: ''
+scores:
+- id: Q01
+  question: The audit objectives, scope, and expected outcome were clear.
+  score: 5
+  comment: ''
+- id: Q02
+  question: The audit was planned and organized in a way that made the required involvement clear in advance.
+  score: 4
+  comment: ''
+- id: Q03
+  question: Communication throughout the audit was timely and effective.
+  score: 4
+  comment: ''
+- id: Q04
+  question: Internal Audit demonstrated a good understanding of our business process, risks, and controls.
+  score: 4
+  comment: ''
+- id: Q05
+  question: Information requests were clear, reasonable, and proportionate to the audit objectives.
+  score: 5
+  comment: ''
+- id: Q06
+  question: Facts, comments, and your point of view were properly considered when preparing the audit
+    report.
+  score: 4
+  comment: ''
+- id: Q07
+  question: Audit observations and recommendations were practical, realistic, and likely to improve the
+    process or control environment.
+  score: 4
+  comment: ''
+- id: Q08
+  question: The audit focused on the areas that mattered most.
+  score: 4
+  comment: ''
+- id: Q09
+  question: If another audit were performed in our area, you would welcome Internal Audit involvement
+    again.
+  score: 5
+  comment: ''
+open_feedback:
+- id: O01
+  question: What was most useful in this audit?
+  answer: 'Timing'
+- id: O02
+  question: What should Internal Audit improve in future audits?
+  answer: 'Less requests'
+- id: O03
+  question: Is there anything you expected from this audit but did not receive?
+  answer: 'No'

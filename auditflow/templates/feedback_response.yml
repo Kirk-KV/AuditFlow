@@ -1,0 +1,20 @@
+audit:
+  title: "$audit_name"
+recipient:
+  name: "$recipient_name"
+  role: "$recipient_role"
+  email: "$recipient_email"
+  source: "$recipient_source"
+request:
+  sent: true
+  sent_date: ""
+  request_file: "$request_file"
+response:
+  received: false
+  received_date: ""
+  original_response_file: ""
+  notes: ""
+scores:
+$scores_block
+open_feedback:
+$open_feedback_block

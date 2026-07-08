@@ -1,0 +1,51 @@
+sponsor:
+  name: "Christian Wolff"
+  role: "Chief Financial Officer"
+  tags:
+    - "sponsor"
+    - "report_recipient"
+  email: "c.wolff@lsjc.com"
+
+auditees:
+  - name: "Chinese Dan"
+    role: "Head of Procurement"
+    tags:
+      - "process_owner"
+      - "auditee"
+      - "report_recipient"
+    email: "c.dan@lsjc.com"
+
+  - name: "Antony Soprano"
+    role: "Head of Accounts Payable"
+    tags:
+      - "process_owner"
+      - "auditee"
+      - "report_recipient"
+    email: "a.soprano@lsjc.com"
+
+additional_stakeholders:
+  - name: "Creed Bratton"
+    role: "ERP Product Owner"
+    tags:
+      - "system_owner"
+      - "data_owner"
+    email: "c.bratton@lsjc.com"
+
+  - name: "The Dude"
+    role: "Procurement Operations Manager"
+    tags:
+      - "process_expert"
+      - "auditee"
+    email: "dude@lsjc.com"
+
+  - name: "Tyrion Lannister"
+    role: "Treasury Manager"
+    tags:
+      - "payment_process_owner"
+      - "auditee"
+    email: "t.lannister@lsjc.com"
+
+report_recipients:
+  - "Christian Wolff"
+  - "Chinese Dan"
+  - "Tyrion Lannister"

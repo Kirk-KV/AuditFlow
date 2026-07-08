@@ -1,0 +1,56 @@
+---
+title: "Audit Story"
+---
+
+<!-- AUTO:COVER START -->
+<!-- AUTO:COVER END -->
+
+# One-page audit story
+
+<!-- AUTO:ONE_PAGE_STORY START -->
+<!-- AUTO:ONE_PAGE_STORY END -->
+
+# What we started with
+
+<!-- AUTO:INITIAL_ASSUMPTIONS START -->
+<!-- AUTO:INITIAL_ASSUMPTIONS END -->
+
+# What changed during planning and why
+
+<!-- AUTO:PLANNING_DECISIONS START -->
+<!-- AUTO:PLANNING_DECISIONS END -->
+
+# Scope and risk evolution
+
+<!-- AUTO:SCOPE_RISK_EVOLUTION START -->
+<!-- AUTO:SCOPE_RISK_EVOLUTION END -->
+
+# What we tested and what we concluded
+
+<!-- AUTO:TESTING_TRACEABILITY START -->
+<!-- AUTO:TESTING_TRACEABILITY END -->
+
+# Observations and final outcome
+
+<!-- AUTO:OBSERVATIONS_OUTCOME START -->
+<!-- AUTO:OBSERVATIONS_OUTCOME END -->
+
+# Evidence and document map
+
+<!-- AUTO:EVIDENCE_MAP START -->
+<!-- AUTO:EVIDENCE_MAP END -->
+
+# Lessons learned
+
+<!-- MANUAL:LESSONS_LEARNED START -->
+::: {.manual-block}
+Add lessons learned after the engagement is complete.
+
+Suggested prompts:
+
+- Which planning assumptions turned out to be wrong?
+- Which analytics or scripts should be reused in the next audit?
+- Which data limitations should be resolved before future monitoring?
+- What would the team do differently next time?
+:::
+<!-- MANUAL:LESSONS_LEARNED END -->

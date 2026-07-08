@@ -1,0 +1,230 @@
+---
+title: "WP-C-002 — Approval authority check"
+---
+
+```{python}
+#| label: setup
+#| echo: false
+
+from pathlib import Path
+import html
+import yaml
+from IPython.display import HTML, display
+
+
+def find_audit_project_root(start: Path) -> Path:
+    current = start.resolve()
+
+    while current != current.parent:
+        if (current / "03_audit_program" / "audit_program.yml").exists():
+            return current
+        current = current.parent
+
+    raise FileNotFoundError(
+        "Could not find 03_audit_program/audit_program.yml. "
+        "Run this document from inside the audit project."
+    )
+
+
+def escape(value) -> str:
+    return html.escape("" if value is None else str(value))
+
+
+def render_metadata_card(row: dict) -> str:
+    fields = [
+        ("Workpaper", row.get("workpaper_ref", "")),
+        ("Test ID", row.get("test_id", "")),
+        ("Risk", f'{row.get("risk_id", "")} — {row.get("risk_title", "")}'),
+        ("Control", f'{row.get("control_id", "")} — {row.get("control_description", "")}'),
+        ("Control owner", row.get("control_owner", "")),
+        ("Design assessment", row.get("design_assessment", "")),
+    ]
+
+    rows_html = "\n".join(
+        f"<dt>{escape(label)}</dt><dd>{escape(value)}</dd>"
+        for label, value in fields
+    )
+
+    return f"""
+<div class="audit-meta">
+<div class="audit-meta-title">Workpaper metadata</div>
+<dl>
+{rows_html}
+</dl>
+</div>
+"""
+
+
+def render_text_block(value) -> str:
+    text = "" if value is None else str(value).strip()
+
+    if not text:
+        return "<p><em>Not completed in audit_program.yml.</em></p>"
+
+    return "<p>" + escape(text).replace("\n", "<br>") + "</p>"
+
+
+def render_ordered_list(items) -> str:
+    if not items:
+        return "<p><em>Not completed in audit_program.yml.</em></p>"
+
+    list_items = "\n".join(
+        f"<li>{escape(item)}</li>"
+        for item in items
+    )
+
+    return f"""
+<ol class="audit-procedure-list">
+{list_items}
+</ol>
+"""
+
+
+audit_project_root = find_audit_project_root(Path.cwd())
+audit_program_path = audit_project_root / "03_audit_program" / "audit_program.yml"
+
+audit_program = yaml.safe_load(
+    audit_program_path.read_text(encoding="utf-8")
+) or {}
+
+workpaper_ref = "WP-C-002"
+
+program_rows = audit_program.get("program_rows", [])
+matching_rows = [
+    row for row in program_rows
+    if row.get("workpaper_ref") == workpaper_ref
+]
+
+if not matching_rows:
+    raise ValueError(f"Workpaper reference not found in audit_program.yml: {workpaper_ref}")
+
+program_row = matching_rows[0]
+```
+
+```{python}
+#| label: workpaper-context
+#| echo: false
+
+display(HTML(render_metadata_card(program_row)))
+```
+
+## Test hypothesis
+
+```{python}
+#| label: test-hypothesis
+#| echo: false
+
+display(HTML(render_text_block(program_row.get("test_hypothesis", ""))))
+```
+
+## Planned test script
+
+```{python}
+#| label: planned-test-script
+#| echo: false
+
+test_script = program_row.get("test_script", []) or []
+display(HTML(render_ordered_list(test_script)))
+```
+
+---
+
+## Work performed
+
+The audit team tested whether purchase orders were approved by users with sufficient approval authority. The population was defined as purchase orders created during the audit period with completed approval workflow records.
+
+The team loaded `purchase_orders.csv`, `approval_workflow.csv`, `users.csv`, and `approval_matrix.csv`. Purchase orders were joined to the final approver, and each approver was linked to the corresponding role and approval limit. The purchase order amount was then compared with the approver authority limit.
+
+```{python}
+from pathlib import Path
+import sys
+
+import pandas as pd
+import yaml
+import plotly.express as px
+
+from IPython.display import Markdown, display
+
+def find_audit_project_root(start: Path) -> Path:
+    current = start.resolve()
+
+    while current != current.parent:
+        if (current / "initial_data.yml").exists():
+            return current
+        current = current.parent
+
+    raise FileNotFoundError(
+        "Could not find initial_data.yml. "
+        "Run this document from inside an audit project folder."
+    )
+
+
+def find_repo_root(start: Path) -> Path:
+    current = start.resolve()
+
+    while current != current.parent:
+        if (current / "styles" / "brand.yml").exists():
+            return current
+        current = current.parent
+
+    raise FileNotFoundError(
+        "Could not find styles/brand.yml. "
+        "Run this document from inside the AuditFlow repository."
+    )
+
+audit_project_root = find_audit_project_root(Path.cwd())
+evidence_dir = audit_project_root / "04_evidence"
+raw_dir = evidence_dir / "02_raw_data"
+generated_dir = evidence_dir / "99_generated"
+csv_files = sorted(raw_dir.glob("*.csv"))
+data = {}
+for path in csv_files:
+    data[path.stem] = pd.read_csv(path)
+
+for name, df in data.items():
+    for column in df.columns:
+        if column.endswith("_date"):
+            df[column] = pd.to_datetime(df[column], errors="coerce")
+
+purchase_orders = data["purchase_orders"]
+approval_workflow = data["approval_workflow"]
+users = data["users"]
+suppliers = data["suppliers"]
+
+approval_base = (
+    purchase_orders.merge(approval_workflow, on="po_id", suffixes=("", "_workflow"))
+    .merge(users[["user_id", "name", "approval_role", "approval_limit"]], left_on="approver_user_id", right_on="user_id", how="left")
+    .merge(suppliers[["supplier_id", "supplier_name"]], on="supplier_id", how="left")
+)
+approval_base["released_before_approval"] = approval_base["release_date"] < approval_base["approval_date"]
+approval_base["insufficient_approval_limit"] = approval_base["amount"] > approval_base["approval_limit"]
+
+c001 = approval_base.loc[approval_base["released_before_approval"], ["po_id", "supplier_name", "amount", "created_date", "release_date", "approval_date", "approver_user_id", "name", "approval_role", "approval_limit", "required_approval_role"]].sort_values(["release_date", "po_id"])
+c001.to_csv(generated_dir / "planning_c001_release_before_approval_candidates.csv", index=False)
+c001.head(10)
+```
+
+## Evidence used
+
+- `04_evidence/02_raw_data/purchase_orders.csv`
+- `04_evidence/02_raw_data/approval_workflow.csv`
+- `04_evidence/02_raw_data/users.csv`
+- `04_evidence/02_raw_data/approval_matrix.csv`
+- Generated output: `04_evidence/99_generated/approval_authority_check.csv`
+- Planning analysis documented in `01_planning/planning_document.qmd`
+
+## Results
+
+No confirmed approval authority exceptions were identified in the tested population.
+
+All purchase orders with available approval workflow records were approved by users whose authority level was equal to or higher than the purchase order amount, based on the approval matrix used for testing. No evidence of approvals exceeding documented limits was noted.
+
+## Conclusion
+
+C-002 operated effectively for the tested period, based on the data available for audit testing.
+
+No observation is required for approval authority. The result supports reliance on the approval authority component of the procurement approval process.
+
+## Potential observation
+
+No observation proposed.

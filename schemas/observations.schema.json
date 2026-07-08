@@ -1,0 +1,108 @@
+{
+  "title": "AuditFlow Observations",
+  "description": "Audit observations and management actions.",
+  "type": "object",
+  "required": ["observations"],
+  "additionalProperties": true,
+  "properties": {
+    "observations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "criterion",
+          "condition",
+          "cause",
+          "risk",
+          "management_action"
+        ],
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^O-[0-9]{3,}$",
+            "examples": ["O-001"]
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "linked_risks": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^R-[0-9]{3,}$"
+            }
+          },
+          "linked_tests": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^T-[0-9]{3,}$"
+            }
+          },
+          "rating": {
+            "type": "string",
+            "description": "Observation rating according to the company's own scale.",
+            "examples": ["high", "medium", "low"]
+          },
+          "criterion": {
+            "type": "string",
+            "minLength": 1,
+            "description": "What should happen."
+          },
+          "condition": {
+            "type": "string",
+            "minLength": 1,
+            "description": "What actually happened."
+          },
+          "cause": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Why the issue occurred."
+          },
+          "risk": {
+            "type": "string",
+            "minLength": 1,
+            "description": "What may happen if the issue continues."
+          },
+          "management_action": {
+            "type": "object",
+            "required": ["description", "owner", "due_date"],
+            "additionalProperties": true,
+            "properties": {
+              "description": {
+                "type": "string",
+                "minLength": 1
+              },
+              "owner": {
+                "type": "string",
+                "minLength": 1
+              },
+              "due_date": {
+                "type": "string",
+                "format": "date"
+              }
+            }
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^E-[0-9]{3,}$"
+            }
+          },
+          "fact_validation_evidence": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^E-[0-9]{3,}$"
+            }
+          }
+        }
+      }
+    }
+  }
+}

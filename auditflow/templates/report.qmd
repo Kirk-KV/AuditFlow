@@ -1,0 +1,74 @@
+---
+title: "Internal Audit Report"
+---
+
+<!-- AUTO:COVER START -->
+<!-- AUTO:COVER END -->
+
+<!-- MANUAL:DRAFT_NOTICE START -->
+::: {.limitation-box}
+**Draft report.** Delete this block before issuing the final report.
+:::
+<!-- MANUAL:DRAFT_NOTICE END -->
+
+# Executive summary
+
+<!-- AUTO:AUDIT_FACTS START -->
+<!-- AUTO:AUDIT_FACTS END -->
+
+## Process overview and key process indicators
+
+<!-- MANUAL:PROCESS_OVERVIEW START -->
+::: {.manual-block}
+Add process overview and key process indicators here.
+:::
+<!-- MANUAL:PROCESS_OVERVIEW END -->
+
+## Overall conclusion
+
+<!-- MANUAL:OVERALL_CONCLUSION START -->
+::: {.manual-block}
+Add overall audit conclusion here.
+:::
+<!-- MANUAL:OVERALL_CONCLUSION END -->
+
+## Summary of observations
+
+<!-- AUTO:SUMMARY_OBSERVATIONS START -->
+<!-- AUTO:SUMMARY_OBSERVATIONS END -->
+
+# Detailed observations
+
+<!-- AUTO:DETAILED_OBSERVATIONS START -->
+<!-- AUTO:DETAILED_OBSERVATIONS END -->
+
+# Appendix
+
+## Audit methodology and limitations
+
+<!-- MANUAL:AUDIT_METHODOLOGY START -->
+::: {.manual-block}
+Add methodology, limitations, and workpaper references here.
+:::
+<!-- MANUAL:AUDIT_METHODOLOGY END -->
+
+## Supporting charts and analysis
+
+<!-- MANUAL:SUPPORTING_CHARTS START -->
+::: {.manual-block}
+Add charts or supporting visual analysis here.
+:::
+<!-- MANUAL:SUPPORTING_CHARTS END -->
+
+## Additional supporting information
+
+<!-- MANUAL:ADDITIONAL_SUPPORT START -->
+::: {.manual-block}
+Add additional supporting information here.
+:::
+<!-- MANUAL:ADDITIONAL_SUPPORT END -->
+
+# Report distribution and audit team
+
+<!-- AUTO:DISTRIBUTION_TEAM START -->
+<!-- AUTO:DISTRIBUTION_TEAM END -->

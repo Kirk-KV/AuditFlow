@@ -1,0 +1,7 @@
+dataset,field,min_date,max_date,missing_dates
+approval_workflow,approval_date,2026-01-01,2026-04-05,0
+goods_receipts,receipt_date,2026-01-04,2026-04-25,0
+invoices,invoice_date,2026-01-07,2026-05-05,0
+payments,payment_date,2026-01-14,2026-05-26,0
+purchase_orders,created_date,2026-01-01,2026-03-31,0
+purchase_orders,release_date,2026-01-01,2026-04-08,0

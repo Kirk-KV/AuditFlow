@@ -1,0 +1,185 @@
+---
+title: "WP-C-003 — Duplicate invoice review"
+---
+
+```{python}
+#| label: setup
+#| echo: false
+
+from pathlib import Path
+import html
+import yaml
+from IPython.display import HTML, display
+
+
+def find_audit_project_root(start: Path) -> Path:
+    current = start.resolve()
+
+    while current != current.parent:
+        if (current / "03_audit_program" / "audit_program.yml").exists():
+            return current
+        current = current.parent
+
+    raise FileNotFoundError(
+        "Could not find 03_audit_program/audit_program.yml. "
+        "Run this document from inside the audit project."
+    )
+
+
+def escape(value) -> str:
+    return html.escape("" if value is None else str(value))
+
+
+def render_metadata_card(row: dict) -> str:
+    fields = [
+        ("Workpaper", row.get("workpaper_ref", "")),
+        ("Test ID", row.get("test_id", "")),
+        ("Risk", f'{row.get("risk_id", "")} — {row.get("risk_title", "")}'),
+        ("Control", f'{row.get("control_id", "")} — {row.get("control_description", "")}'),
+        ("Control owner", row.get("control_owner", "")),
+        ("Design assessment", row.get("design_assessment", "")),
+    ]
+
+    rows_html = "\n".join(
+        f"<dt>{escape(label)}</dt><dd>{escape(value)}</dd>"
+        for label, value in fields
+    )
+
+    return f"""
+<div class="audit-meta">
+<div class="audit-meta-title">Workpaper metadata</div>
+<dl>
+{rows_html}
+</dl>
+</div>
+"""
+
+
+def render_text_block(value) -> str:
+    text = "" if value is None else str(value).strip()
+
+    if not text:
+        return "<p><em>Not completed in audit_program.yml.</em></p>"
+
+    return "<p>" + escape(text).replace("\n", "<br>") + "</p>"
+
+
+def render_ordered_list(items) -> str:
+    if not items:
+        return "<p><em>Not completed in audit_program.yml.</em></p>"
+
+    list_items = "\n".join(
+        f"<li>{escape(item)}</li>"
+        for item in items
+    )
+
+    return f"""
+<ol class="audit-procedure-list">
+{list_items}
+</ol>
+"""
+
+
+audit_project_root = find_audit_project_root(Path.cwd())
+audit_program_path = audit_project_root / "03_audit_program" / "audit_program.yml"
+
+audit_program = yaml.safe_load(
+    audit_program_path.read_text(encoding="utf-8")
+) or {}
+
+workpaper_ref = "WP-C-003"
+
+program_rows = audit_program.get("program_rows", [])
+matching_rows = [
+    row for row in program_rows
+    if row.get("workpaper_ref") == workpaper_ref
+]
+
+if not matching_rows:
+    raise ValueError(f"Workpaper reference not found in audit_program.yml: {workpaper_ref}")
+
+program_row = matching_rows[0]
+```
+
+```{python}
+#| label: workpaper-context
+#| echo: false
+
+display(HTML(render_metadata_card(program_row)))
+```
+
+## Test hypothesis
+
+```{python}
+#| label: test-hypothesis
+#| echo: false
+
+display(HTML(render_text_block(program_row.get("test_hypothesis", ""))))
+```
+
+## Planned test script
+
+```{python}
+#| label: planned-test-script
+#| echo: false
+
+test_script = program_row.get("test_script", []) or []
+display(HTML(render_ordered_list(test_script)))
+```
+
+---
+
+## Work performed
+
+The audit team performed data analysis over duplicate invoice and payment indicators. This was not treated as a formal operating effectiveness test because the duplicate invoice review control was assessed during planning as weakly designed: the regulation did not define clear review criteria, matching rules, evidence requirements, or blocking logic.
+
+The team loaded `invoices.csv` and `payments.csv`. The analysis searched for exact duplicate invoice numbers by supplier, repeated payment amounts by supplier, and similar invoice/payment combinations using invoice number, supplier, amount, and date proximity. Candidate duplicates were reviewed to remove clear false positives such as corrections, reversals, credit notes, and separately supported repeated services.
+
+## Evidence used
+
+- `04_evidence/02_raw_data/invoices.csv`
+- `04_evidence/02_raw_data/payments.csv`
+- Generated candidate listing: `04_evidence/99_generated/duplicate_payment_candidates.csv`
+- Follow-up correspondence with Finance
+- Planning analysis documented in `01_planning/planning_document.qmd`
+
+## Results
+
+The analysis identified 8 exact duplicate invoice-number groups and 12 repeated payment-amount groups for further review. After removing obvious false positives and records with sufficient business explanation, 3 candidate cases remained unresolved.
+
+The unresolved cases had the same supplier, similar invoice/payment attributes, and insufficient evidence in the provided data to demonstrate that the repeated payments were valid. Finance indicated that additional source documents may exist outside the provided data set, but these were not available at the time of workpaper completion.
+
+The results confirm that duplicate payment indicators exist and that the current duplicate review process is not sufficiently evidenced.
+
+## Conclusion
+
+Duplicate payment indicators were confirmed. Because C-003 is weakly designed, the conclusion is not that a well-defined control failed in operation; rather, the process lacks a sufficiently clear and evidenced duplicate review mechanism.
+
+This should be raised as an observation focused on strengthening duplicate invoice/payment review criteria, evidence retention, and automated matching rules.
+
+## Potential observation
+
+```yaml
+status: proposed
+title: Weak duplicate invoice and payment review
+severity: Medium
+condition: >
+  The duplicate payment analysis identified 8 exact duplicate invoice-number groups and
+  12 repeated payment-amount groups. After removing obvious false positives and records
+  with sufficient business explanations, 3 candidate cases remained unresolved. The available
+  evidence did not consistently demonstrate that the repeated payments were valid.
+criteria: >
+  Duplicate invoices and payments should be detected before payment using defined matching
+  criteria, documented review procedures, and retained evidence of review and resolution.
+cause: >
+  The duplicate invoice review control is weakly defined. The regulation does not specify
+  clear matching rules, review criteria, evidence requirements, ownership, or automated
+  blocking / alert logic.
+risk_effect: >
+  Duplicate or erroneous payments may be processed and not detected in a timely manner,
+  potentially resulting in financial loss and increased manual recovery effort.
+recommendation: >
+  Define duplicate invoice and payment matching criteria, implement automated duplicate
+  alerts or blocking rules where feasible, require documented review evidence, and assign
+  clear ownership and frequency for duplicate candidate review.
+```

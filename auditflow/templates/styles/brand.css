@@ -1,0 +1,38 @@
+/* AuditFlow brand styles.
+   This file is intended for company/project branding.
+   It is loaded after styles/auditflow.css, so values here override defaults.
+
+   For a long-lived company style, keep a master brand.css outside audit projects
+   and either:
+   - pass it during init with --brand-css, or
+   - set AUDITFLOW_BRAND_CSS to its path.
+*/
+
+:root {
+  --auditflow-accent: #1f4e79;
+  --auditflow-accent-soft: #eaf2f8;
+
+  --auditflow-heading: #111827;
+  --auditflow-text: #1f2933;
+  --auditflow-muted: #6b7280;
+  --auditflow-border: #d9dee7;
+  --auditflow-background: #ffffff;
+  --auditflow-card-background: #ffffff;
+  --auditflow-table-stripe: #f8fafc;
+
+  --auditflow-warning: #b45309;
+
+  --auditflow-severity-high: #b91c1c;
+  --auditflow-severity-medium: #b45309;
+  --auditflow-severity-low: #166534;
+
+  --auditflow-status-draft-bg: #f3f4f6;
+  --auditflow-status-draft-text: #374151;
+  --auditflow-status-open-bg: #fef3c7;
+  --auditflow-status-open-text: #92400e;
+  --auditflow-status-closed-bg: #dcfce7;
+  --auditflow-status-closed-text: #166534;
+
+  --auditflow-radius: 12px;
+  --auditflow-font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}

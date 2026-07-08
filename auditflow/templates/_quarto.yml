@@ -1,0 +1,20 @@
+project:
+  type: default
+
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: false
+    theme: cosmo
+    css:
+      - styles/auditflow.css
+      - styles/brand.css
+    code-fold: true
+    code-tools: false
+    self-contained: true
+
+execute:
+  echo: false
+  warning: false
+  message: false

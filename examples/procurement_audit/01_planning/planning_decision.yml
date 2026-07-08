@@ -1,0 +1,75 @@
+overall_conclusion: >
+  Planning procedures confirmed that the audit should focus on purchase approval discipline, duplicate payment indicators, and split purchase
+  red flags. Goods receipt before invoice payment remains out of scope.
+
+included_risks:
+- id: R-001
+  title: Unauthorized purchases
+  reasoning: Controls are described and testable. Data indicates release-before-approval
+    candidates.
+- id: R-002
+  title: Duplicate payments
+  reasoning: Duplicate indicators exist, but C-003 has weak design. Use data analysis,
+    not formal control testing.
+- id: R-003
+  title: Split purchases below approval threshold
+  reasoning: No formal control is described. Use red-flag analysis.
+excluded_risks:
+- id: R-004
+  title: Incomplete goods receipt before invoice payment
+  reasoning: Goods receipt linkage is incomplete and the current audit scope is intentionally
+    focused.
+controls:
+- control_id: C-001
+  control: PO release after approval
+  risk: R-001
+  design_assessment: Testable
+  planning_approach: Test operating effectiveness using PO and approval workflow data.
+- control_id: C-002
+  control: Approval authority check
+  risk: R-001
+  design_assessment: Testable
+  planning_approach: Test using PO amount, approval role, and approval matrix.
+- control_id: C-003
+  control: Duplicate invoice review
+  risk: R-002
+  design_assessment: Weak design
+  planning_approach: Do not test as a formal control; perform data analysis.
+- control_id: N/A
+  control: Purchase splitting prevention/detection
+  risk: R-003
+  design_assessment: Control gap
+  planning_approach: No formal control to test; use red-flag analysis.
+recommended_tests:
+- id: T-001
+  risk_id: R-001
+  control_id: C-001
+  type: control_operating_effectiveness
+  title: Test purchase orders released before approval
+- id: T-002
+  risk_id: R-001
+  control_id: C-002
+  type: control_operating_effectiveness
+  title: Test approval authority for purchase orders
+- id: T-003
+  risk_id: R-002
+  control_id: C-003
+  type: data_analysis
+  title: Analyze duplicate payment candidates
+- id: T-004
+  risk_id: R-003
+  type: red_flag_analysis
+  title: Analyze split purchase candidates below approval threshold
+
+scope:
+  in_scope:
+    - "Purchase order approval"
+    - "Invoice matching"
+    - "Payment approval"
+  out_of_scope:
+    - "Goods receipt"
+    - "Supplier master data changes relevant to payments"
+    - "Strategic sourcing"
+    - "Supplier performance management"
+  rationale:
+    - this is a synthetic audit and I don't need a lot of processes in scope

@@ -1,0 +1,33 @@
+team:
+  engagement_lead:
+    name: "Harvey Specter"
+    role: "Engagement Lead"
+    responsibilities:
+      - "Overall audit planning"
+      - "Sponsor communication"
+      - "Review of audit conclusions"
+      - "Final report preparation"
+
+  members:
+    - name: "Alan Turing"
+      role: "Data Analyst"
+      responsibilities:
+        - "Data profiling"
+        - "Common data preparation"
+        - "Population-level testing"
+        - "Exception analysis"
+
+    - name: "Benoit Blanc"
+      role: "Internal Auditor"
+      responsibilities:
+        - "Process walkthroughs"
+        - "Control understanding"
+        - "Exception follow-up"
+        - "Workpaper preparation"
+
+review:
+  reviewer:
+    name: "Mike Ehrmantraut"
+    role: "Head of Internal Audit"
+
+

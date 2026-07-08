@@ -1,0 +1,94 @@
+{
+  "title": "AuditFlow Audit",
+  "description": "Main audit project descriptor.",
+  "type": "object",
+  "required": ["audit", "objectives", "scope"],
+  "additionalProperties": true,
+  "properties": {
+    "audit": {
+      "type": "object",
+      "required": ["id", "title", "type"],
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Stable audit engagement ID.",
+          "examples": ["2026-001"]
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "description": "Engagement type.",
+          "examples": ["assurance", "advisory", "memo"]
+        },
+        "source": {
+          "type": "string",
+          "description": "Where the audit originated from.",
+          "examples": ["annual_audit_plan", "management_request", "ad_hoc"]
+        }
+      }
+    },
+    "objectives": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "statement"],
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^OBJ-[0-9]{3,}$",
+            "examples": ["OBJ-001"]
+          },
+          "statement": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "scope": {
+      "type": "object",
+      "required": ["in_scope"],
+      "additionalProperties": true,
+      "properties": {
+        "in_scope": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "out_of_scope": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "period": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "from": {
+          "type": "string",
+          "format": "date"
+        },
+        "to": {
+          "type": "string",
+          "format": "date"
+        }
+      }
+    }
+  }
+}

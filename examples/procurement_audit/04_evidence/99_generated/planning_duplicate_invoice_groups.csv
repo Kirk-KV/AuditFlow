@@ -1,0 +1,9 @@
+supplier_id,invoice_number,invoice_count,supplier_name
+S004,INV-DUP-8238,2,Dunder Mifflin Paper Co.
+S006,INV-DUP-7482,2,Vandelay Industrial
+S008,INV-DUP-7913,2,Pied Piper Systems
+S020,INV-DUP-8934,2,Supplier 020 LLC
+S021,INV-DUP-9083,2,Supplier 021 LLC
+S022,INV-DUP-9107,2,Supplier 022 LLC
+S023,INV-DUP-7929,2,Supplier 023 LLC
+S024,INV-DUP-7292,2,Supplier 024 LLC

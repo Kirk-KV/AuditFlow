@@ -1,0 +1,94 @@
+program:
+  status: draft
+  source:
+    planning_decision: 01_planning/planning_decision.yml
+  note: This audit program is a working matrix. The auditor completes or adjusts test_hypothesis and test_script here. Conclusions
+    are documented in workpapers.
+program_rows:
+- test_id: T-001
+  risk_id: R-001
+  risk_title: Unauthorized purchases
+  risk_reasoning: Controls are described and testable. Data indicates release-before-approval candidates.
+  control_id: C-001
+  control_description: PO release after approval
+  control_owner: Procurement Department
+  design_assessment: Testable
+  planning_approach: Test operating effectiveness using PO and approval workflow data.
+  test_hypothesis: Some purchase orders may have been released before the required approval was completed.
+  test_script:
+  - Load purchase_orders.csv and approval_workflow.csv.
+  - Define the population as purchase orders within the audit period that have an approval workflow record.
+  - Join purchase orders to approval workflow records using the purchase order identifier.
+  - Compare PO release date/time with approval completion date/time.
+  - Identify cases where the PO was released before the required approval was completed.
+  - For each candidate exception, verify whether the release event and approval event are correctly matched.
+  - Summarize the number and value of confirmed exceptions by requester, supplier, and period.
+  - Select material or unusual exceptions for follow-up with the control owner.
+  workpaper_ref: WP-C-001
+
+- test_id: T-002
+  risk_id: R-001
+  risk_title: Unauthorized purchases
+  risk_reasoning: Controls are described and testable. Data indicates release-before-approval candidates.
+  control_id: C-002
+  control_description: Approval authority check
+  control_owner: Procurement Department
+  design_assessment: Testable
+  planning_approach: Test using PO amount, approval role, and approval matrix.
+  test_hypothesis: Some purchase orders may have been approved by users whose approval authority was below the purchase order
+    amount.
+  test_script:
+  - Load purchase_orders.csv, approval_workflow.csv, users.csv, and approval_matrix.csv.
+  - Define the population as purchase orders within the audit period with completed approvals.
+  - Join purchase orders to approval workflow records and identify the final approver.
+  - Join the approver to user role and approval limit information.
+  - Compare each purchase order amount with the approver's approval authority.
+  - Identify approvals where the PO amount exceeds the approver's authority.
+  - Check whether any exception is explained by delegation, temporary approval rights, or documented override.
+  - Summarize confirmed exceptions and assess whether they indicate a control failure.
+  workpaper_ref: WP-C-002
+
+- test_id: T-003
+  risk_id: R-002
+  risk_title: Duplicate payments
+  risk_reasoning: Duplicate indicators exist, but C-003 has weak design. Use data analysis, not formal control testing.
+  control_id: C-003
+  control_description: Duplicate invoice review
+  control_owner: Finance Department
+  design_assessment: Weak design
+  planning_approach: Do not test as a formal control; perform data analysis.
+  test_hypothesis: Duplicate or potentially duplicate invoices/payments may have been recorded because the duplicate review
+    control is weakly designed.
+  test_script:
+  - Load invoices.csv and payments.csv.
+  - Define the population as invoices and related payments recorded during the audit period.
+  - Identify exact duplicate invoice numbers for the same supplier.
+  - Identify payments to the same supplier with the same amount and close payment dates.
+  - Identify invoices with similar invoice numbers, dates, amounts, and supplier identifiers where exact matching may miss
+    duplicates.
+  - Exclude known valid duplicates, credit notes, reversals, corrections, and reprocessed payments where supported by evidence.
+  - Summarize remaining duplicate candidates by supplier, amount, and payment status.
+  - Select high-risk candidates for follow-up with Finance.
+  workpaper_ref: WP-C-003
+
+- test_id: T-004
+  risk_id: R-003
+  risk_title: Split purchases below approval threshold
+  risk_reasoning: No formal control is described. Use red-flag analysis.
+  control_id: null
+  control_description: Purchase splitting prevention/detection
+  control_owner: Procurement Department
+  design_assessment: Control gap
+  planning_approach: No formal control to test; use red-flag analysis.
+  test_hypothesis: Purchases may have been split into several smaller purchase orders to stay below approval thresholds.
+  test_script:
+  - Load purchase_orders.csv.
+  - Define approval thresholds from the approval matrix or the relevant procurement regulation.
+  - Group purchase orders by supplier, requester, and a short time window.
+  - Identify groups where individual purchase orders are below the approval threshold but the combined value exceeds the threshold.
+  - Prioritize groups with same or similar descriptions, same supplier, same requester, and close creation dates.
+  - Remove cases with clear business explanations such as framework releases, recurring services, or separately documented
+    needs.
+  - Summarize remaining split purchase candidates by supplier, requester, total value, and threshold exceeded.
+  - Select high-risk candidates for follow-up with Procurement.
+  workpaper_ref: WP-R-003-NO-CONTROL

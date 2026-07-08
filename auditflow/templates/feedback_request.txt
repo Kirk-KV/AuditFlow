@@ -1,0 +1,25 @@
+Subject: Feedback request: $audit_name
+
+Dear $recipient_name,
+
+We would appreciate your short feedback on the completed internal audit.
+Your response will help us improve audit planning, communication, and the value of our audit results.
+
+Audit: $audit_name
+Respondent: $recipient_name$recipient_role_suffix
+$response_due_date_line
+
+How to respond
+Please reply directly to this email. For each question, enter a score and add a short comment if useful.
+$score_guidance
+
+Questions
+
+$questions_block
+
+Open feedback
+
+$open_questions_block
+
+Thank you.
+Internal Audit Team

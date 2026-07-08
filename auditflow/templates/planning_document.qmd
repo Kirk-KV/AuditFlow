@@ -1,0 +1,138 @@
+---
+title: "Planning Document — $audit_title"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+**Audit ID:** $audit_id  
+**Company:** $company  
+**Audit period:** $period_from — $period_to  
+**Sponsor:** $sponsor_name  
+**Engagement lead:** $engagement_lead  
+**Reviewer:** $reviewer  
+
+---
+
+This template contains things to be considered during the audit planning stage. The main focus should be on:
+
+* the planned audit areas;
+* the audit team’s approach to the risks included in the audit;
+* management’s awareness of the company’s risks and controls.
+
+---
+
+## 1. General Description
+
+Include here anything that is valuable to understanding of the audit area:
+* audit scope and risks from the annual audit plan;
+* link to BPMN description of the business process and/or description in plain language (including policies and procedures governing the process);
+* roles, responsibilities and key KPIs of actors involved in the audited process;
+* goals of the process, whether they were achieved in previous years and the current status (statistics). You may additionally use any of relevant statistics here (for instance, costs vs revenues of the audited area, value and number of transactions, etc.) 
+* background information on the audit subject, current projects, or key changes in the audited area.
+
+**Objectives, risks and scope from the annual plan:**
+
+$objectives_block
+
+$risks_block
+
+$scope_block
+
+$notes_block
+
+### EDA 
+Use this block to describe information/ data gained from the pre-planning stage.
+
+::: {.conclusion-box}
+State the planning conclusion from this section.
+:::
+
+### Process
+Describe the process 
+
+::: {.conclusion-box}
+State the planning conclusion from this section.
+:::
+
+---
+
+## 2. Information from Prior Audits
+
+If there was something relevant and useful in the previous audits, include it here
+
+::: {.conclusion-box}
+State the conclusion from this section.
+:::
+
+---
+
+## 3. Information from the 2nd Line
+
+It is useful to ask colleagues (for instance, from Risk Management and IC, Security, Legal, Quality, etc.) whether they had issues with the audited process. They sometimes rise concrete examples of control failures, which saves a time to the auditor.  
+
+::: {.conclusion-box}
+State the conclusion from this section.
+:::
+
+---
+
+
+## 4. IT part
+
+In general, you may want to assess risks related to a specific software used by a company. General questions are: is software customized or standard, developed internally or by a third party, supported by a contractor or internally, hosted inside or ouside of the company’s perimeter. Does the company plan any changes in the current software?
+
+The table to fill in
+| Software | Its purpose | Include in audit scope? | Rationale |
+| -------- | ----------- | ----------------------- | --------- |
+
+Also describe the IT part here : how complex is the IT architecture, is there a transfer of critical information, how critical are access controls for providing audit assurance in this audit, to what extent the business processes are automated, etc.
+
+::: {.conclusion-box}
+State the planning conclusion from this section.
+:::
+
+---
+
+## 5. Fraud Red Flags
+
+Just not to forget about this aspect of work - during planning and data analysis check if there are potential fraud red flags.
+
+::: {.conclusion-box}
+State the planning conclusion from this section.
+:::
+
+---
+
+## 6. Risks
+
+Provide the list of risks identified during planning, including fraud risks and IT risks.
+
+::: {.conclusion-box}
+State the planning conclusion from this section.
+:::
+
+---
+
+## 7. Scope
+
+In scope:
+
+xxxx
+
+xxxx
+
+Out of scope:
+
+xxxx
+
+xxxx
+
+---
+
+The audit approach is filled in by the auditor in the planned_decision.yml (by hand, based on the analysis above).

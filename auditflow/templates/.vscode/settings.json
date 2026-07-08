@@ -1,0 +1,13 @@
+{
+  "files.associations": {
+    "*.yml": "yaml",
+    "*.qmd": "quarto"
+  },
+  "yaml.format.enable": true,
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/.pytest_cache": true,
+    "**/.mypy_cache": true,
+    "**/.ruff_cache": true
+  }
+}

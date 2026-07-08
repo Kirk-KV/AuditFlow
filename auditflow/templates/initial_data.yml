@@ -1,0 +1,43 @@
+audit:
+  id: ""
+  title: ""
+  company: ""
+  type: ""
+  source: ""
+
+annual_plan:
+  year: ""
+  original_topic: ""
+  why_included: ""
+  expected_value: ""
+
+objectives:
+  - id: "OBJ-001"
+    statement: ""
+
+period:
+  from: ""
+  to: ""
+
+scope:
+  in_scope:
+    - ""
+  out_of_scope:
+    - ""
+  rationale:
+    - ""
+
+risks:
+  - id: "R-001"
+    title: ""
+    source: ""
+    preliminary_rating: ""
+    rationale: ""
+    possible_audit_focus:
+      - ""
+
+notes:
+  required_attention:
+    - ""
+  keep_in_mind:
+    - ""

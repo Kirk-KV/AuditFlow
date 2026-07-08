@@ -1,0 +1,32 @@
+overall_conclusion: ""
+
+scope:
+  in_scope:
+    - ""
+  out_of_scope:
+    - ""
+  rationale:
+    - ""
+
+included_risks:
+  - id: ""
+    title: ""
+    rationale: ""
+
+excluded_risks:
+  - id: ""
+    title: ""
+    rationale: ""
+
+controls:
+  - id: ""
+    risk_id: ""
+    description: ""
+    owner: ""
+    design_assessment: ""
+
+recommended_tests:
+  - id: ""
+    risk_id: ""
+    control_id: ""
+    test_objective: ""

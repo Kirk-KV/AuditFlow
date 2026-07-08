@@ -1,0 +1,36 @@
+observation_id: OBS-002
+status: draft
+source_workpaper: WP-C-003
+source_file: 05_workpapers/WP-C-003.qmd
+test_id: T-003
+risk_id: R-002
+risk_title: Duplicate payments
+control_id: C-003
+control_description: Duplicate invoice review
+control_owner: Finance Department
+title: Weak duplicate invoice and payment review
+severity: Medium
+condition: 'The duplicate payment analysis identified 8 exact duplicate invoice-number groups and 12 repeated payment-amount
+  groups. After removing obvious false positives and records with sufficient business explanations, 3 candidate cases remained
+  unresolved. The available evidence did not consistently demonstrate that the repeated payments were valid.
+
+  '
+criteria: 'Duplicate invoices and payments should be detected before payment using defined matching criteria, documented review
+  procedures, and retained evidence of review and resolution.
+
+  '
+cause: 'The duplicate invoice review control is weakly defined. The regulation does not specify clear matching rules, review
+  criteria, evidence requirements, ownership, or automated blocking / alert logic.
+
+  '
+risk_effect: 'Duplicate or erroneous payments may be processed and not detected in a timely manner, potentially resulting
+  in financial loss and increased manual recovery effort.
+
+  '
+recommendation: Define duplicate invoice and payment matching criteria, implement automated duplicate alerts or blocking rules
+  where feasible, require documented review evidence, and assign clear ownership and frequency for duplicate candidate review.
+management_action_plan:
+- action_id: MAP-001
+  action: ''
+  responsible_name: ''
+  due_date: ''

@@ -1,0 +1,5 @@
+approval_role,approval_limit
+buyer,10000
+manager,100000
+director,250000
+cfo,10000000

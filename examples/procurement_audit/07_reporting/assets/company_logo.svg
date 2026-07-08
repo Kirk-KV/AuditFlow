@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="120" viewBox="0 0 360 120" role="img" aria-label="Placeholder company logo">
+  <rect width="360" height="120" rx="18" fill="#111827"/>
+  <circle cx="58" cy="60" r="28" fill="#B08D57"/>
+  <path d="M50 61 L59 42 L69 78 Z" fill="#FFFFFF"/>
+  <text x="102" y="55" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#FFFFFF">COMPANY</text>
+  <text x="104" y="78" font-family="Arial, Helvetica, sans-serif" font-size="13" letter-spacing="3" fill="#D1D5DB">PLACEHOLDER LOGO</text>
+</svg>

@@ -1,0 +1,9 @@
+dataset,rows,columns,column_names
+approval_matrix,4,2,"approval_role, approval_limit"
+approval_workflow,1503,6,"po_id, approval_date, approver_user_id, required_approval_role, amount, approval_status"
+goods_receipts,1183,5,"gr_id, po_id, receipt_date, received_amount, status"
+invoices,1644,7,"invoice_id, invoice_number, supplier_id, po_id, invoice_date, amount, status"
+payments,1644,6,"payment_id, invoice_id, supplier_id, payment_date, amount, status"
+purchase_orders,1503,9,"po_id, created_date, supplier_id, requester_user_id, buyer_user_id, amount, category, status, release_date"
+suppliers,85,4,"supplier_id, supplier_name, category, status"
+users,24,6,"user_id, name, role, department, approval_role, approval_limit"

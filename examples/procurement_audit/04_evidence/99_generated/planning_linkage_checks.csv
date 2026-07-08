@@ -1,0 +1,6 @@
+check,count,planning_relevance
+Purchase orders without approval workflow,0,R-001 / approval testing
+Approval workflow records without purchase order,0,Data completeness
+Invoices without purchase order,0,Invoice-to-PO linkage
+Payments without invoice,0,Payment-to-invoice linkage
+Purchase orders without goods receipt,320,R-004 / goods receipt before payment

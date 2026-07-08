@@ -1,0 +1,16 @@
+sponsor:
+  name: ""
+  role: ""
+  email: ""
+
+auditees:
+  - name: ""
+    role: ""
+    email: ""
+
+additional_stakeholders: []
+
+report_recipients: []
+
+notes: >
+  Stakeholder roles are intentionally simple. The purpose is to support communication, document generation, and review of responsibilities, not to create a separate contact management system.

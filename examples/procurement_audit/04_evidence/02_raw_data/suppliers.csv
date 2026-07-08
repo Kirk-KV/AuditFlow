@@ -1,0 +1,86 @@
+supplier_id,supplier_name,category,status
+S001,Winterfell Steel Ltd.,Consulting,active
+S002,Bada Bing Logistics,Consulting,active
+S003,Los Pollos Industrial Supplies,Maintenance,active
+S004,Dunder Mifflin Paper Co.,Maintenance,active
+S005,Waystar Office Solutions,Facilities,active
+S006,Vandelay Industrial,Components,active
+S007,Bluth Company Maintenance,Maintenance,active
+S008,Pied Piper Systems,Materials,active
+S009,Initech Facilities,IT,active
+S010,Prestige Worldwide Components,IT,active
+S011,Acme Packaging,Facilities,active
+S012,Sterling Cooper Services,Packaging,active
+S013,Supplier 013 LLC,Logistics,active
+S014,Supplier 014 LLC,Packaging,active
+S015,Supplier 015 LLC,Consulting,active
+S016,Supplier 016 LLC,Facilities,active
+S017,Supplier 017 LLC,Logistics,active
+S018,Supplier 018 LLC,Packaging,active
+S019,Supplier 019 LLC,Consulting,active
+S020,Supplier 020 LLC,Facilities,active
+S021,Supplier 021 LLC,Packaging,active
+S022,Supplier 022 LLC,Consulting,active
+S023,Supplier 023 LLC,Maintenance,active
+S024,Supplier 024 LLC,Packaging,active
+S025,Supplier 025 LLC,Facilities,active
+S026,Supplier 026 LLC,Consulting,active
+S027,Supplier 027 LLC,Consulting,active
+S028,Supplier 028 LLC,Materials,active
+S029,Supplier 029 LLC,Office supplies,active
+S030,Supplier 030 LLC,Components,active
+S031,Supplier 031 LLC,Materials,active
+S032,Supplier 032 LLC,Consulting,active
+S033,Supplier 033 LLC,Logistics,active
+S034,Supplier 034 LLC,Packaging,active
+S035,Supplier 035 LLC,Facilities,active
+S036,Supplier 036 LLC,Components,active
+S037,Supplier 037 LLC,Facilities,active
+S038,Supplier 038 LLC,Office supplies,active
+S039,Supplier 039 LLC,Logistics,active
+S040,Supplier 040 LLC,Facilities,active
+S041,Supplier 041 LLC,Facilities,active
+S042,Supplier 042 LLC,Consulting,active
+S043,Supplier 043 LLC,Maintenance,active
+S044,Supplier 044 LLC,Consulting,active
+S045,Supplier 045 LLC,Packaging,active
+S046,Supplier 046 LLC,Maintenance,active
+S047,Supplier 047 LLC,Consulting,active
+S048,Supplier 048 LLC,Consulting,active
+S049,Supplier 049 LLC,Facilities,active
+S050,Supplier 050 LLC,Packaging,active
+S051,Supplier 051 LLC,Packaging,active
+S052,Supplier 052 LLC,Office supplies,active
+S053,Supplier 053 LLC,Maintenance,active
+S054,Supplier 054 LLC,Maintenance,active
+S055,Supplier 055 LLC,Materials,active
+S056,Supplier 056 LLC,Materials,active
+S057,Supplier 057 LLC,Components,active
+S058,Supplier 058 LLC,Facilities,active
+S059,Supplier 059 LLC,Consulting,active
+S060,Supplier 060 LLC,Facilities,active
+S061,Supplier 061 LLC,IT,active
+S062,Supplier 062 LLC,Office supplies,active
+S063,Supplier 063 LLC,Maintenance,active
+S064,Supplier 064 LLC,Facilities,active
+S065,Supplier 065 LLC,Facilities,active
+S066,Supplier 066 LLC,Consulting,active
+S067,Supplier 067 LLC,Facilities,active
+S068,Supplier 068 LLC,Packaging,active
+S069,Supplier 069 LLC,Consulting,active
+S070,Supplier 070 LLC,Materials,active
+S071,Supplier 071 LLC,Maintenance,active
+S072,Supplier 072 LLC,IT,active
+S073,Supplier 073 LLC,Facilities,active
+S074,Supplier 074 LLC,Logistics,active
+S075,Supplier 075 LLC,Facilities,active
+S076,Supplier 076 LLC,Consulting,active
+S077,Supplier 077 LLC,Maintenance,active
+S078,Supplier 078 LLC,Facilities,active
+S079,Supplier 079 LLC,Components,active
+S080,Supplier 080 LLC,Packaging,active
+S081,Supplier 081 LLC,Facilities,active
+S082,Supplier 082 LLC,Logistics,active
+S083,Supplier 083 LLC,Maintenance,active
+S084,Supplier 084 LLC,Facilities,active
+S085,Supplier 085 LLC,IT,active

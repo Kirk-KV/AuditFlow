@@ -1,0 +1,25 @@
+user_id,name,role,department,approval_role,approval_limit
+U001,Christian Wolff,Chief Financial Officer,Finance,cfo,10000000
+U002,Chinese Dan,Head of Procurement,Procurement,director,250000
+U003,Antony Soprano,Head of Accounts Payable,Accounts Payable,director,250000
+U004,Tyrion Lannister,Treasury Manager,Treasury,director,250000
+U005,Creed Bratton,ERP Product Owner,IT,system_owner,0
+U006,The Dude,Procurement Operations Manager,Procurement,manager,100000
+U007,Employee 07,AP Specialist,Operations,none,0
+U008,Employee 08,System Analyst,IT,none,0
+U009,Employee 09,Buyer,Operations,buyer,10000
+U010,Employee 10,System Analyst,IT,none,0
+U011,Employee 11,Warehouse Specialist,IT,manager,100000
+U012,Employee 12,System Analyst,IT,none,0
+U013,Employee 13,System Analyst,Warehouse,none,0
+U014,Employee 14,Buyer,Warehouse,buyer,10000
+U015,Employee 15,System Analyst,Operations,none,0
+U016,Employee 16,Requester,Operations,none,0
+U017,Employee 17,Requester,Accounts Payable,none,0
+U018,Employee 18,Requester,Warehouse,none,0
+U019,Employee 19,AP Specialist,Warehouse,none,0
+U020,Employee 20,Warehouse Specialist,Procurement,manager,100000
+U021,Employee 21,AP Specialist,Accounts Payable,none,0
+U022,Employee 22,Warehouse Specialist,Accounts Payable,manager,100000
+U023,Employee 23,Requester,IT,none,0
+U024,Employee 24,Requester,Accounts Payable,none,0

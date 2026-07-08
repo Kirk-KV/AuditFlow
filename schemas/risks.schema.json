@@ -1,0 +1,49 @@
+{
+  "title": "AuditFlow Risk Assessment",
+  "description": "Risk assessment model for an audit engagement.",
+  "type": "object",
+  "required": ["risks"],
+  "additionalProperties": true,
+  "properties": {
+    "risks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "rationale"],
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^R-[0-9]{3,}$",
+            "examples": ["R-001"]
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string",
+            "examples": ["financial", "operational", "fraud", "compliance"]
+          },
+          "rating": {
+            "type": "string",
+            "description": "Risk rating according to the company's own scale.",
+            "examples": ["high", "medium", "low"]
+          },
+          "included_in_scope": {
+            "type": "boolean"
+          },
+          "rationale": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Why the risk is included, excluded, or considered relevant."
+          }
+        }
+      }
+    }
+  }
+}
