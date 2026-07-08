@@ -69,7 +69,7 @@ AuditFlow is an opinionated framework. It assumes that:
 ## Install
 
 ```bash
-git clone https://github.com/<your-name>/auditflow.git
+git clone https://github.com/Kirk-KV/auditflow.git
 cd auditflow
 pip install -e .
 auditflow --help
