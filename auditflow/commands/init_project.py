@@ -192,22 +192,16 @@ Use this folder during pre-planning, planning, and fieldwork.
         project_root / "04_evidence" / "README.md",
     )
 
-    record_file(
-        write_text_if_missing(
-            project_root / ".vscode" / "settings.json",
-            """{
-  "files.associations": {
-    "*.yml": "yaml",
-    "*.qmd": "quarto",
-    "*.css": "css"
-  },
-  "yaml.format.enable": true
-}
-""",
-            overwrite=overwrite,
-        ),
-        project_root / ".vscode" / "settings.json",
-    )
+    for file_name in ["settings.json", "tasks.json", "extensions.json"]:
+        target_path = project_root / ".vscode" / file_name
+        record_file(
+            write_text_if_missing(
+                target_path,
+                read_template(f".vscode/{file_name}"),
+                overwrite=overwrite,
+            ),
+            target_path,
+        )
 
     return {
         "project_root": project_root,

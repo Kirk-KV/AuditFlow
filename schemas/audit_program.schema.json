@@ -1,19 +1,43 @@
 {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "AuditFlow Audit Program",
-  "description": "Audit procedures linked to risks, controls, data sources, scripts, and outputs.",
+  "description": "Generated audit program matrix linked to planning decisions and workpapers.",
   "type": "object",
-  "required": ["tests"],
+  "required": ["program", "program_rows"],
   "additionalProperties": true,
   "properties": {
-    "tests": {
+    "program": {
+      "type": "object",
+      "required": ["status", "source"],
+      "additionalProperties": true,
+      "properties": {
+        "status": {
+          "type": "string",
+          "examples": ["draft"]
+        },
+        "source": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "planning_decision": {
+              "type": "string",
+              "examples": ["01_planning/planning_decision.yml"]
+            }
+          }
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    },
+    "program_rows": {
       "type": "array",
-      "minItems": 1,
       "items": {
         "type": "object",
-        "required": ["id", "risk_id", "title", "objective", "procedure"],
+        "required": ["test_id", "risk_id", "risk_title", "workpaper_ref"],
         "additionalProperties": true,
         "properties": {
-          "id": {
+          "test_id": {
             "type": "string",
             "pattern": "^T-[0-9]{3,}$",
             "examples": ["T-001"]
@@ -23,54 +47,67 @@
             "pattern": "^R-[0-9]{3,}$",
             "examples": ["R-001"]
           },
+          "risk_title": {
+            "type": "string"
+          },
+          "risk_reasoning": {
+            "type": "string"
+          },
           "control_id": {
-            "type": "string",
+            "type": ["string", "null"],
             "pattern": "^C-[0-9]{3,}$",
             "examples": ["C-001"]
           },
-          "title": {
-            "type": "string",
-            "minLength": 1
-          },
-          "objective": {
-            "type": "string",
-            "minLength": 1
-          },
-          "assigned_to": {
+          "control_description": {
             "type": "string"
           },
-          "procedure": {
-            "type": "array",
-            "minItems": 1,
-            "items": {
-              "type": "string"
-            }
+          "control_owner": {
+            "type": "string"
           },
-          "data_sources": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "pattern": "^DS-[0-9]{3,}$"
-            }
+          "design_assessment": {
+            "type": "string"
           },
-          "script": {
-            "type": "string",
-            "description": "Path to the script used to perform the test.",
-            "examples": ["04_evidence/02_raw_data/scripts/T001_po_approval_before_release.py"]
+          "planning_approach": {
+            "type": "string"
           },
-          "expected_output": {
-            "type": "string",
-            "description": "Expected generated output path.",
-            "examples": ["04_evidence/99_generated/po_approval_exceptions.xlsx"]
+          "test_hypothesis": {
+            "type": "string"
           },
-          "expected_evidence": {
+          "test_script": {
             "type": "array",
             "items": {
               "type": "string"
             }
           },
-          "notes": {
-            "type": "string"
+          "workpaper_ref": {
+            "type": "string",
+            "pattern": "^WP-[A-Za-z0-9_-]+$",
+            "examples": ["WP-C-001"]
+          }
+        }
+      }
+    },
+    "planning_warnings": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "included_risks_without_valid_controls": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "risk_id": {
+                "type": "string",
+                "pattern": "^R-[0-9]{3,}$"
+              },
+              "risk_title": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            }
           }
         }
       }

@@ -14,8 +14,10 @@ from auditflow.commands.observations import generate_observations
 from auditflow.commands.planning import create_planning_files
 from auditflow.commands.report import update_report_qmd
 from auditflow.commands.status import get_status
+from auditflow.commands.validate import validate_project
 from auditflow.commands.workpapers import generate_workpapers
 from auditflow.project import AuditFlowProjectNotFound, relative_to_cwd, resolve_project
+from auditflow.timeline import record_event, refresh_timeline
 
 app = typer.Typer(
     name="auditflow",
@@ -25,8 +27,10 @@ app = typer.Typer(
 
 create_app = typer.Typer(help="Create staged audit artifacts.", no_args_is_help=True)
 feedback_app = typer.Typer(help="Create feedback requests and summaries.", no_args_is_help=True)
+timeline_app = typer.Typer(help="Work with audit timeline facts.", no_args_is_help=True)
 app.add_typer(create_app, name="create")
 app.add_typer(feedback_app, name="feedback")
+app.add_typer(timeline_app, name="timeline")
 
 
 def project_option() -> Optional[Path]:
@@ -77,6 +81,12 @@ def init(
     typer.echo(f"AuditFlow project created: {result['project_root']}")
     typer.echo(f"Created folders: {len(result['created_dirs'])}")
     typer.echo(f"Created files: {len(result['created_files'])}")
+    record_event(
+        result["project_root"],
+        event="project_initialized",
+        command="auditflow init",
+        artifact="initial_data.yml",
+    )
     typer.echo("Next: cd into the project and complete initial_data.yml and 00_admin/*.yml")
 
 
@@ -113,6 +123,12 @@ def create_planning_command(
     typer.echo(f"Planning directory: {result['planning_dir']}")
     typer.echo(f"Created: {len(result['created'])}")
     typer.echo(f"Kept existing: {len(result['kept'])}")
+    record_event(
+        project_root,
+        event="planning_created",
+        command="auditflow create planning",
+        artifact="01_planning/planning_decision.yml",
+    )
 
 
 @create_app.command("audit-program")
@@ -127,6 +143,12 @@ def create_audit_program_command(
     typer.echo(f"Rows: {result['rows']}")
     if result["manual_fields_preserved"]:
         typer.echo("Manual fields preserved.")
+    record_event(
+        project_root,
+        event="audit_program_created",
+        command="auditflow create audit-program",
+        artifact="03_audit_program/audit_program.yml",
+    )
 
 
 @create_app.command("workpapers")
@@ -141,6 +163,12 @@ def create_workpapers_command(
     typer.echo(f"Workpapers skipped: {result['skipped']}")
     typer.echo(f"Rows without workpaper_ref: {result.get('missing_workpaper_ref', 0)}")
     typer.echo(f"Output directory: {result['workpapers_dir']}")
+    record_event(
+        project_root,
+        event="workpapers_created",
+        command="auditflow create workpapers",
+        artifact="05_workpapers",
+    )
 
 
 @create_app.command("observations")
@@ -173,6 +201,12 @@ def create_observations_command(
         typer.echo(f"Stale observation files: {len(result['stale_candidates'])}")
         if not clean_stale:
             typer.echo("Use --clean-stale to delete stale observation files.")
+    record_event(
+        project_root,
+        event="observations_created",
+        command="auditflow create observations",
+        artifact="06_observations",
+    )
 
 
 @create_app.command("report")
@@ -184,6 +218,12 @@ def create_report_command(
     project_root = require_project(project)
     report_path = update_report_qmd(project_root, reset_report=reset_report)
     typer.echo(f"Report updated: {report_path}")
+    record_event(
+        project_root,
+        event="report_created",
+        command="auditflow create report",
+        artifact="07_reporting/report.qmd",
+    )
 
 
 @create_app.command("archive")
@@ -195,6 +235,12 @@ def create_archive_command(
     project_root = require_project(project)
     archive_path = update_archive(project_root, reset=reset_archive)
     typer.echo(f"Audit story updated: {archive_path}")
+    record_event(
+        project_root,
+        event="archive_created",
+        command="auditflow create archive",
+        artifact="09_archive/audit_story.qmd",
+    )
 
 
 @feedback_app.command("request")
@@ -214,6 +260,12 @@ def feedback_request_command(
         overwrite_requests=overwrite,
         reset_response_templates=reset_response_templates,
     )
+    record_event(
+        project_root,
+        event="feedback_requested",
+        command="auditflow feedback request",
+        artifact="08_feedback/request",
+    )
 
 
 @feedback_app.command("summary")
@@ -225,6 +277,23 @@ def feedback_summary_command(
     create_summary(project_root)
 
 
+@timeline_app.command("refresh")
+def timeline_refresh_command(
+    project: Optional[Path] = project_option(),
+    overwrite_facts: bool = typer.Option(
+        False,
+        help="Overwrite existing fact dates from recorded events.",
+    ),
+) -> None:
+    """Refresh timeline fact dates from recorded workflow events."""
+    project_root = require_project(project)
+    result = refresh_timeline(project_root, overwrite_facts=overwrite_facts)
+    events = result.get("events", [])
+    event_count = len(events) if isinstance(events, list) else 0
+    typer.echo("Timeline refreshed.")
+    typer.echo(f"Events: {event_count}")
+
+
 @app.command()
 def validate(
     project: Optional[Path] = project_option(),
@@ -233,10 +302,29 @@ def validate(
     """Validate audit project structure and links."""
     project_root = require_project(project)
     mode = "strict" if strict else "soft"
+    result = validate_project(project_root)
+
     typer.echo(f"Validating audit project: {project_root}")
     typer.echo(f"Validation mode: {mode}")
-    typer.echo("Not implemented yet. Planned for the validation iteration.")
-    raise typer.Exit(code=1)
+
+    if result.errors:
+        typer.echo("")
+        typer.echo("Errors:")
+        for message in result.errors:
+            typer.echo(f"- {message}")
+
+    if result.warnings:
+        typer.echo("")
+        typer.echo("Warnings:")
+        for message in result.warnings:
+            typer.echo(f"- {message}")
+
+    if not result.errors and not result.warnings:
+        typer.echo("")
+        typer.echo("No validation issues found.")
+
+    if result.has_failures(strict=strict):
+        raise typer.Exit(code=1)
 
 
 @app.command()

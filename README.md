@@ -69,7 +69,7 @@ AuditFlow is an opinionated framework. It assumes that:
 ## Install
 
 ```bash
-git clone https://github.com/<your-name>/auditflow.git
+git clone https://github.com/Kirk-KV/auditflow.git
 cd auditflow
 pip install -e .
 auditflow --help
@@ -90,6 +90,8 @@ auditflow create report
 auditflow feedback request
 auditflow feedback summary
 auditflow create archive
+auditflow timeline refresh
+auditflow validate
 auditflow render all
 ```
 
@@ -106,6 +108,8 @@ In practice, the auditor edits files between commands:
 9. Complete observation YAML files in `06_observations/`.
 10. Run `auditflow create report`.
 11. Run feedback and archive steps when the audit is complete.
+12. Run `auditflow timeline refresh` if timeline facts were edited or events were added manually.
+13. Run `auditflow validate` before rendering or sharing final materials.
 
 ## Project Structure
 
@@ -145,7 +149,26 @@ audit_project/
     auditflow.css
     brand.css
     report.css
+
+  .vscode/
+    settings.json
+    tasks.json
+    extensions.json
 ```
+
+## Timeline Facts
+
+`00_admin/timeline.yml` contains planned dates, fact dates, and recorded workflow events.
+
+Planned dates are entered manually. Fact dates are updated by AuditFlow commands when workflow artifacts are created. For example, `auditflow create audit-program` records an `audit_program_created` event and can mark planning as completed.
+
+Use:
+
+```bash
+auditflow timeline refresh
+```
+
+to rebuild empty fact dates from recorded events.
 
 ## Styling
 
@@ -201,9 +224,15 @@ format:
     css: ../styles/report.css
 ```
 
+## VSCode Support
+
+`auditflow init` creates `.vscode/settings.json`, `.vscode/tasks.json`, and `.vscode/extensions.json`.
+
+These files provide YAML/Quarto editor defaults, recommended extensions, and ready-to-run tasks such as `AuditFlow: status`, `AuditFlow: validate`, and `AuditFlow: render report`.
+
 ## Current Limitations
 
-- `auditflow validate` is a placeholder.
+- `auditflow validate` currently performs basic project, schema, and link checks. Deeper methodology validation is still evolving.
 - Long-term management action tracking is outside the current project scope.
 - LLM integration is not automated and not finished yet; any LLM use should follow company data protection rules.
 - Notification letter generation is not part of the current CLI workflow (however, you can see the notification template in 'auditflow/templates/').
@@ -215,5 +244,5 @@ format:
 - `docs/workflow.md` — decision-oriented audit workflow.
 - `docs/methodology.md` — methodology principles.
 - `docs/customization.md` — customization approach.
-- `examples/procurement_audit/` — synthetic example audit (at the moment it differs from the current structure a little bit. I will update it shortly, but it is useful to understand what should appear where).
+- `examples/procurement_audit/` — synthetic example audit showing the generated structure, traceability chain, and reporting artifacts.
 

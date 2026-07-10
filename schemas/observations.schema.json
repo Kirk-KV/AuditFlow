@@ -1,105 +1,119 @@
 {
-  "title": "AuditFlow Observations",
-  "description": "Audit observations and management actions.",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AuditFlow Observation",
+  "description": "Single generated OBS-XXX.yml observation file.",
   "type": "object",
-  "required": ["observations"],
+  "required": [
+    "observation_id",
+    "status",
+    "source_workpaper",
+    "source_file",
+    "test_id",
+    "risk_id",
+    "risk_title",
+    "title",
+    "condition",
+    "criteria",
+    "cause",
+    "risk_effect",
+    "recommendation",
+    "management_action_plan"
+  ],
   "additionalProperties": true,
   "properties": {
-    "observations": {
+    "observation_id": {
+      "type": "string",
+      "pattern": "^OBS-[0-9]{3,}$",
+      "examples": ["OBS-001"]
+    },
+    "status": {
+      "type": "string",
+      "examples": ["draft", "validated", "closed"]
+    },
+    "source_workpaper": {
+      "type": "string",
+      "pattern": "^WP-[A-Za-z0-9_-]+$",
+      "examples": ["WP-C-001"]
+    },
+    "source_file": {
+      "type": "string",
+      "examples": ["05_workpapers/WP-C-001.qmd"]
+    },
+    "test_id": {
+      "type": "string",
+      "pattern": "^T-[0-9]{3,}$",
+      "examples": ["T-001"]
+    },
+    "risk_id": {
+      "type": "string",
+      "pattern": "^R-[0-9]{3,}$",
+      "examples": ["R-001"]
+    },
+    "risk_title": {
+      "type": "string"
+    },
+    "control_id": {
+      "type": ["string", "null"],
+      "pattern": "^C-[0-9]{3,}$",
+      "examples": ["C-001"]
+    },
+    "control_description": {
+      "type": "string"
+    },
+    "control_owner": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "severity": {
+      "type": "string",
+      "description": "Observation severity according to the company's own scale.",
+      "examples": ["High", "Medium", "Low"]
+    },
+    "condition": {
+      "type": "string",
+      "description": "What actually happened."
+    },
+    "criteria": {
+      "type": "string",
+      "description": "What should happen."
+    },
+    "cause": {
+      "type": "string",
+      "description": "Why the issue occurred."
+    },
+    "risk_effect": {
+      "type": "string",
+      "description": "What may happen if the issue continues."
+    },
+    "recommendation": {
+      "type": "string"
+    },
+    "executive_summary": {
+      "type": "string"
+    },
+    "management_action_plan": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": [
-          "id",
-          "title",
-          "criterion",
-          "condition",
-          "cause",
-          "risk",
-          "management_action"
-        ],
+        "required": ["action_id", "action", "responsible_name", "due_date"],
         "additionalProperties": true,
         "properties": {
-          "id": {
+          "action_id": {
             "type": "string",
-            "pattern": "^O-[0-9]{3,}$",
-            "examples": ["O-001"]
+            "pattern": "^MAP-[0-9]{3,}$",
+            "examples": ["MAP-001"]
           },
-          "title": {
-            "type": "string",
-            "minLength": 1
+          "action": {
+            "type": "string"
           },
-          "linked_risks": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "pattern": "^R-[0-9]{3,}$"
-            }
+          "responsible_name": {
+            "type": "string"
           },
-          "linked_tests": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "pattern": "^T-[0-9]{3,}$"
-            }
-          },
-          "rating": {
-            "type": "string",
-            "description": "Observation rating according to the company's own scale.",
-            "examples": ["high", "medium", "low"]
-          },
-          "criterion": {
-            "type": "string",
-            "minLength": 1,
-            "description": "What should happen."
-          },
-          "condition": {
-            "type": "string",
-            "minLength": 1,
-            "description": "What actually happened."
-          },
-          "cause": {
-            "type": "string",
-            "minLength": 1,
-            "description": "Why the issue occurred."
-          },
-          "risk": {
-            "type": "string",
-            "minLength": 1,
-            "description": "What may happen if the issue continues."
-          },
-          "management_action": {
-            "type": "object",
-            "required": ["description", "owner", "due_date"],
-            "additionalProperties": true,
-            "properties": {
-              "description": {
-                "type": "string",
-                "minLength": 1
-              },
-              "owner": {
-                "type": "string",
-                "minLength": 1
-              },
-              "due_date": {
-                "type": "string",
-                "format": "date"
-              }
-            }
-          },
-          "evidence": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "pattern": "^E-[0-9]{3,}$"
-            }
-          },
-          "fact_validation_evidence": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "pattern": "^E-[0-9]{3,}$"
-            }
+          "due_date": {
+            "type": "string"
           }
         }
       }

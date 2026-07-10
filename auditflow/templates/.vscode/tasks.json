@@ -1,1 +1,23 @@
-{}
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "AuditFlow: status",
+      "type": "shell",
+      "command": "auditflow status",
+      "problemMatcher": []
+    },
+    {
+      "label": "AuditFlow: validate",
+      "type": "shell",
+      "command": "auditflow validate",
+      "problemMatcher": []
+    },
+    {
+      "label": "AuditFlow: render report",
+      "type": "shell",
+      "command": "auditflow render report",
+      "problemMatcher": []
+    }
+  ]
+}

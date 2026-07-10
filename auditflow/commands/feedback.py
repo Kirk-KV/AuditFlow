@@ -440,7 +440,7 @@ Workflow:
 2. Copy the text into an email and send it to the recipient.
 3. Save the recipient's original reply in `response/original/`.
 4. Complete the corresponding `*_response.yml`. You may either set `response.received: true` or just enter scores/comments; the summary will infer that a response was received.
-5. Run `python scripts/feedback_workflow.py --summary`.
+5. Run `auditflow feedback summary`.
 6. Review `08_feedback/feedback_summary.qmd`.
 
 Important:

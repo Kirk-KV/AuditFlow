@@ -38,7 +38,7 @@ audit_project/
     01_regulations/
     02_raw_data/                
     03_correspondence/
-    04_supporting_documents/
+    04_reference_materials/
     05_screenshots/
     99_generated/
 
@@ -189,7 +189,13 @@ reviewer:
 
 ### `timeline.yml`
 
-Use this file for planned and actual dates if the team wants to compare planning assumptions with actual execution. Note that this file should be manually updated after the end of the audit (at the moment I don't know how to automate this easily).
+Use this file for planned and actual dates if the team wants to compare planning assumptions with actual execution.
+
+Planned dates are maintained manually in `timeline.plan`.
+
+Actual dates are updated by AuditFlow commands through an event log in the same file. For example, when `auditflow create audit-program` succeeds, AuditFlow records an `audit_program_created` event and can treat this date as both the completion of planning and the initiation of the audit program stage.
+
+Manual fact dates are preserved by default. The event log remains visible so a reviewer can understand why a fact date was recorded.
 
 ### `decisions.yml`
 

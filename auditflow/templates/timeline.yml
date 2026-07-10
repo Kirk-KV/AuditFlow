@@ -15,7 +15,16 @@ timeline:
     fieldwork_end: ""
     draft_report: ""
     final_report: ""
+    planning_completed: ""
+    audit_program_initiated: ""
+    fieldwork_started: ""
+    fieldwork_completed: ""
+    draft_report_created: ""
+    feedback_requested: ""
+    archive_created: ""
 
+events: []
 
 notes: >
-  These are target dates for planning purposes. Actual evidence of communication, review, and completion should be preserved through documents, emails, Git history, or generated archive materials where practical.
+  Planned dates are entered manually. Fact dates are updated by AuditFlow commands based on recorded workflow events.
+  Manual fact dates are preserved unless an explicit overwrite mode is used.

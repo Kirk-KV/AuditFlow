@@ -24,6 +24,7 @@ exclude = ["docs*", "examples*", "schemas*", "styles*", "tests*"]
 auditflow = [
     "templates/*.yml",
     "templates/*.qmd",
+    "templates/*.md",
     "templates/*.txt",
     "templates/*.css",
     "templates/styles/*.css",
