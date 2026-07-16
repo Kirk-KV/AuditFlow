@@ -284,11 +284,13 @@ The report references:
 
 So `styles/report.css` is created during `auditflow init`, not during report generation.
 
-Render:
+Preview the report while editing it with the Quarto extension in VS Code, or run:
 
 ```bash
-auditflow render report
+quarto preview 07_reporting/report.qmd
 ```
+
+Use `quarto render 07_reporting/report.qmd` when a standalone rendered output is needed.
 
 ## 9. Feedback
 
@@ -327,11 +329,13 @@ Creates:
 08_feedback/feedback_summary.qmd
 ```
 
-Render:
+Preview the feedback summary with the Quarto extension in VS Code, or run:
 
 ```bash
-auditflow render feedback
+quarto preview 08_feedback/feedback_summary.qmd
 ```
+
+Use `quarto render 08_feedback/feedback_summary.qmd` when a standalone rendered output is needed.
 
 ## 10. Archive Story
 
@@ -355,11 +359,13 @@ The archive story reconstructs the audit from existing artifacts:
 - evidence map;
 - lessons learned.
 
-Render:
+Preview the archive story with the Quarto extension in VS Code, or run:
 
 ```bash
-auditflow render archive
+quarto preview 09_archive/audit_story.qmd
 ```
+
+Use `quarto render 09_archive/audit_story.qmd` when a standalone rendered output is needed.
 
 ## 11. Full Current Command Sequence
 
@@ -388,9 +394,9 @@ auditflow create report
 auditflow feedback request
 auditflow feedback summary
 auditflow create archive
-
-auditflow render all
 ```
+
+QMD documents are previewed and rendered using the standard Quarto extension in VS Code or the `quarto preview` and `quarto render` commands. AuditFlow does not require a separate rendering workflow.
 
 ## 12. Current Non-Goals
 

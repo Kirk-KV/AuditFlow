@@ -92,7 +92,6 @@ auditflow feedback summary
 auditflow create archive
 auditflow timeline refresh
 auditflow validate
-auditflow render all
 ```
 
 In practice, the auditor edits files between commands:
@@ -110,6 +109,8 @@ In practice, the auditor edits files between commands:
 11. Run feedback and archive steps when the audit is complete.
 12. Run `auditflow timeline refresh` if timeline facts were edited or events were added manually.
 13. Run `auditflow validate` before rendering or sharing final materials.
+
+QMD documents are previewed and rendered using the standard Quarto extension in VS Code or the `quarto preview` and `quarto render` commands. AuditFlow does not require a separate rendering workflow.
 
 ## Project Structure
 
@@ -228,7 +229,7 @@ format:
 
 `auditflow init` creates `.vscode/settings.json`, `.vscode/tasks.json`, and `.vscode/extensions.json`.
 
-These files provide YAML/Quarto editor defaults, recommended extensions, and ready-to-run tasks such as `AuditFlow: status`, `AuditFlow: validate`, and `AuditFlow: render report`.
+These files provide YAML/Quarto editor defaults, recommended extensions, and ready-to-run AuditFlow tasks such as `AuditFlow: status` and `AuditFlow: validate`. Use the standard Quarto extension in VS Code to preview and render QMD documents.
 
 ## Current Limitations
 

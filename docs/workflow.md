@@ -73,8 +73,9 @@ auditflow create report
 auditflow feedback request
 auditflow feedback summary
 auditflow create archive
-auditflow render all
 ```
+
+QMD documents are previewed and rendered using the standard Quarto extension in VS Code or the `quarto preview` and `quarto render` commands. AuditFlow does not require a separate rendering workflow.
 
 ## Gate 1: Is The Audit Still Worth Doing?
 

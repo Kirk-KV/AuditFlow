@@ -12,12 +12,6 @@
       "type": "shell",
       "command": "auditflow validate",
       "problemMatcher": []
-    },
-    {
-      "label": "AuditFlow: render report",
-      "type": "shell",
-      "command": "auditflow render report",
-      "problemMatcher": []
     }
   ]
 }

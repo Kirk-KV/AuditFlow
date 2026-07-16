@@ -18,7 +18,6 @@ auditflow create report
 auditflow feedback request
 auditflow feedback summary
 auditflow create archive
-auditflow render <planning|report|feedback|archive|all>
 auditflow validate
 ```
 
@@ -136,19 +135,21 @@ Creates or updates:
 09_archive/audit_story.qmd
 ```
 
-## `auditflow render`
+## Rendering QMD Documents
 
-Renders Quarto documents.
+QMD documents are previewed and rendered using the standard Quarto extension in VS Code. While editing a document, use the Quarto Preview button or run:
 
 ```bash
-auditflow render planning
-auditflow render report
-auditflow render feedback
-auditflow render archive
-auditflow render all
+quarto preview 07_reporting/report.qmd
 ```
 
-Requires Quarto to be installed and available on PATH.
+To create a standalone rendered output, run:
+
+```bash
+quarto render 07_reporting/report.qmd
+```
+
+Replace the path with the QMD document you are working on. Quarto must be installed and available on `PATH`; AuditFlow does not require a separate rendering workflow.
 
 ## VSCode Tasks
 
@@ -166,5 +167,4 @@ AuditFlow: Create Report
 AuditFlow: Feedback Request
 AuditFlow: Feedback Summary
 AuditFlow: Create Archive
-AuditFlow: Render All
 ```

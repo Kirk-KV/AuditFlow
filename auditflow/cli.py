@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import subprocess
 from pathlib import Path
 from typing import Optional
 
@@ -325,36 +324,3 @@ def validate(
 
     if result.has_failures(strict=strict):
         raise typer.Exit(code=1)
-
-
-@app.command()
-def render(
-    target: str = typer.Argument(..., help="Target to render: planning, report, feedback, archive, all."),
-    project: Optional[Path] = project_option(),
-) -> None:
-    """Render Quarto documents for a project."""
-    project_root = require_project(project)
-    targets = {
-        "planning": [project_root / "01_planning" / "planning_document.qmd"],
-        "report": [project_root / "07_reporting" / "report.qmd"],
-        "feedback": [project_root / "08_feedback" / "feedback_summary.qmd"],
-        "archive": [project_root / "09_archive" / "audit_story.qmd"],
-    }
-
-    if target == "all":
-        paths = [path for group in targets.values() for path in group]
-    elif target in targets:
-        paths = targets[target]
-    else:
-        typer.echo("Unknown target. Use: planning, report, feedback, archive, all.", err=True)
-        raise typer.Exit(code=1)
-
-    rendered = 0
-    for path in paths:
-        if not path.exists():
-            typer.echo(f"Skipped missing file: {path}")
-            continue
-        subprocess.run(["quarto", "render", str(path)], cwd=project_root, check=True)
-        rendered += 1
-
-    typer.echo(f"Rendered documents: {rendered}")
