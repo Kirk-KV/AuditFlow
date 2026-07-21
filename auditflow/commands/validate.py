@@ -7,6 +7,8 @@ from typing import Any
 
 import yaml
 
+from auditflow.commands.evidence import EvidenceManifestError, load_evidence_manifest
+
 
 REQUIRED_ADMIN_FILES = [
     "stakeholders.yml",
@@ -200,6 +202,16 @@ def validate_observations(
             result.error(f"{observation_path}: risk_id {risk_id} is not present in audit_program.yml")
 
 
+def validate_evidence_manifest(project_root: Path, result: ValidationResult) -> None:
+    manifest_path = project_root / "04_evidence" / "evidence_manifest.yml"
+    if not manifest_path.exists():
+        return
+    try:
+        load_evidence_manifest(project_root)
+    except EvidenceManifestError as exc:
+        result.error(f"Invalid evidence manifest: {exc}")
+
+
 def validate_project(project_root: Path) -> ValidationResult:
     result = ValidationResult()
     validate_required_structure(project_root, result)
@@ -209,5 +221,6 @@ def validate_project(project_root: Path) -> ValidationResult:
 
     program_rows = validate_audit_program(project_root, result)
     validate_observations(project_root, program_rows, result)
+    validate_evidence_manifest(project_root, result)
 
     return result

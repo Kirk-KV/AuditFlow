@@ -97,6 +97,10 @@ secrets.yaml
 
 # Keep folder structure
 !**/.gitkeep
+!**/04_evidence/README.md
+!**/04_evidence/evidence_manifest.yml
+!**/04_evidence/02_raw_data/scripts/
+!**/04_evidence/02_raw_data/scripts/**
 
 # =========================
 # Allow synthetic example data in public repo

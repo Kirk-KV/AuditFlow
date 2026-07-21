@@ -21,6 +21,12 @@ from auditflow.ai.service import (
 )
 from auditflow.commands.archive import update_archive
 from auditflow.commands.audit_program import create_audit_program
+from auditflow.commands.evidence import (
+    EvidenceChange,
+    EvidenceManifestError,
+    compare_evidence,
+    refresh_evidence_manifest,
+)
 from auditflow.commands.feedback import create_requests, create_summary
 from auditflow.commands.init_project import create_initial_project
 from auditflow.commands.observations import generate_observations
@@ -42,10 +48,15 @@ create_app = typer.Typer(help="Create staged audit artifacts.", no_args_is_help=
 feedback_app = typer.Typer(help="Create feedback requests and summaries.", no_args_is_help=True)
 timeline_app = typer.Typer(help="Work with audit timeline facts.", no_args_is_help=True)
 ai_app = typer.Typer(help="Use approved AI profiles for audit assistance.", no_args_is_help=True)
+evidence_app = typer.Typer(
+    help="Track hashes of evidence files kept outside Git.",
+    no_args_is_help=True,
+)
 app.add_typer(create_app, name="create")
 app.add_typer(feedback_app, name="feedback")
 app.add_typer(timeline_app, name="timeline")
 app.add_typer(ai_app, name="ai")
+app.add_typer(evidence_app, name="evidence")
 
 
 def project_option() -> Optional[Path]:
@@ -307,6 +318,81 @@ def timeline_refresh_command(
     event_count = len(events) if isinstance(events, list) else 0
     typer.echo("Timeline refreshed.")
     typer.echo(f"Events: {event_count}")
+
+
+def _echo_evidence_changes(changes: tuple[EvidenceChange, ...]) -> None:
+    for change in changes:
+        if change.kind == "modified":
+            typer.echo(
+                f"- MODIFIED {change.path}: "
+                f"{str(change.expected_sha256)[:12]} -> "
+                f"{str(change.actual_sha256)[:12]}"
+            )
+        elif change.kind == "added":
+            typer.echo(
+                f"- ADDED {change.path}: sha256 "
+                f"{str(change.actual_sha256)[:12]}"
+            )
+        else:
+            typer.echo(
+                f"- MISSING {change.path}: expected sha256 "
+                f"{str(change.expected_sha256)[:12]}"
+            )
+
+
+@evidence_app.command("status")
+def evidence_status_command(
+    project: Optional[Path] = project_option(),
+) -> None:
+    """Compare local evidence files with the tracked SHA-256 manifest."""
+    project_root = require_project(project)
+    try:
+        comparison = compare_evidence(project_root)
+    except EvidenceManifestError as exc:
+        typer.echo(f"Evidence status error: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+
+    typer.echo(f"Evidence files found: {len(comparison.current_files)}")
+    if not comparison.manifest_exists:
+        typer.echo(
+            "Evidence manifest is missing. Run 'auditflow evidence refresh' to create it."
+        )
+        raise typer.Exit(code=1)
+    if comparison.changes:
+        typer.echo("Evidence differs from 04_evidence/evidence_manifest.yml:")
+        _echo_evidence_changes(comparison.changes)
+        typer.echo(
+            "Review the changes, then run 'auditflow evidence refresh' only when the "
+            "new evidence state is accepted for review."
+        )
+        raise typer.Exit(code=1)
+    typer.echo("Evidence matches 04_evidence/evidence_manifest.yml.")
+
+
+@evidence_app.command("refresh")
+def evidence_refresh_command(
+    project: Optional[Path] = project_option(),
+) -> None:
+    """Record the current local evidence hashes in the tracked manifest."""
+    project_root = require_project(project)
+    try:
+        result = refresh_evidence_manifest(project_root)
+    except EvidenceManifestError as exc:
+        typer.echo(f"Evidence refresh error: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+
+    if result.previous_changes:
+        typer.echo("Evidence snapshot changes recorded:")
+        _echo_evidence_changes(result.previous_changes)
+    typer.echo(f"Evidence files recorded: {len(result.files)}")
+    typer.echo(
+        f"Evidence manifest {'updated' if result.changed else 'unchanged'}: "
+        f"{result.manifest_path}"
+    )
+    typer.echo(
+        "Commit the manifest change for manager review; do not add evidence file "
+        "contents to Git."
+    )
 
 
 @ai_app.command("status")

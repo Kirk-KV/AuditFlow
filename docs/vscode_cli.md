@@ -18,6 +18,8 @@ auditflow create report
 auditflow feedback request
 auditflow feedback summary
 auditflow create archive
+auditflow evidence status
+auditflow evidence refresh
 auditflow ai status
 auditflow ai draft-observation <workpaper_ref>
 auditflow ai review-observation <observation_id>
@@ -26,6 +28,8 @@ auditflow validate
 ```
 
 AI commands are optional and disabled by default in new projects.
+
+Commands for Git `auditflow evidence status` and `auditflow evidence refreshare` also optional - use it if you need it.
 
 ## `auditflow init`
 
@@ -138,6 +142,10 @@ Creates or updates:
 ```text
 09_archive/audit_story.qmd
 ```
+
+## `auditflow evidence`
+
+`auditflow evidence refresh` creates or updates the optional `04_evidence/evidence_manifest.yml`; `auditflow evidence status` compares local evidence with it. Evidence contents remain outside Git; see `git_collaboration.md` for the review workflow.
 
 ## `auditflow ai`
 

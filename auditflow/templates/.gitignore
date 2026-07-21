@@ -8,3 +8,11 @@
 secrets.yml
 secrets.yaml
 ai_outputs/
+
+# Evidence contents stay outside Git; the hash manifest and folder metadata remain tracked.
+04_evidence/**
+!04_evidence/**/
+!04_evidence/README.md
+!04_evidence/evidence_manifest.yml
+!04_evidence/**/.gitkeep
+!04_evidence/02_raw_data/scripts/**

@@ -36,6 +36,8 @@ AuditFlow keeps the work in plain files:
 - raw evidence kept unchanged;
 - generated outputs kept separate from source evidence.
 
+With Git, these source files also gain a reviewable history without manual copies such as `final_v2_revised`.
+
 The current traceability chain is:
 
 ```text
@@ -117,6 +119,19 @@ In practice, the auditor edits files between commands:
 
 QMD documents are previewed and rendered using the standard Quarto extension in VS Code or the `quarto preview` and `quarto render` commands. AuditFlow does not require a separate rendering workflow.
 
+## Optional Git Collaboration
+
+An AuditFlow project can be stored in a private GitLab, Azure DevOps, GitHub Enterprise, or equivalent repository. Protected branches and pull/merge requests let the audit manager comment on changes, request corrections, approve them, and safely revert earlier decisions.
+
+Raw evidence and regulations stay outside Git. Their fingerprints are stored in a tracked manifest:
+
+```bash
+auditflow evidence refresh
+auditflow evidence status
+```
+
+See `docs/git_collaboration.md` for the short setup and review workflow.
+
 ## Project Structure
 
 ```text
@@ -139,6 +154,7 @@ audit_project/
     audit_program.yml
 
   04_evidence/
+    evidence_manifest.yml       # optional; created by evidence refresh
     01_regulations/
     02_raw_data/
     03_correspondence/
@@ -274,5 +290,6 @@ These files provide YAML/Quarto editor defaults, recommended extensions, and rea
 - `docs/workflow.md` — decision-oriented audit workflow.
 - `docs/methodology.md` — methodology principles.
 - `docs/customization.md` — customization approach.
+- `docs/git_collaboration.md` — version history and manager review with Git.
 - `examples/procurement_audit/` — synthetic example audit showing the generated structure, traceability chain, and reporting artifacts.
 

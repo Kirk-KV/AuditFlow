@@ -36,6 +36,7 @@ audit_project/
     *sponsor_comments.yml       # (optional) if you need to fix the reason to change the scope from planning based on the Sponsor's comments
 
   04_evidence/
+    *evidence_manifest.yml      # optional tracked hashes for Git review
     01_regulations/
     02_raw_data/                
     03_correspondence/
@@ -399,6 +400,8 @@ Evidence folders:
 | `04_reference_materials/` | Org charts, presentations, reports, background materials |
 | `05_screenshots/` | Screenshots used as evidence |
 | `99_generated/` | Generated analysis outputs, charts, profiling files |
+
+Optional `evidence_manifest.yml` records path, size, and SHA-256 for these files. `auditflow evidence refresh` creates it when a team enables Git review; `auditflow evidence status` then detects differences. Analysis code under `02_raw_data/scripts/` remains versioned directly in Git and is excluded from the manifest.
 
 General approach:
 regulations → "how the process should work";
