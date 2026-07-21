@@ -103,4 +103,16 @@ secrets.yaml
 # =========================
 !examples/**
 
+# Secrets and AI history remain private even inside synthetic examples.
+**/.env
+**/.env.*
+!**/.env.example
+**/*.key
+**/*.pem
+**/*.p12
+**/*.pfx
+**/secrets.yml
+**/secrets.yaml
+**/ai_outputs/
+
 /.quarto/

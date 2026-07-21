@@ -27,14 +27,15 @@ Controls are important when they exist, but they are not mandatory as a separate
 * **Evidence-First Design**: if something is already documented in evidence, try to use it "as is" without retyping it into another file.
 
 
-**If you use LLM**, define rules:
+**If you use an LLM**, define company rules in the policy file referenced by `AUDITFLOW_AI_POLICY`:
 * whether LLM use is allowed;
-* which model can be used;
-* whether only internal LLMs are allowed;
-* what data may be sent;
-* whether redaction is required;
+* which profiles, destinations, models, and project classifications are allowed;
+* whether external providers are allowed and require confirmation;
+* whether sensitive-data findings warn or block;
 * whether prompts and responses must be saved;
-* whether LLM review is optional or required, etc.
+* where AI sidecar output is retained.
+
+Keep `00_admin/ai.yml` limited to project choices. It must not contain endpoint URLs, credentials, or weaker security rules. See `llm_integration.md` for the implemented policy schema and context boundaries.
 
 
 **Some validator rules**:

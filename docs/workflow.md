@@ -67,8 +67,10 @@ flowchart TD
 auditflow init <project>
 auditflow create planning
 auditflow create audit-program
+# optional methodology challenge: auditflow ai review-audit-program --dry-run
 auditflow create workpapers
 auditflow create observations
+# optional drafting/review: auditflow ai draft-observation ... / review-observation ...
 auditflow create report
 auditflow feedback request
 auditflow feedback summary
@@ -127,6 +129,8 @@ The audit program should be reviewed by the auditor and discussed with the spons
 You could ask questions like "are test hypotheses valid and test scripts clear enough", "is the planned work proportionate to the risk and expected value".
 The Sponsor could have a meaningful input to the audit.
 
+`auditflow ai review-audit-program` can provide an optional, non-blocking challenge of risk formulation, included-risk coverage, risk-control-test traceability, and internal consistency. It does not receive or assess `test_script`; the auditor determines whether planned procedures are practical and sufficient.
+
 After Gate 3, the approved audit program becomes the working basis for fieldwork.
 
 Further changes are still possible, but they should be documented and justified.
@@ -153,6 +157,8 @@ Observation logic:
 ```text
 Criteria -> Condition -> Cause -> Risk / Effect -> Recommendation -> Management Action Plan
 ```
+
+`auditflow ai draft-observation` and `auditflow ai review-observation` can be used as optional challenge steps. Their outputs remain separate from `OBS-*.yml`, and their risk-formulation reminders do not block the workflow.
 
 ## Report
 
@@ -193,9 +199,9 @@ The archive story reconstructs the engagement from existing files:
 The current workflow does not yet include:
 
 - automated notification letter generation;
-- strict validation;
+- deep methodology validation;
 - automated management action export;
-- automated LLM prompt export;
+- OpenAI-compatible and Hugging Face provider adapters;
 - long-term action tracking.
 
 Those are possible future extensions. The current version intentionally stays small.

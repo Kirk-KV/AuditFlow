@@ -197,6 +197,22 @@ test_script: []
 
 When regenerated without `--overwrite`, existing manual fields are preserved.
 
+### Optional: Review the Audit Program with AI
+
+Check exactly what would be sent before contacting a model:
+
+```bash
+auditflow ai review-audit-program --dry-run
+```
+
+If the preflight result and destination are acceptable, run:
+
+```bash
+auditflow ai review-audit-program
+```
+
+The review covers risk formulation, included-risk coverage, risk-control-test traceability, and internal consistency. It does not include or assess `test_script`. Comments are saved separately under `ai_outputs/audit_program_reviews/` and do not change `audit_program.yml`.
+
 ## 6. Create Workpapers
 
 ```bash
@@ -253,6 +269,24 @@ The auditor then completes:
 - risk / effect;
 - recommendation;
 - management action plan.
+
+### Optional: Draft or Review an Observation with AI
+
+An AI draft can be requested from a completed workpaper before or after generating an observation:
+
+```bash
+auditflow ai draft-observation <workpaper_ref> --dry-run
+auditflow ai draft-observation <workpaper_ref>
+```
+
+Review an existing observation with its linked workpaper and program context:
+
+```bash
+auditflow ai review-observation <observation_id> --dry-run
+auditflow ai review-observation <observation_id>
+```
+
+Both commands check the linked risk formulation as a non-blocking reminder. AI results are sidecar files under `ai_outputs/`; no `OBS-*.yml` file is changed automatically.
 
 ## 8. Create Report
 
@@ -382,12 +416,14 @@ auditflow create planning
 auditflow create audit-program
 
 # Complete test_hypothesis and test_script
+# Optional: auditflow ai review-audit-program --dry-run
 auditflow create workpapers
 
 # Complete workpapers
 auditflow create observations
 
 # Complete observation YAML files
+# Optional: auditflow ai review-observation <observation_id> --dry-run
 auditflow create report
 
 # Complete report manual sections
@@ -405,7 +441,7 @@ The current CLI does not yet implement:
 - notification letter generation;
 - strict validation;
 - automated management action export;
-- automated LLM prompt export;
+- OpenAI-compatible and Hugging Face provider adapters;
 - long-term action tracking.
 
 Those may be added later, but the current workflow should stay small until it is sufficiently tested several times on real audits.

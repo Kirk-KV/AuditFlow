@@ -10,6 +10,9 @@ Adapt it to your own circumstances and context.
 ### 1.1 Risk-Based
 
 The audit engagement itself and its scope are based on risks. Approach to risk analysis is out of scope of this document.
+
+For documentation quality, a risk should normally describe cause, event, and consequence; event plus consequence is acceptable. AuditFlow AI checks apply this as a non-blocking reminder.
+
 Just remember: time is valuable, don't spend it on something useless.  
 The audit team should focus on areas where:
 
@@ -352,6 +355,8 @@ Possible uses include:
 * checking whether the audit program is aligned with risks;
 * reviewing report wording for clarity and neutrality;
 * identifying inconsistencies between risks, tests, observations, and actions.
+
+The implemented commands are `auditflow ai draft-observation`, `auditflow ai review-observation`, and `auditflow ai review-audit-program`. Audit-program review does not receive `test_script` and does not assess whether a script is executable; that judgment remains with the auditor.
 
 LLM output should be treated as a suggestion.
 

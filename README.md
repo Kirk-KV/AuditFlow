@@ -5,8 +5,11 @@
 ---
 **Why:**
 Internal audit work is often scattered across manually edited Excel files, Word files, emails, screenshots, and slide decks. 
+
 Some calculations are copied, some formulas are replaced, several filters are applied, a few pivot tables appear, "irrelevant" rows are manually removed, etc.
+
 The conclusion may be correct, but the reasoning behind it has largely disappeared.
+
 Moreover, calculations 'update' become quite time-consuming.
 
 ---
@@ -15,10 +18,10 @@ Moreover, calculations 'update' become quite time-consuming.
 
 Time is the most valuable thing. So:
 - no work for the sake of work
-- auditor must think before going into tests
-- work should be easily understood and traceable, so there will be no time wasting for clarification
-- decisions and conclusions should be data-based, and data analysis should be as easy and quick as possible: any error is corrected in script in 5 minutes and not in Excel in 3 hours
-- 'mechanical' work should be minimized
+- why?” before “how?”: testing should focus on the areas identified as significant during planning
+- work is easy to understand and trace, avoiding time wasted on clarification
+- decisions and conclusions are data-based, and analysis is simple and fast: an error is fixed in a script in 5 minutes, not in Excel in 3 hours
+- mechanical work is minimized
 
 This is my specific view of what good internal audit work should look like.
 
@@ -101,10 +104,12 @@ In practice, the auditor edits files between commands:
 3. Complete `01_planning/planning_document.qmd` and `01_planning/planning_decision.yml`.
 4. Run `auditflow create audit-program`.
 5. Complete `test_hypothesis` and `test_script` in `03_audit_program/audit_program.yml`.
+   Optionally run `auditflow ai review-audit-program --dry-run`, then the same command without `--dry-run`.
 6. Run `auditflow create workpapers`.
 7. Complete workpapers in `05_workpapers/`.
 8. Run `auditflow create observations`.
 9. Complete observation YAML files in `06_observations/`.
+   Optional AI commands are `auditflow ai draft-observation <workpaper_ref>` and `auditflow ai review-observation <observation_id>` (for instance `auditflow ai draft-observation WP-C-001` and `auditflow ai review-observation OBS-001`).
 10. Run `auditflow create report`.
 11. Run feedback and archive steps when the audit is complete.
 12. Run `auditflow timeline refresh` if timeline facts were edited or events were added manually.
@@ -120,6 +125,7 @@ audit_project/
   _quarto.yml
 
   00_admin/
+    ai.yml
     stakeholders.yml
     team.yml
     decisions.yml
@@ -146,6 +152,8 @@ audit_project/
   08_feedback/
   09_archive/
 
+  ai_outputs/                 # local AI review history; ignored by Git
+
   styles/
     auditflow.css
     brand.css
@@ -170,6 +178,26 @@ auditflow timeline refresh
 ```
 
 to rebuild empty fact dates from recorded events.
+
+## Optional AI Assistance
+
+AI is disabled by default. The implemented provider adapter is Ollama; Qwen3 8B is the default demonstration model, not a framework requirement.
+
+```bash
+ollama pull qwen3:8b
+auditflow ai status
+auditflow ai review-audit-program --dry-run
+auditflow ai draft-observation <workpaper_ref> --dry-run
+auditflow ai review-observation <observation_id> --dry-run
+```
+
+Set `enabled: true` in `00_admin/ai.yml` before a real model call. Always inspect the dry-run source manifest first.
+
+AuditFlow uses a company-policy layer to control approved profiles, destinations, models, classifications, external-provider use, confirmation, and output retention. Set the policy path with `AUDITFLOW_AI_POLICY`; audit projects cannot override provider URLs or security rules.
+
+AI tasks use selective context and do not overwrite audit artifacts. Raw evidence is excluded by default. Audit-program review also excludes every `test_script`: it checks only risk formulation, coverage, risk-control-test traceability, and internal consistency. Model comments are advisory; the auditor remains responsible for scope, test design, facts, and conclusions.
+
+See `docs/llm_integration.md` for setup, policy format, context boundaries, and output structure.
 
 ## Styling
 
@@ -235,7 +263,8 @@ These files provide YAML/Quarto editor defaults, recommended extensions, and rea
 
 - `auditflow validate` currently performs basic project, schema, and link checks. Deeper methodology validation is still evolving.
 - Long-term management action tracking is outside the current project scope.
-- LLM integration is not automated and not finished yet; any LLM use should follow company data protection rules.
+- AI drafting and review are optional and currently use the Ollama runtime adapter. OpenAI-compatible and Hugging Face adapters are not implemented yet.
+- Sensitive-data scanning is pattern-based and cannot prove that context is safe to disclose.
 - Notification letter generation is not part of the current CLI workflow (however, you can see the notification template in 'auditflow/templates/').
 
 ## Documentation

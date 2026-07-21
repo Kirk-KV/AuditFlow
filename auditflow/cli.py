@@ -5,6 +5,20 @@ from typing import Optional
 
 import typer
 
+from auditflow.ai.config import AIConfigError, resolve_ai_config
+from auditflow.ai.providers import AIProviderError, create_provider
+from auditflow.ai.service import (
+    AIServiceError,
+    PreparedAuditProgramReview,
+    PreparedObservationDraft,
+    PreparedObservationReview,
+    generate_audit_program_review,
+    generate_observation_draft,
+    generate_observation_review,
+    prepare_audit_program_review,
+    prepare_observation_draft,
+    prepare_observation_review,
+)
 from auditflow.commands.archive import update_archive
 from auditflow.commands.audit_program import create_audit_program
 from auditflow.commands.feedback import create_requests, create_summary
@@ -27,9 +41,11 @@ app = typer.Typer(
 create_app = typer.Typer(help="Create staged audit artifacts.", no_args_is_help=True)
 feedback_app = typer.Typer(help="Create feedback requests and summaries.", no_args_is_help=True)
 timeline_app = typer.Typer(help="Work with audit timeline facts.", no_args_is_help=True)
+ai_app = typer.Typer(help="Use approved AI profiles for audit assistance.", no_args_is_help=True)
 app.add_typer(create_app, name="create")
 app.add_typer(feedback_app, name="feedback")
 app.add_typer(timeline_app, name="timeline")
+app.add_typer(ai_app, name="ai")
 
 
 def project_option() -> Optional[Path]:
@@ -291,6 +307,304 @@ def timeline_refresh_command(
     event_count = len(events) if isinstance(events, list) else 0
     typer.echo("Timeline refreshed.")
     typer.echo(f"Events: {event_count}")
+
+
+@ai_app.command("status")
+def ai_status_command(
+    project: Optional[Path] = project_option(),
+    check_provider: bool = typer.Option(
+        True,
+        "--check-provider/--no-check-provider",
+        help="Check provider availability and whether the selected model is installed.",
+    ),
+) -> None:
+    """Show resolved AI policy, profile, and project permissions."""
+    project_root = require_project(project)
+    try:
+        config = resolve_ai_config(project_root)
+    except AIConfigError as exc:
+        typer.echo(f"AI configuration error: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+
+    profile = config.profile
+    rules = config.rules
+    typer.echo(f"AI enabled: {'yes' if config.enabled else 'no'}")
+    typer.echo(f"Policy: {config.policy_id}")
+    typer.echo(f"Policy source: {config.policy_source}")
+    typer.echo(f"Policy hash: {config.policy_hash[:12]}")
+    typer.echo(f"Project settings: {config.project_settings_source}")
+    typer.echo(f"Profile: {profile.name}")
+    typer.echo(f"Provider: {profile.provider}")
+    typer.echo(f"Destination: {profile.base_url}")
+    typer.echo(f"Data boundary: {profile.data_boundary}")
+    typer.echo(f"Model: {config.model}")
+    typer.echo(f"Project classification: {config.project_classification}")
+    typer.echo(f"Raw evidence: {'allowed' if rules.allow_raw_evidence else 'denied'}")
+    typer.echo(f"Preflight: {'required' if rules.require_preflight else 'optional'}")
+    typer.echo(f"Sensitive-data findings: {rules.sensitive_data_action}")
+    typer.echo(f"AI output folder: {rules.output_folder}")
+    typer.echo(
+        "External confirmation: "
+        + ("required" if rules.require_confirmation_for_external else "not required")
+    )
+    if profile.api_key_env:
+        key_status = "configured" if config.api_key_configured else "missing"
+        typer.echo(f"API key environment: {profile.api_key_env} ({key_status})")
+
+    if check_provider:
+        try:
+            provider = create_provider(config)
+            provider_status = provider.status(config.model)
+            typer.echo(
+                f"Provider connection: {'available' if provider_status.reachable else 'unavailable'}"
+            )
+            typer.echo(f"Provider detail: {provider_status.detail}")
+            if config.enabled and (
+                not provider_status.reachable or not provider_status.model_available
+            ):
+                raise typer.Exit(code=1)
+        except AIProviderError as exc:
+            typer.echo(f"Provider connection: unavailable ({exc})")
+            if config.enabled:
+                raise typer.Exit(code=1) from exc
+
+
+def _echo_ai_preflight(
+    prepared: (
+        PreparedObservationDraft
+        | PreparedObservationReview
+        | PreparedAuditProgramReview
+    ),
+    subject: str,
+) -> None:
+    preflight = prepared.preflight
+    config = prepared.config
+    typer.echo(f"AI preflight: {subject}")
+    typer.echo(f"Destination: {config.profile.name} ({config.profile.base_url})")
+    typer.echo(f"Data boundary: {config.profile.data_boundary}")
+    typer.echo(f"Project classification: {config.project_classification}")
+    typer.echo(f"Raw evidence included: {'yes' if preflight.raw_evidence_included else 'no'}")
+    typer.echo(f"Context characters: {prepared.context.character_count}")
+    typer.echo("Sources:")
+    for source in preflight.sources:
+        typer.echo(
+            f"- {source.path}: {source.selection} "
+            f"({source.character_count} characters, sha256 {source.sha256[:12]})"
+        )
+    if preflight.findings:
+        typer.echo("Findings:")
+        for finding in preflight.findings:
+            source_suffix = f" [{finding.source}]" if finding.source else ""
+            typer.echo(
+                f"- {finding.severity.upper()} {finding.code}: "
+                f"{finding.message}{source_suffix}"
+            )
+    else:
+        typer.echo("Findings: none")
+    typer.echo(f"Decision: {preflight.decision}")
+
+
+@ai_app.command("draft-observation")
+def ai_draft_observation_command(
+    workpaper_ref: str = typer.Argument(..., help="Workpaper reference, e.g. WP-C-001."),
+    project: Optional[Path] = project_option(),
+    dry_run: bool = typer.Option(
+        False,
+        "--dry-run",
+        help="Run preflight and show the source manifest without contacting the provider.",
+    ),
+    confirm_send: bool = typer.Option(
+        False,
+        "--confirm-send",
+        help="Explicitly confirm sending context when company policy requires confirmation.",
+    ),
+) -> None:
+    """Prepare an AI observation draft without changing OBS-*.yml files."""
+    project_root = require_project(project)
+    try:
+        prepared = prepare_observation_draft(project_root, workpaper_ref)
+    except (AIConfigError, AIServiceError) as exc:
+        typer.echo(f"AI preparation error: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+
+    _echo_ai_preflight(prepared, prepared.context.workpaper_ref)
+    if prepared.preflight.decision == "blocked":
+        raise typer.Exit(code=1)
+    if dry_run:
+        typer.echo("Dry run complete. No data was sent and no AI output was created.")
+        return
+
+    confirmation_granted = confirm_send
+    if prepared.preflight.decision == "confirmation_required" and not confirmation_granted:
+        confirmation_granted = typer.confirm(
+            "Company policy requires confirmation before sending this context. Continue?",
+            default=False,
+        )
+        if not confirmation_granted:
+            typer.echo("AI request cancelled. No data was sent.")
+            raise typer.Exit(code=1)
+
+    try:
+        result = generate_observation_draft(
+            project_root,
+            prepared,
+            confirmation_granted=confirmation_granted,
+        )
+    except AIServiceError as exc:
+        typer.echo(f"AI generation error: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+
+    typer.echo(f"AI draft created: {result.draft_path}")
+    typer.echo(f"Run manifest: {result.manifest_path}")
+    typer.echo(
+        "Observation needed: "
+        + ("yes" if result.content.get("observation_needed") else "no")
+    )
+    if result.quality_findings:
+        typer.echo("Draft quality warnings:")
+        for finding in result.quality_findings:
+            typer.echo(f"- {finding.field}: {finding.message}")
+    else:
+        typer.echo("Draft quality warnings: none")
+    risk_review = result.content.get("risk_formulation_review", {})
+    if isinstance(risk_review, dict):
+        typer.echo(f"Risk formulation: {risk_review.get('structure', 'not reviewed')}")
+        reminder = str(risk_review.get("reminder") or "").strip()
+        if reminder:
+            typer.echo(f"Risk reminder: {reminder}")
+    typer.echo("Review the draft manually. No OBS-*.yml file was changed.")
+
+
+@ai_app.command("review-observation")
+def ai_review_observation_command(
+    observation_id: str = typer.Argument(..., help="Observation ID, e.g. OBS-001."),
+    project: Optional[Path] = project_option(),
+    dry_run: bool = typer.Option(
+        False,
+        "--dry-run",
+        help="Run preflight and show the source manifest without contacting the provider.",
+    ),
+    confirm_send: bool = typer.Option(
+        False,
+        "--confirm-send",
+        help="Explicitly confirm sending context when company policy requires confirmation.",
+    ),
+) -> None:
+    """Review an observation without changing its OBS-*.yml file."""
+    project_root = require_project(project)
+    try:
+        prepared = prepare_observation_review(project_root, observation_id)
+    except (AIConfigError, AIServiceError) as exc:
+        typer.echo(f"AI preparation error: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+
+    _echo_ai_preflight(prepared, prepared.context.workpaper_ref)
+    if prepared.preflight.decision == "blocked":
+        raise typer.Exit(code=1)
+    if dry_run:
+        typer.echo("Dry run complete. No data was sent and no AI output was created.")
+        return
+
+    confirmation_granted = confirm_send
+    if prepared.preflight.decision == "confirmation_required" and not confirmation_granted:
+        confirmation_granted = typer.confirm(
+            "Company policy requires confirmation before sending this context. Continue?",
+            default=False,
+        )
+        if not confirmation_granted:
+            typer.echo("AI request cancelled. No data was sent.")
+            raise typer.Exit(code=1)
+
+    try:
+        result = generate_observation_review(
+            project_root,
+            prepared,
+            confirmation_granted=confirmation_granted,
+        )
+    except AIServiceError as exc:
+        typer.echo(f"AI review error: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+
+    typer.echo(f"AI review created: {result.review_path}")
+    typer.echo(f"Run manifest: {result.manifest_path}")
+    risk_review = result.content.get("risk_formulation_review", {})
+    if isinstance(risk_review, dict):
+        typer.echo(f"Risk formulation: {risk_review.get('structure', 'not reviewed')}")
+        reminder = str(risk_review.get("reminder") or "").strip()
+        if reminder:
+            typer.echo(f"Risk reminder: {reminder}")
+    if result.quality_findings:
+        typer.echo("AI response quality warnings:")
+        for finding in result.quality_findings:
+            typer.echo(f"- {finding.field}: {finding.message}")
+    typer.echo("Review comments are advisory. No OBS-*.yml file was changed.")
+
+
+@ai_app.command("review-audit-program")
+def ai_review_audit_program_command(
+    project: Optional[Path] = project_option(),
+    dry_run: bool = typer.Option(
+        False,
+        "--dry-run",
+        help="Run preflight and show the source manifest without contacting the provider.",
+    ),
+    confirm_send: bool = typer.Option(
+        False,
+        "--confirm-send",
+        help="Explicitly confirm sending context when company policy requires confirmation.",
+    ),
+) -> None:
+    """Review audit-program risks, coverage, traceability, and consistency."""
+    project_root = require_project(project)
+    try:
+        prepared = prepare_audit_program_review(project_root)
+    except (AIConfigError, AIServiceError) as exc:
+        typer.echo(f"AI preparation error: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+
+    _echo_ai_preflight(prepared, "audit program")
+    typer.echo("Test scripts included: no")
+    if prepared.preflight.decision == "blocked":
+        raise typer.Exit(code=1)
+    if dry_run:
+        typer.echo("Dry run complete. No data was sent and no AI output was created.")
+        return
+
+    confirmation_granted = confirm_send
+    if prepared.preflight.decision == "confirmation_required" and not confirmation_granted:
+        confirmation_granted = typer.confirm(
+            "Company policy requires confirmation before sending this context. Continue?",
+            default=False,
+        )
+        if not confirmation_granted:
+            typer.echo("AI request cancelled. No data was sent.")
+            raise typer.Exit(code=1)
+
+    try:
+        result = generate_audit_program_review(
+            project_root,
+            prepared,
+            confirmation_granted=confirmation_granted,
+        )
+    except AIServiceError as exc:
+        typer.echo(f"AI review error: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+
+    typer.echo(f"AI review created: {result.review_path}")
+    typer.echo(f"Run manifest: {result.manifest_path}")
+    typer.echo(f"Risk formulation reviews: {len(result.content['risk_reviews'])}")
+    typer.echo(f"Coverage reviews: {len(result.content['coverage_reviews'])}")
+    typer.echo(f"Traceability issues: {len(result.content['traceability_issues'])}")
+    if result.quality_findings:
+        typer.echo("AI response quality warnings:")
+        for finding in result.quality_findings:
+            typer.echo(f"- {finding.field}: {finding.message}")
+    else:
+        typer.echo("AI response quality warnings: none")
+    typer.echo(
+        "Review comments are advisory. The audit program was not changed, and "
+        "test scripts were not assessed."
+    )
 
 
 @app.command()

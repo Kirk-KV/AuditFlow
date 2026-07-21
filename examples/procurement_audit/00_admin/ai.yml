@@ -1,0 +1,6 @@
+ai:
+  enabled: false
+  profile: local_ollama
+  model: qwen3:8b
+  project_classification: confidential
+  output_language: auto

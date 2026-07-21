@@ -18,10 +18,14 @@ auditflow create report
 auditflow feedback request
 auditflow feedback summary
 auditflow create archive
+auditflow ai status
+auditflow ai draft-observation <workpaper_ref>
+auditflow ai review-observation <observation_id>
+auditflow ai review-audit-program
 auditflow validate
 ```
 
-`validate` is currently a placeholder.
+AI commands are optional and disabled by default in new projects.
 
 ## `auditflow init`
 
@@ -134,6 +138,26 @@ Creates or updates:
 ```text
 09_archive/audit_story.qmd
 ```
+
+## `auditflow ai`
+
+Shows the effective company policy, destination, model, project classification, and provider availability:
+
+```bash
+auditflow ai status
+```
+
+Available review and drafting commands:
+
+```bash
+auditflow ai draft-observation <workpaper_ref> --dry-run
+auditflow ai review-observation <observation_id> --dry-run
+auditflow ai review-audit-program --dry-run
+```
+
+Remove `--dry-run` only after reviewing the source manifest and preflight findings. A dry run does not contact the provider or create output.
+
+AI output is written separately under `ai_outputs/`; source workpapers, observations, and the audit program are not overwritten. Audit-program review excludes `test_script` and does not assess test executability. See `llm_integration.md` for setup and company-policy controls.
 
 ## Rendering QMD Documents
 

@@ -17,6 +17,7 @@ audit_project/
   _quarto.yml
 
   00_admin/
+    ai.yml                      # project AI choices within company policy
     stakeholders.yml            # those who will receive the report
     team.yml                    # audit team
     timeline.yml                # audit deadlines (planned and actual)
@@ -61,6 +62,8 @@ audit_project/
   09_archive/
     audit_story.qmd             # automated audit story with manual 'lessons learned' block
 
+  ai_outputs/                   # AI sidecar history; ignored by Git
+
   .vscode/
     settings.json
     tasks.json
@@ -85,6 +88,7 @@ Source files are manually maintained or received as evidence. Generated files ar
 | --- | --- |
 | Initial audit context | `initial_data.yml` |
 | Stakeholders and audit team | `00_admin/*.yml` |
+| Project AI choices | `00_admin/ai.yml` |
 | Planning reasoning | `01_planning/planning_document.qmd` |
 | Final planning decision | `01_planning/planning_decision.yml` |
 | Audit program | `03_audit_program/audit_program.yml` |
@@ -139,7 +143,22 @@ Do not use `initial_data.yml` as the live current state of the audit. Later deci
 
 ## `00_admin/`
 
-The folder contains administrative and governance information about the audit: stakeholders, team, timeline and decisions.
+The folder contains administrative and governance information about the audit: AI choices, stakeholders, team, timeline and decisions.
+
+### `ai.yml`
+
+Contains project-level AI choices only:
+
+```yaml
+ai:
+  enabled: false
+  profile: local_ollama
+  model: qwen3:8b
+  project_classification: confidential
+  output_language: auto
+```
+
+Company-approved destinations, model allowlists, data boundaries, and security rules are defined outside the project in the policy referenced by `AUDITFLOW_AI_POLICY`. A project cannot override those controls. AI output is written separately to `ai_outputs/` and never becomes a source of truth unless an auditor manually evaluates and incorporates it.
 
 ### `stakeholders.yml`
 

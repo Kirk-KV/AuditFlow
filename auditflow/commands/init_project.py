@@ -128,6 +128,7 @@ def create_initial_project(
         "team.yml": project_root / "00_admin" / "team.yml",
         "decisions.yml": project_root / "00_admin" / "decisions.yml",
         "timeline.yml": project_root / "00_admin" / "timeline.yml",
+        "ai.yml": project_root / "00_admin" / "ai.yml",
     }
 
     for template_name, target_path in starter_yaml_templates.items():
@@ -141,6 +142,7 @@ def create_initial_project(
         )
 
     project_text_templates = {
+        ".gitignore": project_root / ".gitignore",
         "_quarto.yml": project_root / "_quarto.yml",
         "styles/auditflow.css": project_root / "styles" / "auditflow.css",
     }
