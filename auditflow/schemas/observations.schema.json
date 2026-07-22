@@ -28,6 +28,7 @@
     },
     "status": {
       "type": "string",
+      "minLength": 1,
       "examples": ["draft", "validated", "closed"]
     },
     "source_workpaper": {
@@ -37,6 +38,7 @@
     },
     "source_file": {
       "type": "string",
+      "minLength": 1,
       "examples": ["05_workpapers/WP-C-001.qmd"]
     },
     "test_id": {
@@ -50,7 +52,8 @@
       "examples": ["R-001"]
     },
     "risk_title": {
-      "type": "string"
+      "type": "string",
+      "minLength": 1
     },
     "control_id": {
       "type": ["string", "null"],
@@ -113,7 +116,15 @@
             "type": "string"
           },
           "due_date": {
-            "type": "string"
+            "anyOf": [
+              {
+                "const": ""
+              },
+              {
+                "type": "string",
+                "format": "date"
+              }
+            ]
           }
         }
       }

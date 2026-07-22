@@ -1,5 +1,16 @@
 ---
 title: "WP-C-001 — PO release after approval"
+auditflow:
+  workpaper_ref: "WP-C-001"
+  analysis_refs:
+    - 04_evidence/02_raw_data/scripts/procurement_analysis.py
+  output_refs:
+    - 04_evidence/99_generated/t001_release_before_approval_candidates.csv
+    - 04_evidence/99_generated/t001_release_before_approval_review.csv
+  evidence_refs:
+    - 04_evidence/02_raw_data/purchase_orders.csv
+    - 04_evidence/02_raw_data/approval_workflow.csv
+    - 04_evidence/03_correspondence/candidate_review_dispositions.csv
 ---
 
 ```{python}
@@ -137,12 +148,30 @@ The team loaded `purchase_orders.csv` and `approval_workflow.csv`, checked the c
 
 The candidate listing was reviewed for obvious false positives, including cancelled records, missing workflow timestamps, and records where the release event was a technical re-release after prior approval. High-value and unusual cases were selected for follow-up with the Procurement Department.
 
+```{python}
+#| label: execute-t001
+
+import sys
+
+analysis_scripts_dir = audit_project_root / "04_evidence" / "02_raw_data" / "scripts"
+if str(analysis_scripts_dir) not in sys.path:
+    sys.path.insert(0, str(analysis_scripts_dir))
+
+from procurement_analysis import run_test_analysis
+
+test_outputs = run_test_analysis(audit_project_root)
+t001_review = test_outputs["t001_review"]
+t001_review["review_status"].value_counts()
+```
+
 ## Evidence used
 
 - `04_evidence/02_raw_data/purchase_orders.csv`
 - `04_evidence/02_raw_data/approval_workflow.csv`
-- Generated exception listing: `04_evidence/99_generated/release_before_approval_candidates.csv`
-- Follow-up correspondence with the Procurement Department
+- Analysis script: `04_evidence/02_raw_data/scripts/procurement_analysis.py`
+- Generated candidate listing: `04_evidence/99_generated/t001_release_before_approval_candidates.csv`
+- Documented review: `04_evidence/99_generated/t001_release_before_approval_review.csv`
+- Follow-up record: `04_evidence/03_correspondence/candidate_review_dispositions.csv`
 - Planning analysis documented in `01_planning/planning_document.qmd`
 
 ## Results

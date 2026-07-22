@@ -1,5 +1,16 @@
 ---
 title: "WP-R-003-NO-CONTROL — Purchase splitting prevention/detection"
+auditflow:
+  workpaper_ref: "WP-R-003-NO-CONTROL"
+  analysis_refs:
+    - 04_evidence/02_raw_data/scripts/procurement_analysis.py
+  output_refs:
+    - 04_evidence/99_generated/t004_split_purchase_candidates.csv
+    - 04_evidence/99_generated/t004_split_purchase_review.csv
+  evidence_refs:
+    - 04_evidence/02_raw_data/purchase_orders.csv
+    - 04_evidence/02_raw_data/approval_matrix.csv
+    - 04_evidence/03_correspondence/candidate_review_dispositions.csv
 ---
 
 ```{python}
@@ -87,7 +98,7 @@ audit_program = yaml.safe_load(
     audit_program_path.read_text(encoding="utf-8")
 ) or {}
 
-workpaper_ref = "WP-G-004"
+workpaper_ref = "WP-R-003-NO-CONTROL"
 
 program_rows = audit_program.get("program_rows", [])
 matching_rows = [
@@ -137,12 +148,30 @@ The team loaded `purchase_orders.csv` and used the relevant approval threshold l
 
 Candidate groups were prioritized when descriptions were similar, suppliers were the same, requesters were the same, and creation dates were close. Cases with clear business explanations, such as separately documented recurring services or framework releases, were excluded where evidence supported the explanation.
 
+```{python}
+#| label: execute-t004
+
+import sys
+
+analysis_scripts_dir = audit_project_root / "04_evidence" / "02_raw_data" / "scripts"
+if str(analysis_scripts_dir) not in sys.path:
+    sys.path.insert(0, str(analysis_scripts_dir))
+
+from procurement_analysis import run_test_analysis
+
+test_outputs = run_test_analysis(audit_project_root)
+t004_review = test_outputs["t004_review"]
+t004_review["review_status"].value_counts()
+```
+
 ## Evidence used
 
 - `04_evidence/02_raw_data/purchase_orders.csv`
 - `04_evidence/02_raw_data/approval_matrix.csv`
-- Generated red-flag listing: `04_evidence/99_generated/split_purchase_candidates.csv`
-- Follow-up correspondence with Procurement
+- Analysis script: `04_evidence/02_raw_data/scripts/procurement_analysis.py`
+- Generated candidate listing: `04_evidence/99_generated/t004_split_purchase_candidates.csv`
+- Documented review: `04_evidence/99_generated/t004_split_purchase_review.csv`
+- Follow-up record: `04_evidence/03_correspondence/candidate_review_dispositions.csv`
 - Planning analysis documented in `01_planning/planning_document.qmd`
 
 ## Results

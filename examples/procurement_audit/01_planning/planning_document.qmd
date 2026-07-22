@@ -59,6 +59,12 @@ generated_dir = evidence_dir / "99_generated"
 planning_dir = audit_project_root / "01_planning"
 
 generated_dir.mkdir(parents=True, exist_ok=True)
+
+analysis_scripts_dir = raw_dir / "scripts"
+if str(analysis_scripts_dir) not in sys.path:
+    sys.path.insert(0, str(analysis_scripts_dir))
+
+from procurement_analysis import run_test_analysis
 ```
 
 ```{python}
@@ -264,16 +270,8 @@ The population is spread across the audit period and does not indicate an obviou
 **Unauthorized Purchases: Purchase orders released before approval**
 
 ```{python}
-approval_base = (
-    purchase_orders.merge(approval_workflow, on="po_id", suffixes=("", "_workflow"))
-    .merge(users[["user_id", "name", "approval_role", "approval_limit"]], left_on="approver_user_id", right_on="user_id", how="left")
-    .merge(suppliers[["supplier_id", "supplier_name"]], on="supplier_id", how="left")
-)
-approval_base["released_before_approval"] = approval_base["release_date"] < approval_base["approval_date"]
-approval_base["insufficient_approval_limit"] = approval_base["amount"] > approval_base["approval_limit"]
-
-c001 = approval_base.loc[approval_base["released_before_approval"], ["po_id", "supplier_name", "amount", "created_date", "release_date", "approval_date", "approver_user_id", "name", "approval_role", "approval_limit", "required_approval_role"]].sort_values(["release_date", "po_id"])
-c001.to_csv(generated_dir / "planning_c001_release_before_approval_candidates.csv", index=False)
+test_outputs = run_test_analysis(audit_project_root)
+c001 = test_outputs["t001_candidates"]
 c001.head(10)
 ```
 
@@ -284,8 +282,7 @@ Data available, keys validated, no missing values. Tables have "po_id", "supplie
 **Approval authority check**
 
 ```{python}
-c002 = approval_base.loc[approval_base["insufficient_approval_limit"], ["po_id", "supplier_name", "amount", "approval_date", "approver_user_id", "name", "approval_role", "approval_limit", "required_approval_role"]].sort_values(["approval_date", "po_id"])
-c002.to_csv(generated_dir / "planning_c002_approval_authority_exceptions.csv", index=False)
+c002 = test_outputs["t002_exceptions"]
 c002.head(20)
 ```
 
@@ -300,23 +297,17 @@ Markdown(f"""Planning data identified **{len(c002):,}** approval authority excep
 **Duplicate Payment Indicators**
 
 ```{python}
-duplicate_invoice_groups = invoices.groupby(["supplier_id", "invoice_number"]).size().reset_index(name="invoice_count").query("invoice_count > 1").merge(suppliers[["supplier_id", "supplier_name"]], on="supplier_id", how="left").sort_values(["supplier_id", "invoice_number"])
-duplicate_invoice_groups.to_csv(generated_dir / "planning_duplicate_invoice_groups.csv", index=False)
+duplicate_invoice_groups = test_outputs["t003_invoice_groups"]
 duplicate_invoice_groups.head(10)
 ```
 
 ```{python}
-if duplicate_invoice_groups.empty:
-    duplicate_invoice_records = invoices.head(0).copy()
-else:
-    duplicate_invoice_records = invoices.merge(duplicate_invoice_groups[["supplier_id", "invoice_number"]], on=["supplier_id", "invoice_number"], how="inner").merge(suppliers[["supplier_id", "supplier_name"]], on="supplier_id", how="left").sort_values(["supplier_id", "invoice_number", "invoice_date"])
-duplicate_invoice_records.to_csv(generated_dir / "planning_duplicate_invoice_candidate_records.csv", index=False)
+duplicate_invoice_records = test_outputs["t003_invoice_records"]
 duplicate_invoice_records.head(10)
 ```
 
 ```{python}
-repeated_payment_amount_groups = payments.groupby(["supplier_id", "amount"]).agg(payment_count=("payment_id", "count"), payment_ids=("payment_id", lambda values: ", ".join(values))).reset_index().query("payment_count > 1").merge(suppliers[["supplier_id", "supplier_name"]], on="supplier_id", how="left").sort_values(["supplier_id", "amount"])
-repeated_payment_amount_groups.to_csv(generated_dir / "planning_repeated_payment_amount_groups.csv", index=False)
+repeated_payment_amount_groups = test_outputs["t003_payment_groups"]
 repeated_payment_amount_groups.head(10)
 ```
 
@@ -339,25 +330,7 @@ The planning rule used here is intentionally simple:
 - combined amount above 100,000.
 
 ```{python}
-threshold = 100_000
-window_days = 3
-min_po_count = 3
-rows = []
-
-for (supplier_id, requester_user_id), group in purchase_orders.sort_values("created_date").groupby(["supplier_id", "requester_user_id"]):
-    group = group.sort_values("created_date")
-    for _, row in group.iterrows():
-        window_start = row["created_date"]
-        window_end = window_start + pd.Timedelta(days=window_days)
-        window = group[(group["created_date"] >= window_start) & (group["created_date"] <= window_end)]
-        if len(window) >= min_po_count and window["amount"].max() < threshold and window["amount"].sum() > threshold:
-            rows.append({"supplier_id": supplier_id, "requester_user_id": requester_user_id, "window_start": window_start.date().isoformat(), "window_end": window_end.date().isoformat(), "po_ids": ", ".join(window["po_id"].tolist()), "po_count": len(window), "total_amount": round(window["amount"].sum(), 2), "max_single_amount": round(window["amount"].max(), 2)})
-
-split_candidates = pd.DataFrame(rows)
-if not split_candidates.empty:
-    split_candidates = split_candidates.drop_duplicates(subset=["supplier_id", "requester_user_id", "po_ids"])
-    split_candidates = split_candidates.merge(suppliers[["supplier_id", "supplier_name"]], on="supplier_id", how="left").merge(users[["user_id", "name"]], left_on="requester_user_id", right_on="user_id", how="left").rename(columns={"name": "requester_name"}).sort_values(["supplier_id", "window_start"])
-split_candidates.to_csv(generated_dir / "planning_split_purchase_candidates.csv", index=False)
+split_candidates = test_outputs["t004_candidates"]
 split_candidates.head(10)
 ```
 

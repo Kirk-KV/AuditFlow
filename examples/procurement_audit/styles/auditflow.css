@@ -1,0 +1,209 @@
+/* AuditFlow HTML theme */
+
+:root {
+    --af-primary: #1F4E79;
+    --af-secondary: #70AD47;
+    --af-accent: #F4B183;
+    --af-danger: #C00000;
+    --af-warning: #FFC000;
+    --af-success: #70AD47;
+
+    --af-text: #1F1F1F;
+    --af-muted: #666666;
+    --af-border: #D9D9D9;
+    --af-surface: #F7F9FB;
+}
+
+/* Page */
+
+body {
+    color: var(--af-text);
+    line-height: 1.55;
+}
+
+main.content {
+    max-width: 1100px;
+}
+
+/* Headings */
+
+h1, h2, h3 {
+    color: var(--af-primary);
+}
+
+h1 {
+    border-bottom: 2px solid var(--af-primary);
+    padding-bottom: 0.3rem;
+}
+
+h2 {
+    margin-top: 2rem;
+    border-bottom: 1px solid var(--af-border);
+    padding-bottom: 0.25rem;
+}
+
+/* Tables */
+
+table {
+    font-size: 0.92rem;
+}
+
+thead th {
+    background-color: var(--af-surface);
+    color: var(--af-primary);
+    border-bottom: 2px solid var(--af-border);
+}
+
+tbody tr:nth-child(even) {
+    background-color: #FAFAFA;
+}
+
+/* Code */
+
+details {
+    margin-bottom: 0.5rem;
+}
+
+details summary {
+    font-size: 0.85rem;
+    color: var(--af-muted);
+    cursor: pointer;
+}
+
+pre.sourceCode {
+    font-size: 0.78rem;
+    line-height: 1.25;
+    border-radius: 6px;
+    padding: 0.8em;
+}
+
+div.sourceCode {
+    font-size: 0.78rem;
+    margin-top: 0.25rem;
+}
+
+/* Inline code */
+
+code {
+    font-size: 0.85rem;
+}
+
+/* Callouts */
+
+.callout {
+    border-radius: 8px;
+}
+
+.callout-note {
+    border-left-color: var(--af-primary);
+}
+
+.callout-important {
+    border-left-color: var(--af-danger);
+}
+
+.callout-warning {
+    border-left-color: var(--af-warning);
+}
+
+.callout-tip {
+    border-left-color: var(--af-success);
+}
+
+/* Custom decision block */
+
+.audit-decision {
+    border-left: 4px solid var(--af-primary);
+    background: var(--af-surface);
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 6px;
+}
+
+.audit-decision-title {
+    font-weight: 700;
+    color: var(--af-primary);
+    margin-bottom: 0.4rem;
+}
+
+/* Audit procedures */
+
+.audit-procedure-list {
+    margin-top: 0.5rem;
+    padding-left: 1.5rem;
+}
+
+.audit-procedure-list li {
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+}
+
+/* Muted helper text */
+
+.muted {
+    color: var(--af-muted);
+    font-size: 0.9rem;
+}
+
+/* Metadata cards */
+
+.audit-meta {
+    background: var(--af-surface);
+    border: 1px solid var(--af-border);
+    border-left: 4px solid var(--af-primary);
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1rem 0 1.5rem 0;
+}
+
+.audit-meta-title {
+    font-weight: 700;
+    color: var(--af-primary);
+    margin-bottom: 0.75rem;
+}
+
+.audit-meta dl {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    row-gap: 0.4rem;
+    column-gap: 1rem;
+    margin: 0;
+}
+
+.audit-meta dt {
+    font-weight: 600;
+    color: var(--af-text);
+}
+
+.audit-meta dd {
+    margin: 0;
+    color: var(--af-text);
+}
+
+/* Quarto folded code summary */
+
+details.code-fold > summary,
+div.sourceCode details > summary,
+.cell details > summary,
+details > summary {
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+    color: var(--af-muted) !important;
+    font-weight: 400 !important;
+}
+
+.conclusion-box {
+    background-color: #f5f5f5;
+    padding: 1rem;
+    border-radius: 6px;
+    margin: 1rem 0;
+}
+
+.conclusion-box::before {
+    content: "Conclusion";
+    display: block;
+    font-weight: bold;
+    padding-bottom: .3rem;
+    margin-bottom: .7rem;
+    border-bottom: 1px solid #ccc;
+}

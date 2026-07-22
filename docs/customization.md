@@ -38,15 +38,15 @@ Controls are important when they exist, but they are not mandatory as a separate
 Keep `00_admin/ai.yml` limited to project choices. It must not contain endpoint URLs, credentials, or weaker security rules. See `llm_integration.md` for the implemented policy schema and context boundaries.
 
 
-**Some validator rules**:
+**Core validator rules**:
 
-* every observation has criterion, condition, cause, risk, and action;
-* every observation references at least one risk or test;
-* every test references a risk;
-* every high-risk area has at least one planned procedure or documented exclusion rationale;
-* every report observation exists in `observations.yml`;
-* every referenced evidence file exists;
-* raw data files are not modified.
+* required project structure and YAML schemas are valid;
+* test, workpaper, and observation links are internally consistent;
+* declared analysis, output, and evidence files exist;
+* IDs that must be unique are not duplicated;
+* strict mode identifies incomplete finalization fields and fails on warnings.
+
+These are structural checks, not assurance that procedures, evidence, or conclusions are professionally sufficient. Add company-specific rules only where they support a real process.
 
 ---
 

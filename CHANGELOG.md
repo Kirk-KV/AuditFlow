@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- fixed and consolidated the procurement example analysis;
+- added candidate review evidence and reproducible example tests;
+- added optional analysis and test dependencies;
+- added structured analysis, output, and evidence references to workpapers;
+- expanded structural validation and added finalization-oriented strict mode;
+- clarified that AuditFlow is an engagement framework, not an audit management system.
+
 ## 0.1.0
 
 Initial public prototype:

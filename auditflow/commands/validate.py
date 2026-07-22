@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass, field
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -67,8 +68,35 @@ def load_yaml_if_exists(path: Path, result: ValidationResult) -> Any:
         return {}
 
 
+def load_qmd_front_matter(path: Path, result: ValidationResult) -> dict[str, Any]:
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except OSError as exc:
+        result.error(f"Could not read {path}: {exc}")
+        return {}
+
+    if not lines or lines[0].strip() != "---":
+        return {}
+
+    try:
+        closing_index = next(
+            index for index, line in enumerate(lines[1:], start=1) if line.strip() == "---"
+        )
+    except StopIteration:
+        result.error(f"Invalid QMD front matter in {path}: closing delimiter is missing")
+        return {}
+
+    try:
+        metadata = yaml.safe_load("\n".join(lines[1:closing_index])) or {}
+    except yaml.YAMLError as exc:
+        result.error(f"Invalid QMD front matter in {path}: {exc}")
+        return {}
+
+    return metadata if isinstance(metadata, dict) else {}
+
+
 def schema_root() -> Path:
-    return Path(__file__).resolve().parents[2] / "schemas"
+    return Path(__file__).resolve().parents[1] / "schemas"
 
 
 def validate_with_schema(
@@ -81,7 +109,7 @@ def validate_with_schema(
         return
 
     try:
-        from jsonschema import Draft202012Validator
+        from jsonschema import Draft202012Validator, FormatChecker
     except ImportError:
         result.warning("Schema validation skipped because jsonschema is not installed.")
         return
@@ -98,7 +126,8 @@ def validate_with_schema(
         return
 
     data = load_yaml_if_exists(data_path, result)
-    errors = sorted(Draft202012Validator(schema).iter_errors(data), key=lambda item: item.path)
+    validator = Draft202012Validator(schema, format_checker=FormatChecker())
+    errors = sorted(validator.iter_errors(data), key=lambda item: item.path)
 
     for error in errors:
         path = ".".join(str(part) for part in error.path) or "<root>"
@@ -122,7 +151,74 @@ def validate_required_structure(project_root: Path, result: ValidationResult) ->
             result.error(f"Missing required evidence folder: 04_evidence/{folder_name}")
 
 
-def validate_audit_program(project_root: Path, result: ValidationResult) -> list[dict[str, Any]]:
+def duplicate_values(values: list[str]) -> set[str]:
+    seen: set[str] = set()
+    duplicates: set[str] = set()
+    for value in values:
+        if value in seen:
+            duplicates.add(value)
+        seen.add(value)
+    return duplicates
+
+
+def validate_reference(
+    project_root: Path,
+    reference: str,
+    context: str,
+    result: ValidationResult,
+) -> None:
+    reference_path = Path(reference)
+    if reference_path.is_absolute():
+        result.error(f"{context}: reference must be relative to the project: {reference}")
+        return
+
+    project_root = project_root.resolve()
+    resolved = (project_root / reference_path).resolve()
+    try:
+        resolved.relative_to(project_root)
+    except ValueError:
+        result.error(f"{context}: reference escapes the project folder: {reference}")
+        return
+
+    if not resolved.is_file():
+        result.error(f"{context}: referenced file does not exist: {reference}")
+
+
+def validate_declared_references(
+    project_root: Path,
+    metadata: dict[str, Any],
+    context: str,
+    result: ValidationResult,
+) -> None:
+    for field_name in ("analysis_refs", "output_refs", "evidence_refs"):
+        references = metadata.get(field_name, [])
+        if not isinstance(references, list):
+            result.error(f"{context}.{field_name}: value must be a list")
+            continue
+        normalized_references: list[str] = []
+        for index, reference in enumerate(references, start=1):
+            if not isinstance(reference, str) or not reference.strip():
+                result.error(
+                    f"{context}.{field_name}[{index}]: reference must be a non-empty string"
+                )
+                continue
+            normalized_references.append(reference)
+            validate_reference(
+                project_root,
+                reference,
+                f"{context}.{field_name}",
+                result,
+            )
+        for duplicate in sorted(duplicate_values(normalized_references)):
+            result.error(f"{context}.{field_name}: duplicate reference: {duplicate}")
+
+
+def validate_audit_program(
+    project_root: Path,
+    result: ValidationResult,
+    *,
+    strict: bool = False,
+) -> list[dict[str, Any]]:
     audit_program_path = project_root / "03_audit_program" / "audit_program.yml"
     if not audit_program_path.exists():
         result.warning("Audit program not created yet: 03_audit_program/audit_program.yml")
@@ -137,13 +233,31 @@ def validate_audit_program(project_root: Path, result: ValidationResult) -> list
     data = load_yaml_if_exists(audit_program_path, result)
     rows = data.get("program_rows", []) if isinstance(data, dict) else []
 
+    if strict and isinstance(data, dict):
+        program = data.get("program", {})
+        if isinstance(program, dict) and str(program.get("status") or "").lower() == "draft":
+            result.warning("03_audit_program/audit_program.yml: program status is draft")
+
     if not isinstance(rows, list):
         result.error("03_audit_program/audit_program.yml: program_rows must be a list")
         return []
 
+    valid_rows = [row for row in rows if isinstance(row, dict)]
+    test_ids = [str(row.get("test_id")) for row in valid_rows if row.get("test_id")]
+    workpaper_refs = [
+        str(row.get("workpaper_ref")) for row in valid_rows if row.get("workpaper_ref")
+    ]
+    for duplicate in sorted(duplicate_values(test_ids)):
+        result.error(f"03_audit_program/audit_program.yml: duplicate test_id: {duplicate}")
+    for duplicate in sorted(duplicate_values(workpaper_refs)):
+        result.error(f"03_audit_program/audit_program.yml: duplicate workpaper_ref: {duplicate}")
+
     for index, row in enumerate(rows, start=1):
         if not isinstance(row, dict):
-            result.error(f"03_audit_program/audit_program.yml: program_rows[{index}] must be a mapping")
+            result.error(
+                f"03_audit_program/audit_program.yml: "
+                f"program_rows[{index}] must be a mapping"
+            )
             continue
 
         workpaper_ref = str(row.get("workpaper_ref") or "")
@@ -154,14 +268,53 @@ def validate_audit_program(project_root: Path, result: ValidationResult) -> list
                     f"Program row {row.get('test_id', index)} references missing workpaper: "
                     f"05_workpapers/{workpaper_ref}.qmd"
                 )
+            else:
+                metadata = load_qmd_front_matter(workpaper_path, result)
+                auditflow_metadata = metadata.get("auditflow", {})
+                declared_ref = (
+                    str(auditflow_metadata.get("workpaper_ref") or "")
+                    if isinstance(auditflow_metadata, dict)
+                    else ""
+                )
+                if declared_ref and declared_ref != workpaper_ref:
+                    result.error(
+                        f"{workpaper_path}: front matter workpaper_ref {declared_ref} "
+                        f"does not match audit_program.yml reference {workpaper_ref}"
+                    )
+                elif strict and not declared_ref:
+                    result.warning(
+                        f"{workpaper_path}: front matter auditflow.workpaper_ref is missing"
+                    )
+                if isinstance(auditflow_metadata, dict):
+                    validate_declared_references(
+                        project_root,
+                        auditflow_metadata,
+                        f"{workpaper_path}: auditflow",
+                        result,
+                    )
+                    if strict and not auditflow_metadata.get("evidence_refs"):
+                        result.warning(
+                            f"{workpaper_path}: front matter auditflow.evidence_refs is empty"
+                        )
+                else:
+                    result.error(f"{workpaper_path}: front matter auditflow must be a mapping")
 
-    return [row for row in rows if isinstance(row, dict)]
+        if strict:
+            test_id = str(row.get("test_id") or index)
+            if not str(row.get("test_hypothesis") or "").strip():
+                result.warning(f"Program row {test_id}: test_hypothesis is empty")
+            if not row.get("test_script"):
+                result.warning(f"Program row {test_id}: test_script is empty")
+
+    return valid_rows
 
 
 def validate_observations(
     project_root: Path,
     program_rows: list[dict[str, Any]],
     result: ValidationResult,
+    *,
+    strict: bool = False,
 ) -> None:
     observations_dir = project_root / "06_observations"
     if not observations_dir.exists():
@@ -174,6 +327,7 @@ def validate_observations(
     }
     test_ids = {str(row.get("test_id")) for row in program_rows if row.get("test_id")}
     risk_ids = {str(row.get("risk_id")) for row in program_rows if row.get("risk_id")}
+    observation_ids: list[str] = []
 
     for observation_path in sorted(observations_dir.glob("OBS-*.yml")):
         validate_with_schema(
@@ -186,6 +340,10 @@ def validate_observations(
             result.error(f"{observation_path}: observation file must contain a YAML mapping")
             continue
 
+        observation_id = str(observation.get("observation_id") or "")
+        if observation_id:
+            observation_ids.append(observation_id)
+
         source_workpaper = str(observation.get("source_workpaper") or "")
         if source_workpaper and source_workpaper not in rows_by_workpaper:
             result.error(
@@ -193,13 +351,87 @@ def validate_observations(
                 "is not present in audit_program.yml"
             )
 
+        linked_row = rows_by_workpaper.get(source_workpaper)
+
         test_id = str(observation.get("test_id") or "")
         if test_id and test_id not in test_ids:
-            result.error(f"{observation_path}: test_id {test_id} is not present in audit_program.yml")
+            result.error(
+                f"{observation_path}: test_id {test_id} is not present in audit_program.yml"
+            )
+        elif linked_row and test_id != str(linked_row.get("test_id") or ""):
+            result.error(
+                f"{observation_path}: test_id {test_id} does not match "
+                f"source_workpaper {source_workpaper}"
+            )
 
         risk_id = str(observation.get("risk_id") or "")
         if risk_id and risk_id not in risk_ids:
-            result.error(f"{observation_path}: risk_id {risk_id} is not present in audit_program.yml")
+            result.error(
+                f"{observation_path}: risk_id {risk_id} is not present in audit_program.yml"
+            )
+        elif linked_row and risk_id != str(linked_row.get("risk_id") or ""):
+            result.error(
+                f"{observation_path}: risk_id {risk_id} does not match "
+                f"source_workpaper {source_workpaper}"
+            )
+
+        source_file = str(observation.get("source_file") or "")
+        if source_file:
+            validate_reference(project_root, source_file, str(observation_path), result)
+            expected_source = f"05_workpapers/{source_workpaper}.qmd"
+            if source_file.replace("\\", "/") != expected_source:
+                result.error(
+                    f"{observation_path}: source_file must match source_workpaper: "
+                    f"expected {expected_source}"
+                )
+
+        actions = observation.get("management_action_plan", [])
+        if isinstance(actions, list):
+            action_ids = [
+                str(action.get("action_id"))
+                for action in actions
+                if isinstance(action, dict) and action.get("action_id")
+            ]
+            for duplicate in sorted(duplicate_values(action_ids)):
+                result.error(f"{observation_path}: duplicate action_id: {duplicate}")
+
+            for action in actions:
+                if not isinstance(action, dict):
+                    continue
+                due_date = str(action.get("due_date") or "").strip()
+                if due_date:
+                    try:
+                        date.fromisoformat(due_date)
+                    except ValueError:
+                        result.error(
+                            f"{observation_path}: invalid management action due_date: {due_date}"
+                        )
+
+        if strict:
+            if str(observation.get("status") or "").lower() == "draft":
+                result.warning(f"{observation_path}: observation status is draft")
+            for field_name in (
+                "condition",
+                "criteria",
+                "cause",
+                "risk_effect",
+                "recommendation",
+            ):
+                if not str(observation.get(field_name) or "").strip():
+                    result.warning(f"{observation_path}: {field_name} is empty")
+            if isinstance(actions, list):
+                for action_index, action in enumerate(actions, start=1):
+                    if not isinstance(action, dict):
+                        continue
+                    for field_name in ("action", "responsible_name", "due_date"):
+                        if not str(action.get(field_name) or "").strip():
+                            result.warning(
+                                f"{observation_path}: management_action_plan[{action_index}]."
+                                f"{field_name} is empty"
+                            )
+
+    for duplicate in sorted(duplicate_values(observation_ids)):
+        result.error(f"06_observations: duplicate observation_id: {duplicate}")
 
 
 def validate_evidence_manifest(project_root: Path, result: ValidationResult) -> None:
@@ -212,15 +444,15 @@ def validate_evidence_manifest(project_root: Path, result: ValidationResult) -> 
         result.error(f"Invalid evidence manifest: {exc}")
 
 
-def validate_project(project_root: Path) -> ValidationResult:
+def validate_project(project_root: Path, *, strict: bool = False) -> ValidationResult:
     result = ValidationResult()
     validate_required_structure(project_root, result)
     load_yaml(project_root / "initial_data.yml", result)
     for file_name in REQUIRED_ADMIN_FILES:
         load_yaml(project_root / "00_admin" / file_name, result)
 
-    program_rows = validate_audit_program(project_root, result)
-    validate_observations(project_root, program_rows, result)
+    program_rows = validate_audit_program(project_root, result, strict=strict)
+    validate_observations(project_root, program_rows, result, strict=strict)
     validate_evidence_manifest(project_root, result)
 
     return result

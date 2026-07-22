@@ -1,5 +1,10 @@
 ---
 title: "$title"
+auditflow:
+  workpaper_ref: "$workpaper_ref"
+  analysis_refs: []
+  output_refs: []
+  evidence_refs: []
 ---
 
 ```{python}

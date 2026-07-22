@@ -142,8 +142,8 @@ def build_cover(project_root: Path) -> str:
     return f"""::: {{.audit-card}}
 # {audit_title(initial)}
 
-**Company:** {company(initial)}  
-**Audit period:** {period(initial)}  
+**Company:** {company(initial)}<br>
+**Audit period:** {period(initial)}<br>
 **Audit ID:** {audit_id(initial)}
 :::"""
 

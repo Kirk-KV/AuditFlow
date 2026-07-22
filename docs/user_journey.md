@@ -17,6 +17,8 @@ pip install -e .
 auditflow --help
 ```
 
+The base installation is sufficient for the CLI. To run the bundled analytical example and QMD Python code, use `pip install -e ".[analysis]"`. Install Quarto separately for preview and rendering.
+
 ---
 
 ## 2. Create an Audit Project
@@ -236,6 +238,19 @@ The auditor completes:
 - conclusion;
 - observation proposal block, if an issue should become an observation.
 
+Record the files actually used or produced in the workpaper front matter:
+
+```yaml
+auditflow:
+  workpaper_ref: WP-C-001
+  analysis_refs: []
+  output_refs: []
+  evidence_refs:
+    - 04_evidence/02_raw_data/purchase_orders.csv
+```
+
+`analysis_refs` and `output_refs` are optional. `evidence_refs` should identify the files that support the completed workpaper conclusion and is required by `auditflow validate --strict`.
+
 Observation proposal block:
 
 ```yaml
@@ -375,6 +390,8 @@ Use `quarto render 08_feedback/feedback_summary.qmd` when a standalone rendered 
 
 ```bash
 auditflow create archive
+auditflow validate
+# Before final sharing: auditflow validate --strict
 ```
 
 Creates:
@@ -439,7 +456,6 @@ QMD documents are previewed and rendered using the standard Quarto extension in 
 The current CLI does not yet implement:
 
 - notification letter generation;
-- strict validation;
 - automated management action export;
 - OpenAI-compatible and Hugging Face provider adapters;
 - long-term action tracking.

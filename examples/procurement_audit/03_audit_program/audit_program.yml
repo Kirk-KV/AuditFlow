@@ -2,8 +2,8 @@ program:
   status: draft
   source:
     planning_decision: 01_planning/planning_decision.yml
-  note: This audit program is a working matrix. The auditor completes or adjusts test_hypothesis and test_script here. Conclusions
-    are documented in workpapers.
+  note: This audit program is a working matrix generated from planning_decision.yml. The auditor completes or adjusts test_hypothesis
+    and test_script here. Conclusions and evidence evaluation are documented in workpapers.
 program_rows:
 - test_id: T-001
   risk_id: R-001
@@ -11,7 +11,7 @@ program_rows:
   risk_reasoning: Controls are described and testable. Data indicates release-before-approval candidates.
   control_id: C-001
   control_description: PO release after approval
-  control_owner: Procurement Department
+  control_owner: ''
   design_assessment: Testable
   planning_approach: Test operating effectiveness using PO and approval workflow data.
   test_hypothesis: Some purchase orders may have been released before the required approval was completed.
@@ -25,14 +25,13 @@ program_rows:
   - Summarize the number and value of confirmed exceptions by requester, supplier, and period.
   - Select material or unusual exceptions for follow-up with the control owner.
   workpaper_ref: WP-C-001
-
 - test_id: T-002
   risk_id: R-001
   risk_title: Unauthorized purchases
   risk_reasoning: Controls are described and testable. Data indicates release-before-approval candidates.
   control_id: C-002
   control_description: Approval authority check
-  control_owner: Procurement Department
+  control_owner: ''
   design_assessment: Testable
   planning_approach: Test using PO amount, approval role, and approval matrix.
   test_hypothesis: Some purchase orders may have been approved by users whose approval authority was below the purchase order
@@ -47,14 +46,13 @@ program_rows:
   - Check whether any exception is explained by delegation, temporary approval rights, or documented override.
   - Summarize confirmed exceptions and assess whether they indicate a control failure.
   workpaper_ref: WP-C-002
-
 - test_id: T-003
   risk_id: R-002
   risk_title: Duplicate payments
   risk_reasoning: Duplicate indicators exist, but C-003 has weak design. Use data analysis, not formal control testing.
   control_id: C-003
   control_description: Duplicate invoice review
-  control_owner: Finance Department
+  control_owner: ''
   design_assessment: Weak design
   planning_approach: Do not test as a formal control; perform data analysis.
   test_hypothesis: Duplicate or potentially duplicate invoices/payments may have been recorded because the duplicate review
@@ -70,14 +68,13 @@ program_rows:
   - Summarize remaining duplicate candidates by supplier, amount, and payment status.
   - Select high-risk candidates for follow-up with Finance.
   workpaper_ref: WP-C-003
-
 - test_id: T-004
   risk_id: R-003
   risk_title: Split purchases below approval threshold
   risk_reasoning: No formal control is described. Use red-flag analysis.
   control_id: null
   control_description: Purchase splitting prevention/detection
-  control_owner: Procurement Department
+  control_owner: ''
   design_assessment: Control gap
   planning_approach: No formal control to test; use red-flag analysis.
   test_hypothesis: Purchases may have been split into several smaller purchase orders to stay below approval thresholds.
@@ -92,3 +89,8 @@ program_rows:
   - Summarize remaining split purchase candidates by supplier, requester, total value, and threshold exceeded.
   - Select high-risk candidates for follow-up with Procurement.
   workpaper_ref: WP-R-003-NO-CONTROL
+planning_warnings:
+  included_risks_without_valid_controls:
+  - risk_id: R-003
+    risk_title: Split purchases below approval threshold
+    message: No valid control id is identified for this included risk in planning_decision.yml.

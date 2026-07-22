@@ -1,0 +1,16 @@
+project:
+  type: default
+
+format:
+  html:
+    theme: cosmo
+    css: styles/auditflow.css
+    toc: true
+    toc-depth: 3
+    code-fold: true
+    code-summary: "Show code"
+    embed-resources: true
+
+execute:
+  warning: false
+  message: false

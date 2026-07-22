@@ -1,0 +1,9 @@
+candidate_id,supplier_id,invoice_number,invoice_count,supplier_name
+T003-I-001,S004,INV-DUP-8238,2,Dunder Mifflin Paper Co.
+T003-I-002,S006,INV-DUP-7482,2,Vandelay Industrial
+T003-I-003,S008,INV-DUP-7913,2,Pied Piper Systems
+T003-I-004,S020,INV-DUP-8934,2,Supplier 020 LLC
+T003-I-005,S021,INV-DUP-9083,2,Supplier 021 LLC
+T003-I-006,S022,INV-DUP-9107,2,Supplier 022 LLC
+T003-I-007,S023,INV-DUP-7929,2,Supplier 023 LLC
+T003-I-008,S024,INV-DUP-7292,2,Supplier 024 LLC

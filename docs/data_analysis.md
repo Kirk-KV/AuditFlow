@@ -218,19 +218,32 @@ Data quality checks should be documented because they affect the reliability of 
 
 Data analysis should be linked to audit procedures.
 
-A test in `audit_program.yml` may reference a script:
+A program row defines the planned procedure and its workpaper:
 
 ```yaml
-tests:
-  - id: T-001
+program_rows:
+  - test_id: T-001
     risk_id: R-001
     control_id: C-001
-    title: "Test purchase order approval before release"
-    script: "04_evidence/02_raw_data/scripts/T001_po_approval_before_release.py"
-    output: "04_evidence/99_generated/po_approval_exceptions.xlsx"
+    workpaper_ref: WP-C-001
 ```
 
-A workpaper may reference the same script and output:
+The workpaper front matter records what was actually used and produced:
+
+```yaml
+---
+auditflow:
+  workpaper_ref: WP-C-001
+    analysis_refs:
+      - "04_evidence/02_raw_data/scripts/T001_po_approval_before_release.py"
+    output_refs:
+      - "04_evidence/99_generated/po_approval_exceptions.xlsx"
+    evidence_refs:
+      - "04_evidence/02_raw_data/purchase_orders.csv"
+---
+```
+
+The workpaper body should explain how the script and output support the result:
 
 ```text
 Procedure performed:

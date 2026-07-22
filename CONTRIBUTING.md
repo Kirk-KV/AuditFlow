@@ -5,7 +5,7 @@ AuditFlow is a file-based internal audit workflow tool. Changes should keep audi
 ## Setup
 
 ```bash
-pip install -e .
+pip install -e ".[analysis,test]"
 auditflow --help
 ```
 
@@ -16,6 +16,7 @@ Run at least:
 ```bash
 python -m compileall auditflow
 auditflow validate --project examples/procurement_audit
+python -m pytest -q
 ```
 
 If you change schemas, validate the synthetic example files against the updated schemas.

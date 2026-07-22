@@ -28,33 +28,48 @@ files:
 - path: 02_raw_data/users.csv
   sha256: 596643028537343d045542496e59a6cf0aa018aa774900b83f7b73914c6b93f8
   size_bytes: 1345
-- path: 99_generated/planning_c001_release_before_approval_candidates.csv
-  sha256: 716215310eb41b3d8a09611e80dcb5d8dcb376339462b673ee1da88aa3b6856a
-  size_bytes: 4464
-- path: 99_generated/planning_c002_approval_authority_exceptions.csv
-  sha256: 335e552b0008de3e19b2bfe46534498bdc5e67eb05957e3b76dce0f947ea37e2
-  size_bytes: 116
+- path: 03_correspondence/candidate_review_dispositions.csv
+  sha256: 904e053d6d940f3c05930b6aab0ae6d57cf228c6a5822fcc4abb5c07bbc52b61
+  size_bytes: 14034
+- path: 03_correspondence/procurement_follow_up_summary.md
+  sha256: 96f9e3a3f8291368474cba15229b30ce1bca368282a02fb4bedd71d1ddb064d0
+  size_bytes: 797
 - path: 99_generated/planning_dataset_overview.csv
   sha256: 02e019fd97b7d8f0471db3783588e75dd78e2b748f1931fe4e8efb1d6d843f54
   size_bytes: 735
 - path: 99_generated/planning_date_ranges.csv
   sha256: 5665c69cff5a5cc2c2fef391646b12277ef503f1991e0d2ce7ab69c968741313
   size_bytes: 359
-- path: 99_generated/planning_duplicate_invoice_candidate_records.csv
-  sha256: 00bf95526b081cae2ef8379cf9602a97cdbcbfb7893cdbddac73a5018ae8f1d9
-  size_bytes: 1390
-- path: 99_generated/planning_duplicate_invoice_groups.csv
-  sha256: f476a39f0235e7f39e1f881ca8f0d80d9152b794b7c2fc3692983d6115a0b53f
-  size_bytes: 373
 - path: 99_generated/planning_linkage_checks.csv
   sha256: f3884815fccd9534485a846aa17698a91cd0bf0c9ff9ed791fdd9d8a9eb1ce91
   size_bytes: 364
 - path: 99_generated/planning_po_volume_by_month.csv
   sha256: 70ffca32330494ce1c7991075d62a09e62dccf8822d78745ebbce35498baccc4
   size_bytes: 175
-- path: 99_generated/planning_repeated_payment_amount_groups.csv
-  sha256: d592c8bed73342f2fd163c5bd75c5ee02757e2bb4c78207fe0a0943dcb71dc26
-  size_bytes: 755
-- path: 99_generated/planning_split_purchase_candidates.csv
-  sha256: 05720bdc5e289f219137972013ca0fc9b06da9c792672fca3b659775a917f780
-  size_bytes: 1584
+- path: 99_generated/t001_release_before_approval_candidates.csv
+  sha256: 0026d61ae239854d6ac0e934e1c3bf718c102008d15f3c323df4396374f0792c
+  size_bytes: 5009
+- path: 99_generated/t001_release_before_approval_review.csv
+  sha256: 18d3fe043d32d046b6fcbcfa6fa90c22bac44df202495715605b4f7916ae5a81
+  size_bytes: 12362
+- path: 99_generated/t002_approval_authority_exceptions.csv
+  sha256: cf5eaa1369a85bdf85d6c071cee8ec5154bd97252bcfde78f0b0bed5f0417174
+  size_bytes: 129
+- path: 99_generated/t003_duplicate_invoice_candidate_records.csv
+  sha256: abfa34aa6c0b4514571ffd0d5cb974f2487a7732db7919e7c0ecf59fd0521423
+  size_bytes: 1579
+- path: 99_generated/t003_duplicate_invoice_groups.csv
+  sha256: cf203ac66b0fa5b523913b40e423fd6aa57a1a4b22157933dc4b7a9ac9619c4a
+  size_bytes: 474
+- path: 99_generated/t003_duplicate_payment_review.csv
+  sha256: 8967d9918ca3b39c7971448856665a9f6dfef1a23fd08f60c7efcdc7f95f307e
+  size_bytes: 4646
+- path: 99_generated/t003_repeated_payment_amount_groups.csv
+  sha256: 0c0656ec2df8e4428182517e31b9d9b2a543096465e6d6896bc268daaf80b1c7
+  size_bytes: 900
+- path: 99_generated/t004_split_purchase_candidates.csv
+  sha256: 6e484618f6950933375ec84e86499a162255868fa3d246ebfb3fff436de29d99
+  size_bytes: 1705
+- path: 99_generated/t004_split_purchase_review.csv
+  sha256: 389afd6e4f95cdf52872c9efc424ed6824b488f301fdc64473f6cfa72bcc94fb
+  size_bytes: 3814

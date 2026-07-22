@@ -1,5 +1,16 @@
 ---
 title: "WP-C-002 — Approval authority check"
+auditflow:
+  workpaper_ref: "WP-C-002"
+  analysis_refs:
+    - 04_evidence/02_raw_data/scripts/procurement_analysis.py
+  output_refs:
+    - 04_evidence/99_generated/t002_approval_authority_exceptions.csv
+  evidence_refs:
+    - 04_evidence/02_raw_data/purchase_orders.csv
+    - 04_evidence/02_raw_data/approval_workflow.csv
+    - 04_evidence/02_raw_data/users.csv
+    - 04_evidence/02_raw_data/approval_matrix.csv
 ---
 
 ```{python}
@@ -136,72 +147,17 @@ The audit team tested whether purchase orders were approved by users with suffic
 The team loaded `purchase_orders.csv`, `approval_workflow.csv`, `users.csv`, and `approval_matrix.csv`. Purchase orders were joined to the final approver, and each approver was linked to the corresponding role and approval limit. The purchase order amount was then compared with the approver authority limit.
 
 ```{python}
-from pathlib import Path
 import sys
 
-import pandas as pd
-import yaml
-import plotly.express as px
+analysis_scripts_dir = audit_project_root / "04_evidence" / "02_raw_data" / "scripts"
+if str(analysis_scripts_dir) not in sys.path:
+    sys.path.insert(0, str(analysis_scripts_dir))
 
-from IPython.display import Markdown, display
+from procurement_analysis import run_test_analysis
 
-def find_audit_project_root(start: Path) -> Path:
-    current = start.resolve()
-
-    while current != current.parent:
-        if (current / "initial_data.yml").exists():
-            return current
-        current = current.parent
-
-    raise FileNotFoundError(
-        "Could not find initial_data.yml. "
-        "Run this document from inside an audit project folder."
-    )
-
-
-def find_repo_root(start: Path) -> Path:
-    current = start.resolve()
-
-    while current != current.parent:
-        if (current / "styles" / "brand.yml").exists():
-            return current
-        current = current.parent
-
-    raise FileNotFoundError(
-        "Could not find styles/brand.yml. "
-        "Run this document from inside the AuditFlow repository."
-    )
-
-audit_project_root = find_audit_project_root(Path.cwd())
-evidence_dir = audit_project_root / "04_evidence"
-raw_dir = evidence_dir / "02_raw_data"
-generated_dir = evidence_dir / "99_generated"
-csv_files = sorted(raw_dir.glob("*.csv"))
-data = {}
-for path in csv_files:
-    data[path.stem] = pd.read_csv(path)
-
-for name, df in data.items():
-    for column in df.columns:
-        if column.endswith("_date"):
-            df[column] = pd.to_datetime(df[column], errors="coerce")
-
-purchase_orders = data["purchase_orders"]
-approval_workflow = data["approval_workflow"]
-users = data["users"]
-suppliers = data["suppliers"]
-
-approval_base = (
-    purchase_orders.merge(approval_workflow, on="po_id", suffixes=("", "_workflow"))
-    .merge(users[["user_id", "name", "approval_role", "approval_limit"]], left_on="approver_user_id", right_on="user_id", how="left")
-    .merge(suppliers[["supplier_id", "supplier_name"]], on="supplier_id", how="left")
-)
-approval_base["released_before_approval"] = approval_base["release_date"] < approval_base["approval_date"]
-approval_base["insufficient_approval_limit"] = approval_base["amount"] > approval_base["approval_limit"]
-
-c001 = approval_base.loc[approval_base["released_before_approval"], ["po_id", "supplier_name", "amount", "created_date", "release_date", "approval_date", "approver_user_id", "name", "approval_role", "approval_limit", "required_approval_role"]].sort_values(["release_date", "po_id"])
-c001.to_csv(generated_dir / "planning_c001_release_before_approval_candidates.csv", index=False)
-c001.head(10)
+test_outputs = run_test_analysis(audit_project_root)
+t002_exceptions = test_outputs["t002_exceptions"]
+t002_exceptions
 ```
 
 ## Evidence used
@@ -210,7 +166,8 @@ c001.head(10)
 - `04_evidence/02_raw_data/approval_workflow.csv`
 - `04_evidence/02_raw_data/users.csv`
 - `04_evidence/02_raw_data/approval_matrix.csv`
-- Generated output: `04_evidence/99_generated/approval_authority_check.csv`
+- Analysis script: `04_evidence/02_raw_data/scripts/procurement_analysis.py`
+- Generated output: `04_evidence/99_generated/t002_approval_authority_exceptions.csv`
 - Planning analysis documented in `01_planning/planning_document.qmd`
 
 ## Results

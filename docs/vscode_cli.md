@@ -25,11 +25,13 @@ auditflow ai draft-observation <workpaper_ref>
 auditflow ai review-observation <observation_id>
 auditflow ai review-audit-program
 auditflow validate
+auditflow validate --strict
 ```
 
 AI commands are optional and disabled by default in new projects.
 
-Commands for Git `auditflow evidence status` and `auditflow evidence refreshare` also optional - use it if you need it.
+Commands `auditflow evidence status` and `auditflow evidence refresh` are also optional; use
+them when the team enables Git review of evidence fingerprints.
 
 ## `auditflow init`
 
@@ -166,6 +168,12 @@ auditflow ai review-audit-program --dry-run
 Remove `--dry-run` only after reviewing the source manifest and preflight findings. A dry run does not contact the provider or create output.
 
 AI output is written separately under `ai_outputs/`; source workpapers, observations, and the audit program are not overwritten. Audit-program review excludes `test_script` and does not assess test executability. See `llm_integration.md` for setup and company-policy controls.
+
+## `auditflow validate`
+
+`auditflow validate` checks project structure, schemas, unique IDs, links between the program and observations, and files declared in workpaper `analysis_refs`, `output_refs`, and `evidence_refs`.
+
+Use `auditflow validate --strict` before final sharing. Strict mode adds finalization-oriented checks, requires workpaper `evidence_refs`, and treats warnings as failures. Analysis and output references remain optional. Neither mode confirms audit quality, evidence sufficiency, or the correctness of conclusions.
 
 ## Rendering QMD Documents
 

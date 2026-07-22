@@ -1,0 +1,71 @@
+test_id,candidate_id,review_status,review_basis,management_explanation,evidence_ref
+T-001,T001-PO-01484,unresolved,No documented exception support was provided,Operational urgency was cited but emergency approval evidence was unavailable,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-001,T001-PO-01453,unresolved,No documented exception support was provided,Operational urgency was cited but emergency approval evidence was unavailable,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-001,T001-PO-01483,unresolved,No documented exception support was provided,Operational urgency was cited but emergency approval evidence was unavailable,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-001,T001-PO-01485,unresolved,No documented exception support was provided,Operational urgency was cited but emergency approval evidence was unavailable,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-001,T001-PO-01488,unresolved,No documented exception support was provided,Operational urgency was cited but emergency approval evidence was unavailable,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-001,T001-PO-01476,unresolved,No documented exception support was provided,Operational urgency was cited but emergency approval evidence was unavailable,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-001,T001-PO-01479,unresolved,No documented exception support was provided,Operational urgency was cited but emergency approval evidence was unavailable,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-001,T001-PO-01470,unresolved,No documented exception support was provided,Operational urgency was cited but emergency approval evidence was unavailable,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-001,T001-PO-01461,unresolved,No documented exception support was provided,Operational urgency was cited but emergency approval evidence was unavailable,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-001,T001-PO-01460,unresolved,No documented exception support was provided,Operational urgency was cited but emergency approval evidence was unavailable,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-001,T001-PO-01462,unresolved,No documented exception support was provided,Operational urgency was cited but emergency approval evidence was unavailable,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-001,T001-PO-01474,unresolved,No documented exception support was provided,Operational urgency was cited but emergency approval evidence was unavailable,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-001,T001-PO-01486,unresolved,No documented exception support was provided,Operational urgency was cited but emergency approval evidence was unavailable,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-001,T001-PO-01471,unresolved,No documented exception support was provided,Operational urgency was cited but emergency approval evidence was unavailable,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-001,T001-PO-01464,unresolved,No documented exception support was provided,Operational urgency was cited but emergency approval evidence was unavailable,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-001,T001-PO-01480,unresolved,No documented exception support was provided,Operational urgency was cited but emergency approval evidence was unavailable,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-001,T001-PO-01463,unresolved,No documented exception support was provided,Operational urgency was cited but emergency approval evidence was unavailable,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-001,T001-PO-01452,unresolved,No documented exception support was provided,Operational urgency was cited but emergency approval evidence was unavailable,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-001,T001-PO-01487,unresolved,No documented exception support was provided,Operational urgency was cited but emergency approval evidence was unavailable,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-001,T001-PO-01466,unresolved,No documented exception support was provided,Operational urgency was cited but emergency approval evidence was unavailable,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-001,T001-PO-01482,unresolved,No documented exception support was provided,Operational urgency was cited but emergency approval evidence was unavailable,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-001,T001-PO-01472,unresolved,No documented exception support was provided,Operational urgency was cited but emergency approval evidence was unavailable,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-001,T001-PO-01468,unresolved,No documented exception support was provided,Operational urgency was cited but emergency approval evidence was unavailable,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-001,T001-PO-01469,unresolved,No documented exception support was provided,Operational urgency was cited but emergency approval evidence was unavailable,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-001,T001-PO-01481,unresolved,No documented exception support was provided,Operational urgency was cited but emergency approval evidence was unavailable,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-001,T001-PO-01477,unresolved,No documented exception support was provided,Operational urgency was cited but emergency approval evidence was unavailable,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-001,T001-PO-01465,unresolved,No documented exception support was provided,Operational urgency was cited but emergency approval evidence was unavailable,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-001,T001-PO-01458,unresolved,No documented exception support was provided,Operational urgency was cited but emergency approval evidence was unavailable,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-001,T001-PO-01457,unresolved,No documented exception support was provided,Operational urgency was cited but emergency approval evidence was unavailable,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-001,T001-PO-01456,unresolved,No documented exception support was provided,Operational urgency was cited but emergency approval evidence was unavailable,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-001,T001-PO-01459,unresolved,No documented exception support was provided,Operational urgency was cited but emergency approval evidence was unavailable,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-001,T001-PO-01467,false_positive,Technical re-release was confirmed,Prior approval evidence was identified during follow-up,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-001,T001-PO-01475,false_positive,Technical re-release was confirmed,Prior approval evidence was identified during follow-up,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-001,T001-PO-01473,false_positive,Technical re-release was confirmed,Prior approval evidence was identified during follow-up,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-001,T001-PO-01478,false_positive,Technical re-release was confirmed,Prior approval evidence was identified during follow-up,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-001,T001-PO-01455,false_positive,Technical re-release was confirmed,Prior approval evidence was identified during follow-up,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-001,T001-PO-01451,false_positive,Technical re-release was confirmed,Prior approval evidence was identified during follow-up,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-001,T001-PO-01454,false_positive,Technical re-release was confirmed,Prior approval evidence was identified during follow-up,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-003,T003-I-001,unresolved,Supporting documentation was insufficient,Finance could not demonstrate that the repeated invoice was valid,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-003,T003-I-002,unresolved,Supporting documentation was insufficient,Finance could not demonstrate that the repeated invoice was valid,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-003,T003-I-003,unresolved,Supporting documentation was insufficient,Finance could not demonstrate that the repeated invoice was valid,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-003,T003-I-004,resolved,Separate business purpose was documented,Finance provided sufficient supporting explanation,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-003,T003-I-005,resolved,Separate business purpose was documented,Finance provided sufficient supporting explanation,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-003,T003-I-006,resolved,Separate business purpose was documented,Finance provided sufficient supporting explanation,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-003,T003-I-007,resolved,Separate business purpose was documented,Finance provided sufficient supporting explanation,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-003,T003-I-008,resolved,Separate business purpose was documented,Finance provided sufficient supporting explanation,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-003,T003-P-001,resolved,Separate business purpose was documented,Finance provided sufficient supporting explanation,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-003,T003-P-002,resolved,Separate business purpose was documented,Finance provided sufficient supporting explanation,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-003,T003-P-003,resolved,Separate business purpose was documented,Finance provided sufficient supporting explanation,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-003,T003-P-004,resolved,Separate business purpose was documented,Finance provided sufficient supporting explanation,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-003,T003-P-005,resolved,Separate business purpose was documented,Finance provided sufficient supporting explanation,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-003,T003-P-006,resolved,Separate business purpose was documented,Finance provided sufficient supporting explanation,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-003,T003-P-007,resolved,Separate business purpose was documented,Finance provided sufficient supporting explanation,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-003,T003-P-008,resolved,Separate business purpose was documented,Finance provided sufficient supporting explanation,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-003,T003-P-009,resolved,Separate business purpose was documented,Finance provided sufficient supporting explanation,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-003,T003-P-010,resolved,Separate business purpose was documented,Finance provided sufficient supporting explanation,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-003,T003-P-011,resolved,Separate business purpose was documented,Finance provided sufficient supporting explanation,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-003,T003-P-012,resolved,Separate business purpose was documented,Finance provided sufficient supporting explanation,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-004,T004-001,unresolved,Separate business need was not evidenced,Procurement explanation was not supported by retained documents,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-004,T004-002,unresolved,Separate business need was not evidenced,Procurement explanation was not supported by retained documents,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-004,T004-003,unresolved,Separate business need was not evidenced,Procurement explanation was not supported by retained documents,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-004,T004-004,unresolved,Separate business need was not evidenced,Procurement explanation was not supported by retained documents,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-004,T004-005,unresolved,Separate business need was not evidenced,Procurement explanation was not supported by retained documents,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-004,T004-006,unresolved,Separate business need was not evidenced,Procurement explanation was not supported by retained documents,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-004,T004-007,resolved,Separate business need was documented,Procurement provided sufficient supporting evidence,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-004,T004-008,resolved,Separate business need was documented,Procurement provided sufficient supporting evidence,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-004,T004-009,resolved,Separate business need was documented,Procurement provided sufficient supporting evidence,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-004,T004-010,resolved,Separate business need was documented,Procurement provided sufficient supporting evidence,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-004,T004-011,resolved,Separate business need was documented,Procurement provided sufficient supporting evidence,04_evidence/03_correspondence/procurement_follow_up_summary.md
+T-004,T004-012,resolved,Separate business need was documented,Procurement provided sufficient supporting evidence,04_evidence/03_correspondence/procurement_follow_up_summary.md

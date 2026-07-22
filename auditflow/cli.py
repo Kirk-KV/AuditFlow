@@ -696,15 +696,19 @@ def ai_review_audit_program_command(
 @app.command()
 def validate(
     project: Optional[Path] = project_option(),
-    strict: bool = typer.Option(False, help="Run strict validation."),
+    strict: bool = typer.Option(
+        False,
+        help="Add finalization-oriented structural checks and fail on warnings.",
+    ),
 ) -> None:
-    """Validate audit project structure and links."""
+    """Validate project structure, references, and artifact links."""
     project_root = require_project(project)
     mode = "strict" if strict else "soft"
-    result = validate_project(project_root)
+    result = validate_project(project_root, strict=strict)
 
     typer.echo(f"Validating audit project: {project_root}")
     typer.echo(f"Validation mode: {mode}")
+    typer.echo("Scope: structural integrity only; audit quality and conclusions are not assessed.")
 
     if result.errors:
         typer.echo("")
