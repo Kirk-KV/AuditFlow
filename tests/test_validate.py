@@ -40,13 +40,11 @@ def make_project(tmp_path: Path) -> Path:
         "---\n"
         "auditflow:\n"
         "  workpaper_ref: WP-C-001\n"
-        "  analysis_refs:\n"
-        "    - 04_evidence/02_raw_data/test.py\n"
-        "  output_refs:\n"
-        "    - 04_evidence/99_generated/result.csv\n"
-        "  evidence_refs:\n"
-        "    - 04_evidence/02_raw_data/source.csv\n"
-        "---\n\n# Workpaper\n",
+        "---\n\n"
+        "# Workpaper\n\n"
+        "- [Analysis](../04_evidence/02_raw_data/test.py)\n"
+        "- [Output](../04_evidence/99_generated/result.csv)\n"
+        "- [Evidence](../04_evidence/02_raw_data/source.csv)\n",
         encoding="utf-8",
     )
 
@@ -91,7 +89,7 @@ def make_project(tmp_path: Path) -> Path:
     return project
 
 
-def test_validate_project_checks_declared_references_and_exact_links(tmp_path: Path) -> None:
+def test_validate_project_checks_markdown_evidence_links_and_exact_links(tmp_path: Path) -> None:
     project = make_project(tmp_path)
 
     result = validate_project(project, strict=True)
@@ -110,7 +108,7 @@ def test_validate_project_reports_missing_output_and_mismatched_test(tmp_path: P
 
     result = validate_project(project)
 
-    assert any("referenced file does not exist" in message for message in result.errors)
+    assert any("linked evidence file does not exist" in message for message in result.errors)
     assert any("test_id T-999" in message for message in result.errors)
 
 
@@ -126,15 +124,14 @@ def test_validate_project_checks_workpaper_front_matter_reference(tmp_path: Path
     assert any("front matter workpaper_ref WP-C-999" in message for message in result.errors)
 
 
-def test_strict_validation_does_not_require_analysis_or_output_refs(tmp_path: Path) -> None:
+def test_strict_validation_accepts_one_markdown_evidence_link(tmp_path: Path) -> None:
     project = make_project(tmp_path)
     (project / "05_workpapers" / "WP-C-001.qmd").write_text(
         "---\n"
         "auditflow:\n"
         "  workpaper_ref: WP-C-001\n"
-        "  evidence_refs:\n"
-        "    - 04_evidence/02_raw_data/source.csv\n"
-        "---\n",
+        "---\n\n"
+        "[Evidence](../04_evidence/02_raw_data/source.csv)\n",
         encoding="utf-8",
     )
 
@@ -144,7 +141,7 @@ def test_strict_validation_does_not_require_analysis_or_output_refs(tmp_path: Pa
     assert result.warnings == []
 
 
-def test_strict_validation_requires_workpaper_evidence_refs(tmp_path: Path) -> None:
+def test_strict_validation_requires_workpaper_evidence_link(tmp_path: Path) -> None:
     project = make_project(tmp_path)
     (project / "05_workpapers" / "WP-C-001.qmd").write_text(
         "---\nauditflow:\n  workpaper_ref: WP-C-001\n---\n",
@@ -153,4 +150,19 @@ def test_strict_validation_requires_workpaper_evidence_refs(tmp_path: Path) -> N
 
     result = validate_project(project, strict=True)
 
-    assert any("auditflow.evidence_refs is empty" in message for message in result.warnings)
+    assert any("no local Markdown links" in message for message in result.warnings)
+
+
+def test_links_in_code_and_external_links_are_not_evidence(tmp_path: Path) -> None:
+    project = make_project(tmp_path)
+    (project / "05_workpapers" / "WP-C-001.qmd").write_text(
+        "---\nauditflow:\n  workpaper_ref: WP-C-001\n---\n\n"
+        "`[Code example](../04_evidence/02_raw_data/missing.csv)`\n\n"
+        "[External reference](https://example.com/evidence.csv)\n",
+        encoding="utf-8",
+    )
+
+    result = validate_project(project)
+
+    assert not any("missing.csv" in message for message in result.errors)
+    assert any("no local Markdown links" in message for message in result.warnings)

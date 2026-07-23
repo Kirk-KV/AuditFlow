@@ -238,18 +238,14 @@ The auditor completes:
 - conclusion;
 - observation proposal block, if an issue should become an observation.
 
-Record the files actually used or produced in the workpaper front matter:
+Link the files actually used or produced directly in the workpaper body:
 
-```yaml
-auditflow:
-  workpaper_ref: WP-C-001
-  analysis_refs: []
-  output_refs: []
-  evidence_refs:
-    - 04_evidence/02_raw_data/purchase_orders.csv
+```markdown
+- [Purchase orders](../04_evidence/02_raw_data/purchase_orders.csv)
+- [Test output](../04_evidence/99_generated/T001_result.csv)
 ```
 
-`analysis_refs` and `output_refs` are optional. `evidence_refs` should identify the files that support the completed workpaper conclusion and is required by `auditflow validate --strict`.
+`auditflow validate` automatically checks local Markdown links that resolve inside `04_evidence`. Strict validation requires at least one such link in each workpaper. Links to planning documents, observations, or external websites are not treated as evidence links.
 
 Observation proposal block:
 

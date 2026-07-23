@@ -8,6 +8,8 @@ from pathlib import Path
 import pytest
 import yaml
 
+from auditflow.commands.validate import ValidationResult, validate_workpaper_evidence_links
+
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 EXAMPLE_ROOT = REPO_ROOT / "examples" / "procurement_audit"
@@ -58,10 +60,16 @@ def test_procurement_workpapers_reference_existing_files() -> None:
         front_matter = workpaper_path.read_text(encoding="utf-8").split("---", 2)[1]
         metadata = yaml.safe_load(front_matter)["auditflow"]
         assert metadata["workpaper_ref"] == row["workpaper_ref"]
-        for field_name in ("analysis_refs", "output_refs", "evidence_refs"):
-            assert metadata[field_name], f"{row['workpaper_ref']}.{field_name} is empty"
-            for reference in metadata[field_name]:
-                assert (EXAMPLE_ROOT / reference).is_file(), reference
+        assert set(metadata) == {"workpaper_ref"}
+
+        validation = ValidationResult()
+        references = validate_workpaper_evidence_links(
+            EXAMPLE_ROOT,
+            workpaper_path,
+            validation,
+        )
+        assert references
+        assert validation.errors == []
 
 
 def test_procurement_example_has_no_legacy_workpaper_or_output_references() -> None:

@@ -2,17 +2,6 @@
 title: "WP-C-003 — Duplicate invoice review"
 auditflow:
   workpaper_ref: "WP-C-003"
-  analysis_refs:
-    - 04_evidence/02_raw_data/scripts/procurement_analysis.py
-  output_refs:
-    - 04_evidence/99_generated/t003_duplicate_invoice_groups.csv
-    - 04_evidence/99_generated/t003_duplicate_invoice_candidate_records.csv
-    - 04_evidence/99_generated/t003_repeated_payment_amount_groups.csv
-    - 04_evidence/99_generated/t003_duplicate_payment_review.csv
-  evidence_refs:
-    - 04_evidence/02_raw_data/invoices.csv
-    - 04_evidence/02_raw_data/payments.csv
-    - 04_evidence/03_correspondence/candidate_review_dispositions.csv
 ---
 
 ```{python}
@@ -166,14 +155,15 @@ t003_review["review_status"].value_counts()
 
 ## Evidence used
 
-- `04_evidence/02_raw_data/invoices.csv`
-- `04_evidence/02_raw_data/payments.csv`
-- Analysis script: `04_evidence/02_raw_data/scripts/procurement_analysis.py`
-- Generated invoice groups: `04_evidence/99_generated/t003_duplicate_invoice_groups.csv`
-- Generated payment groups: `04_evidence/99_generated/t003_repeated_payment_amount_groups.csv`
-- Documented review: `04_evidence/99_generated/t003_duplicate_payment_review.csv`
-- Follow-up record: `04_evidence/03_correspondence/candidate_review_dispositions.csv`
-- Planning analysis documented in `01_planning/planning_document.qmd`
+- [Invoices](../04_evidence/02_raw_data/invoices.csv)
+- [Payments](../04_evidence/02_raw_data/payments.csv)
+- Analysis script: [procurement_analysis.py](../04_evidence/02_raw_data/scripts/procurement_analysis.py)
+- Generated invoice groups: [T-003 invoice groups](../04_evidence/99_generated/t003_duplicate_invoice_groups.csv)
+- Generated invoice records: [T-003 invoice records](../04_evidence/99_generated/t003_duplicate_invoice_candidate_records.csv)
+- Generated payment groups: [T-003 payment groups](../04_evidence/99_generated/t003_repeated_payment_amount_groups.csv)
+- Documented review: [T-003 review](../04_evidence/99_generated/t003_duplicate_payment_review.csv)
+- Follow-up record: [candidate dispositions](../04_evidence/03_correspondence/candidate_review_dispositions.csv)
+- Planning analysis documented in [planning_document.qmd](../01_planning/planning_document.qmd)
 
 ## Results
 

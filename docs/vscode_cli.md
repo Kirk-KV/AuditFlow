@@ -171,9 +171,9 @@ AI output is written separately under `ai_outputs/`; source workpapers, observat
 
 ## `auditflow validate`
 
-`auditflow validate` checks project structure, schemas, unique IDs, links between the program and observations, and files declared in workpaper `analysis_refs`, `output_refs`, and `evidence_refs`.
+`auditflow validate` checks project structure, schemas, unique IDs, links between the program and observations, and local Markdown links from workpapers into `04_evidence`.
 
-Use `auditflow validate --strict` before final sharing. Strict mode adds finalization-oriented checks, requires workpaper `evidence_refs`, and treats warnings as failures. Analysis and output references remain optional. Neither mode confirms audit quality, evidence sufficiency, or the correctness of conclusions.
+Use `auditflow validate --strict` before final sharing. Strict mode requires at least one valid evidence link per workpaper, adds finalization-oriented checks, and treats warnings as failures. Other local and external links are ignored. Neither mode confirms audit quality, evidence sufficiency, or the correctness of conclusions.
 
 ## Rendering QMD Documents
 

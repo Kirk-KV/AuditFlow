@@ -120,7 +120,7 @@ In practice, the auditor edits files between commands:
 5. Complete `test_hypothesis` and `test_script` in `03_audit_program/audit_program.yml`.
    Optionally run `auditflow ai review-audit-program --dry-run`, then the same command without `--dry-run`.
 6. Run `auditflow create workpapers`.
-7. Complete workpapers in `05_workpapers/`. Record actual supporting files in the workpaper front matter under `analysis_refs`, `output_refs`, and `evidence_refs`.
+7. Complete workpapers in `05_workpapers/`. Link supporting files using normal Markdown links such as `[source data](../04_evidence/02_raw_data/source.csv)`.
 8. Run `auditflow create observations`.
 9. Complete observation YAML files in `06_observations/`.
    Optional AI commands are `auditflow ai draft-observation <workpaper_ref>` and `auditflow ai review-observation <observation_id>` (for instance `auditflow ai draft-observation WP-C-001` and `auditflow ai review-observation OBS-001`).
@@ -289,7 +289,7 @@ These files provide YAML/Quarto editor defaults, recommended extensions, and rea
 
 ## Current Limitations
 
-- `auditflow validate` checks structural integrity: schemas, IDs, artifact links, and files declared by workpapers. `--strict` requires workpaper evidence references, adds finalization-oriented checks, and fails on warnings. Neither mode confirms audit quality or the correctness of conclusions.
+- `auditflow validate` checks structural integrity: schemas, IDs, artifact links, and local Markdown links from workpapers into `04_evidence`. `--strict` requires at least one such link per workpaper, adds finalization-oriented checks, and fails on warnings. Neither mode confirms audit quality or the correctness of conclusions.
 - Long-term management action tracking is outside the current project scope.
 - AI drafting and review are optional and currently use the Ollama runtime adapter. OpenAI-compatible and Hugging Face adapters are not implemented yet.
 - Sensitive-data scanning is pattern-based and cannot prove that context is safe to disclose.

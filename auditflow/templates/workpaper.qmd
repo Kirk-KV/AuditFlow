@@ -2,9 +2,6 @@
 title: "$title"
 auditflow:
   workpaper_ref: "$workpaper_ref"
-  analysis_refs: []
-  output_refs: []
-  evidence_refs: []
 ---
 
 ```{python}
@@ -173,12 +170,13 @@ Reference files instead of copying their content.
 
 Examples:
 
-```text
-04_evidence/02_raw_data/...
-04_evidence/03_correspondence/...
-04_evidence/05_screenshots/...
-04_evidence/99_generated/...
-```
+- [Source data](../04_evidence/02_raw_data/source_file.ext)
+- [Follow-up](../04_evidence/03_correspondence/follow_up.ext)
+- [Screenshot](../04_evidence/05_screenshots/screenshot.png)
+- [Analysis result](../04_evidence/99_generated/result.ext)
+
+Use normal Markdown links. `auditflow validate` checks local links that resolve inside
+`04_evidence`.
 
 ## Results
 

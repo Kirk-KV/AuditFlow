@@ -2,15 +2,6 @@
 title: "WP-C-001 — PO release after approval"
 auditflow:
   workpaper_ref: "WP-C-001"
-  analysis_refs:
-    - 04_evidence/02_raw_data/scripts/procurement_analysis.py
-  output_refs:
-    - 04_evidence/99_generated/t001_release_before_approval_candidates.csv
-    - 04_evidence/99_generated/t001_release_before_approval_review.csv
-  evidence_refs:
-    - 04_evidence/02_raw_data/purchase_orders.csv
-    - 04_evidence/02_raw_data/approval_workflow.csv
-    - 04_evidence/03_correspondence/candidate_review_dispositions.csv
 ---
 
 ```{python}
@@ -166,13 +157,13 @@ t001_review["review_status"].value_counts()
 
 ## Evidence used
 
-- `04_evidence/02_raw_data/purchase_orders.csv`
-- `04_evidence/02_raw_data/approval_workflow.csv`
-- Analysis script: `04_evidence/02_raw_data/scripts/procurement_analysis.py`
-- Generated candidate listing: `04_evidence/99_generated/t001_release_before_approval_candidates.csv`
-- Documented review: `04_evidence/99_generated/t001_release_before_approval_review.csv`
-- Follow-up record: `04_evidence/03_correspondence/candidate_review_dispositions.csv`
-- Planning analysis documented in `01_planning/planning_document.qmd`
+- [Purchase orders](../04_evidence/02_raw_data/purchase_orders.csv)
+- [Approval workflow](../04_evidence/02_raw_data/approval_workflow.csv)
+- Analysis script: [procurement_analysis.py](../04_evidence/02_raw_data/scripts/procurement_analysis.py)
+- Generated candidate listing: [T-001 candidates](../04_evidence/99_generated/t001_release_before_approval_candidates.csv)
+- Documented review: [T-001 review](../04_evidence/99_generated/t001_release_before_approval_review.csv)
+- Follow-up record: [candidate dispositions](../04_evidence/03_correspondence/candidate_review_dispositions.csv)
+- Planning analysis documented in [planning_document.qmd](../01_planning/planning_document.qmd)
 
 ## Results
 

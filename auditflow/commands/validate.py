@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
 from typing import Any
+from urllib.parse import unquote, urlsplit
 
 import yaml
 
@@ -184,33 +185,72 @@ def validate_reference(
         result.error(f"{context}: referenced file does not exist: {reference}")
 
 
-def validate_declared_references(
+def validate_workpaper_evidence_links(
     project_root: Path,
-    metadata: dict[str, Any],
-    context: str,
+    workpaper_path: Path,
     result: ValidationResult,
-) -> None:
-    for field_name in ("analysis_refs", "output_refs", "evidence_refs"):
-        references = metadata.get(field_name, [])
-        if not isinstance(references, list):
-            result.error(f"{context}.{field_name}: value must be a list")
+) -> list[str] | None:
+    try:
+        from markdown_it import MarkdownIt
+    except ImportError:
+        result.warning(
+            f"{workpaper_path}: evidence link validation skipped because "
+            "markdown-it-py is not installed"
+        )
+        return None
+
+    try:
+        source = workpaper_path.read_text(encoding="utf-8")
+        tokens = MarkdownIt("commonmark").parse(source)
+    except (OSError, RuntimeError, ValueError) as exc:
+        result.error(f"Could not parse Markdown links in {workpaper_path}: {exc}")
+        return None
+
+    targets: list[str] = []
+    for token in tokens:
+        if token.type != "inline":
             continue
-        normalized_references: list[str] = []
-        for index, reference in enumerate(references, start=1):
-            if not isinstance(reference, str) or not reference.strip():
-                result.error(
-                    f"{context}.{field_name}[{index}]: reference must be a non-empty string"
-                )
+        for child in token.children or []:
+            if child.type == "link_open":
+                target = child.attrGet("href")
+            elif child.type == "image":
+                target = child.attrGet("src")
+            else:
                 continue
-            normalized_references.append(reference)
-            validate_reference(
-                project_root,
-                reference,
-                f"{context}.{field_name}",
-                result,
+            if target:
+                targets.append(target)
+
+    evidence_root = (project_root / "04_evidence").resolve()
+    evidence_targets: list[str] = []
+    seen_paths: set[Path] = set()
+
+    for target in targets:
+        parsed = urlsplit(target)
+        if parsed.scheme or parsed.netloc or not parsed.path:
+            continue
+
+        relative_path = Path(unquote(parsed.path))
+        if relative_path.is_absolute():
+            continue
+
+        resolved = (workpaper_path.parent / relative_path).resolve()
+        try:
+            resolved.relative_to(evidence_root)
+        except ValueError:
+            continue
+
+        if resolved in seen_paths:
+            continue
+        seen_paths.add(resolved)
+        evidence_targets.append(target)
+
+        if not resolved.is_file():
+            result.error(
+                f"{workpaper_path}: linked evidence file does not exist or is not a file: "
+                f"{target}"
             )
-        for duplicate in sorted(duplicate_values(normalized_references)):
-            result.error(f"{context}.{field_name}: duplicate reference: {duplicate}")
+
+    return evidence_targets
 
 
 def validate_audit_program(
@@ -285,19 +325,18 @@ def validate_audit_program(
                     result.warning(
                         f"{workpaper_path}: front matter auditflow.workpaper_ref is missing"
                     )
-                if isinstance(auditflow_metadata, dict):
-                    validate_declared_references(
-                        project_root,
-                        auditflow_metadata,
-                        f"{workpaper_path}: auditflow",
-                        result,
-                    )
-                    if strict and not auditflow_metadata.get("evidence_refs"):
-                        result.warning(
-                            f"{workpaper_path}: front matter auditflow.evidence_refs is empty"
-                        )
-                else:
+                if not isinstance(auditflow_metadata, dict):
                     result.error(f"{workpaper_path}: front matter auditflow must be a mapping")
+
+                evidence_links = validate_workpaper_evidence_links(
+                    project_root,
+                    workpaper_path,
+                    result,
+                )
+                if evidence_links == []:
+                    result.warning(
+                        f"{workpaper_path}: no local Markdown links to files in 04_evidence"
+                    )
 
         if strict:
             test_id = str(row.get("test_id") or index)

@@ -2,15 +2,6 @@
 title: "WP-R-003-NO-CONTROL — Purchase splitting prevention/detection"
 auditflow:
   workpaper_ref: "WP-R-003-NO-CONTROL"
-  analysis_refs:
-    - 04_evidence/02_raw_data/scripts/procurement_analysis.py
-  output_refs:
-    - 04_evidence/99_generated/t004_split_purchase_candidates.csv
-    - 04_evidence/99_generated/t004_split_purchase_review.csv
-  evidence_refs:
-    - 04_evidence/02_raw_data/purchase_orders.csv
-    - 04_evidence/02_raw_data/approval_matrix.csv
-    - 04_evidence/03_correspondence/candidate_review_dispositions.csv
 ---
 
 ```{python}
@@ -166,13 +157,13 @@ t004_review["review_status"].value_counts()
 
 ## Evidence used
 
-- `04_evidence/02_raw_data/purchase_orders.csv`
-- `04_evidence/02_raw_data/approval_matrix.csv`
-- Analysis script: `04_evidence/02_raw_data/scripts/procurement_analysis.py`
-- Generated candidate listing: `04_evidence/99_generated/t004_split_purchase_candidates.csv`
-- Documented review: `04_evidence/99_generated/t004_split_purchase_review.csv`
-- Follow-up record: `04_evidence/03_correspondence/candidate_review_dispositions.csv`
-- Planning analysis documented in `01_planning/planning_document.qmd`
+- [Purchase orders](../04_evidence/02_raw_data/purchase_orders.csv)
+- [Approval matrix](../04_evidence/02_raw_data/approval_matrix.csv)
+- Analysis script: [procurement_analysis.py](../04_evidence/02_raw_data/scripts/procurement_analysis.py)
+- Generated candidate listing: [T-004 candidates](../04_evidence/99_generated/t004_split_purchase_candidates.csv)
+- Documented review: [T-004 review](../04_evidence/99_generated/t004_split_purchase_review.csv)
+- Follow-up record: [candidate dispositions](../04_evidence/03_correspondence/candidate_review_dispositions.csv)
+- Planning analysis documented in [planning_document.qmd](../01_planning/planning_document.qmd)
 
 ## Results
 

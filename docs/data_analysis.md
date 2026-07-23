@@ -228,22 +228,15 @@ program_rows:
     workpaper_ref: WP-C-001
 ```
 
-The workpaper front matter records what was actually used and produced:
+The workpaper body links what was actually used and produced:
 
-```yaml
----
-auditflow:
-  workpaper_ref: WP-C-001
-    analysis_refs:
-      - "04_evidence/02_raw_data/scripts/T001_po_approval_before_release.py"
-    output_refs:
-      - "04_evidence/99_generated/po_approval_exceptions.xlsx"
-    evidence_refs:
-      - "04_evidence/02_raw_data/purchase_orders.csv"
----
+```markdown
+- [Analysis script](../04_evidence/02_raw_data/scripts/T001_po_approval_before_release.py)
+- [Test output](../04_evidence/99_generated/po_approval_exceptions.xlsx)
+- [Source data](../04_evidence/02_raw_data/purchase_orders.csv)
 ```
 
-The workpaper body should explain how the script and output support the result:
+The surrounding text should explain how the script and output support the result:
 
 ```text
 Procedure performed:

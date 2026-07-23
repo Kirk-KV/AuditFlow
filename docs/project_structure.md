@@ -427,23 +427,16 @@ Workpapers should document:
 - conclusion;
 - observation proposal, if needed.
 
-Actual traceability belongs to the workpaper, not the audit program:
+Actual traceability belongs in the workpaper body, not the audit program or front matter:
 
-```yaml
----
-auditflow:
-  workpaper_ref: WP-C-001
-  analysis_refs:
-    - 04_evidence/02_raw_data/scripts/T001_test.py
-  output_refs:
-    - 04_evidence/99_generated/T001_result.csv
-  evidence_refs:
-    - 04_evidence/02_raw_data/purchase_orders.csv
----
+```markdown
+- [Analysis script](../04_evidence/02_raw_data/scripts/T001_test.py)
+- [Generated result](../04_evidence/99_generated/T001_result.csv)
+- [Purchase orders](../04_evidence/02_raw_data/purchase_orders.csv)
 ```
 
-Analysis and output references are optional. Strict validation requires evidence references
-for each workpaper and checks every path that is declared.
+The validator extracts normal Markdown links and checks only local paths that resolve inside
+`04_evidence`. Strict validation requires at least one such link per workpaper.
 
 **Optionally** you may use the evidence register, like: 
 
