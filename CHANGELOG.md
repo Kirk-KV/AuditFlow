@@ -11,6 +11,7 @@
 - added an end-to-end CLI lifecycle regression test;
 - added direct development dependency constraints and package metadata;
 - prevented example evidence links in new workpapers from being validated as real files;
+- preserved empty evidence folders in Git so validation works after a clean checkout;
 - clarified that AuditFlow is an engagement framework, not an audit management system.
 
 ## 0.1.0

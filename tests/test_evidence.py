@@ -126,6 +126,15 @@ class EvidenceManifestTests(unittest.TestCase):
 
         ignore_text = (root / ".gitignore").read_text(encoding="utf-8")
         self.assertFalse((root / "04_evidence" / "evidence_manifest.yml").exists())
+        for folder in (
+            "01_regulations",
+            "02_raw_data",
+            "03_correspondence",
+            "04_reference_materials",
+            "05_screenshots",
+            "99_generated",
+        ):
+            self.assertTrue((root / "04_evidence" / folder / ".gitkeep").exists())
         self.assertIn("04_evidence/**", ignore_text)
         self.assertIn("!04_evidence/evidence_manifest.yml", ignore_text)
         self.assertIn("!04_evidence/02_raw_data/scripts/**", ignore_text)

@@ -120,7 +120,16 @@ def create_initial_project(
         ensure_dir(directory)
 
     for subfolder in EVIDENCE_SUBFOLDERS:
-        ensure_dir(project_root / "04_evidence" / subfolder)
+        evidence_subfolder = project_root / "04_evidence" / subfolder
+        ensure_dir(evidence_subfolder)
+        record_file(
+            write_text_if_missing(
+                evidence_subfolder / ".gitkeep",
+                "",
+                overwrite=overwrite,
+            ),
+            evidence_subfolder / ".gitkeep",
+        )
 
     starter_yaml_templates = {
         "initial_data.yml": project_root / "initial_data.yml",
