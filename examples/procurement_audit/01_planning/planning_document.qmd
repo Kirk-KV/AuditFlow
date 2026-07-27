@@ -173,7 +173,11 @@ Dataset overview
 
 ```{python}
 overview = pd.DataFrame([{"dataset": name, "rows": len(df), "columns": df.shape[1], "column_names": ", ".join(df.columns)} for name, df in data.items()]).sort_values("dataset")
-overview.to_csv(generated_dir / "planning_dataset_overview.csv", index=False)
+overview.to_csv(
+    generated_dir / "planning_dataset_overview.csv",
+    index=False,
+    lineterminator="\n",
+)
 overview
 ```
 
@@ -192,7 +196,11 @@ for name, df in data.items():
             date_rows.append({"dataset": name, "field": column, "min_date": df[column].min().date().isoformat(), "max_date": df[column].max().date().isoformat(), "missing_dates": int(df[column].isna().sum())})
 
 date_ranges = pd.DataFrame(date_rows).sort_values(["dataset", "field"])
-date_ranges.to_csv(generated_dir / "planning_date_ranges.csv", index=False)
+date_ranges.to_csv(
+    generated_dir / "planning_date_ranges.csv",
+    index=False,
+    lineterminator="\n",
+)
 date_ranges
 ```
 
@@ -222,7 +230,11 @@ linkage_checks = pd.DataFrame([
     {"check": "Payments without invoice", "count": len(set(payments["invoice_id"]) - set(invoices["invoice_id"])), "planning_relevance": "Payment-to-invoice linkage"},
     {"check": "Purchase orders without goods receipt", "count": len(set(purchase_orders["po_id"]) - set(goods_receipts["po_id"])), "planning_relevance": "R-004 / goods receipt before payment"},
 ])
-linkage_checks.to_csv(generated_dir / "planning_linkage_checks.csv", index=False)
+linkage_checks.to_csv(
+    generated_dir / "planning_linkage_checks.csv",
+    index=False,
+    lineterminator="\n",
+)
 linkage_checks
 ```
 
@@ -240,7 +252,11 @@ Markdown(f"""The datasets appear usable for testing R-001, R-002, and R-003. Goo
 monthly_po = purchase_orders.copy()
 monthly_po["month"] = monthly_po["created_date"].dt.to_period("M").astype(str)
 monthly_po = monthly_po.groupby("month").agg(po_count=("po_id", "count"), total_amount=("amount", "sum"), average_amount=("amount", "mean")).reset_index()
-monthly_po.to_csv(generated_dir / "planning_po_volume_by_month.csv", index=False)
+monthly_po.to_csv(
+    generated_dir / "planning_po_volume_by_month.csv",
+    index=False,
+    lineterminator="\n",
+)
 monthly_po
 ```
 

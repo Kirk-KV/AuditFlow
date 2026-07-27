@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 import yaml
 
+from auditflow.commands.evidence import compare_evidence
 from auditflow.commands.validate import ValidationResult, validate_workpaper_evidence_links
 
 
@@ -48,7 +49,11 @@ def test_procurement_analysis_reproduces_expected_results(tmp_path: Path) -> Non
 
     generated_dir = project_root / "04_evidence" / "99_generated"
     for output_name in module.OUTPUT_FILES.values():
-        assert (generated_dir / output_name).is_file()
+        output_path = generated_dir / output_name
+        assert output_path.is_file()
+        assert b"\r\n" not in output_path.read_bytes()
+
+    assert compare_evidence(project_root).clean
 
 
 def test_procurement_workpapers_reference_existing_files() -> None:
@@ -116,3 +121,5 @@ def test_procurement_qmd_renders_when_quarto_is_available(tmp_path: Path) -> Non
             capture_output=True,
             text=True,
         )
+
+    assert compare_evidence(project_root).clean

@@ -290,7 +290,11 @@ def run_test_analysis(
         generated_dir = project_root / "04_evidence" / "99_generated"
         generated_dir.mkdir(parents=True, exist_ok=True)
         for key, frame in outputs.items():
-            frame.to_csv(generated_dir / OUTPUT_FILES[key], index=False)
+            frame.to_csv(
+                generated_dir / OUTPUT_FILES[key],
+                index=False,
+                lineterminator="\n",
+            )
 
     return outputs
 
