@@ -1,0 +1,16 @@
+# Direct dependency versions selected for local development and CI.
+# Install with:
+#   python -m pip install -c requirements-dev.lock -e ".[analysis,test]"
+#
+# Transitive dependencies remain platform-resolved by pip. Quarto is installed
+# separately; the CI integration job uses Quarto 1.8.27.
+
+httpx==0.28.1
+jsonschema==4.26.0
+jupyter==1.1.1
+markdown-it-py==4.2.0
+pandas==3.0.3
+plotly==6.8.0
+pytest==9.1.1
+PyYAML==6.0.3
+typer==0.26.8

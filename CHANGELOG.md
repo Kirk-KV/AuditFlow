@@ -7,6 +7,10 @@
 - added optional analysis and test dependencies;
 - added automatic validation of Markdown evidence links in workpapers;
 - expanded structural validation and added finalization-oriented strict mode;
+- added GitHub Actions checks for Python, wheel packaging, and Quarto rendering;
+- added an end-to-end CLI lifecycle regression test;
+- added direct development dependency constraints and package metadata;
+- prevented example evidence links in new workpapers from being validated as real files;
 - clarified that AuditFlow is an engagement framework, not an audit management system.
 
 ## 0.1.0

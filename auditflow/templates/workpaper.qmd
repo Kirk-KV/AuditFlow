@@ -170,10 +170,12 @@ Reference files instead of copying their content.
 
 Examples:
 
+```markdown
 - [Source data](../04_evidence/02_raw_data/source_file.ext)
 - [Follow-up](../04_evidence/03_correspondence/follow_up.ext)
 - [Screenshot](../04_evidence/05_screenshots/screenshot.png)
 - [Analysis result](../04_evidence/99_generated/result.ext)
+```
 
 Use normal Markdown links. `auditflow validate` checks local links that resolve inside
 `04_evidence`.

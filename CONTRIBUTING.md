@@ -5,9 +5,12 @@ AuditFlow is a file-based internal audit workflow tool. Changes should keep audi
 ## Setup
 
 ```bash
-pip install -e ".[analysis,test]"
+python -m pip install -c requirements-dev.lock -e ".[analysis,test]"
 auditflow --help
 ```
+
+`requirements-dev.lock` pins the direct dependencies selected for development
+and CI. End users do not need this file for a normal AuditFlow installation.
 
 ## Checks
 
@@ -18,6 +21,8 @@ python -m compileall auditflow
 auditflow validate --project examples/procurement_audit
 python -m pytest -q
 ```
+
+The Quarto integration job is configured to use Quarto 1.8.27.
 
 If you change schemas, validate the synthetic example files against the updated schemas.
 

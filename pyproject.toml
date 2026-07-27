@@ -8,6 +8,29 @@ version = "0.1.0"
 description = "A VSCode-based framework for reproducible, data-driven internal audits."
 readme = "README.md"
 requires-python = ">=3.11"
+license = {file = "LICENSE"}
+authors = [
+    {name = "Kirill"}
+]
+keywords = [
+    "internal-audit",
+    "audit",
+    "data-analysis",
+    "quarto",
+    "reproducibility"
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Financial and Insurance Industry",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Office/Business :: Financial"
+]
 dependencies = [
     "httpx>=0.27.0",
     "jsonschema>=4.0.0",
@@ -29,6 +52,12 @@ test = [
 
 [project.scripts]
 auditflow = "auditflow.cli:app"
+
+[project.urls]
+Homepage = "https://github.com/Kirk-KV/auditflow"
+Repository = "https://github.com/Kirk-KV/auditflow"
+Issues = "https://github.com/Kirk-KV/auditflow/issues"
+Changelog = "https://github.com/Kirk-KV/auditflow/blob/main/CHANGELOG.md"
 
 [tool.setuptools.packages.find]
 include = ["auditflow*"]
