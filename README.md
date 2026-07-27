@@ -1,307 +1,199 @@
-# AuditFlow
+![AuditFlow: a lightweight framework for reproducible, data-driven internal audits](./assets/readme/hero.svg)
 
-> **A lightweight framework for structured, traceable, reproducible internal audit work**
+AuditFlow turns internal audit engagement into a transparent project of structured
+files, reproducible analysis, linked evidence, workpapers, observations, and reports.
+It is intended for auditors who want more control than a folder of Word and Excel files
+without introducing a large workflow system.
 
-AuditFlow is not an audit management system and does not attempt to replace TeamMate, AuditBoard, Pentana, or similar platforms. Portfolio management, access control, electronic sign-off, and long-term action tracking remain in company systems or optional extensions.
+> **AuditFlow** does not replace TeamMate, AuditBoard, Pentana, or company systems for portfolio management.
 
-The core data model is intentionally small. Companies can extend YAML, templates, validation rules, and Git review without making those governance fields mandatory for every user.
+## See it work
 
----
-**Why:**
-Internal audit work is often scattered across manually edited Excel files, Word files, emails, screenshots, and slide decks. 
+The repository includes a complete synthetic procurement audit. Its analysis is executed
+in the test suite, its evidence links are validated, and its seven QMD documents are
+rendered in the Quarto integration test.
 
-Some calculations are copied, some formulas are replaced, several filters are applied, a few pivot tables appear, "irrelevant" rows are manually removed, etc.
+![Reproduced procurement audit results and three linked observations](./assets/readme/procurement-proof.svg)
 
-The conclusion may be correct, but the reasoning behind it has largely disappeared.
+| Reproduced test result | Result |
+| --- | ---: |
+| Purchase orders released before approval | 38 candidates, 31 unresolved |
+| Approval authority exceptions | 0 |
+| Duplicate invoice and payment indicators | 8 invoice groups, 12 payment groups, 3 unresolved |
+| Split-purchase indicators | 12 candidate groups, 6 unresolved |
 
-Moreover, calculations 'update' become quite time-consuming.
+Explore the
+[analysis script](./examples/procurement_audit/04_evidence/02_raw_data/scripts/procurement_analysis.py),
+[workpapers](./examples/procurement_audit/05_workpapers), and
+[generated report](./examples/procurement_audit/07_reporting/report.qmd).
 
----
+## Start with the example
 
-## AuditFlow Philosophy
-
-Time is the most valuable thing. So:
-- no work for the sake of work
-- why?” before “how?”: testing should focus on the areas identified as significant during planning
-- work is easy to understand and trace, avoiding time wasted on clarification
-- decisions and conclusions are data-based, and analysis is simple and fast: an error is fixed in a script in 5 minutes, not in Excel in 3 hours
-- mechanical work is minimized
-
-This is my specific view of what good internal audit work should look like.
-
----
-
-## AuditFlow Approach
-
-AuditFlow keeps the work in plain files:
-
-- YAML for structured audit data and decisions;
-- QMD / Markdown for audit narratives, workpapers, reports, and archive story;
-- raw evidence kept unchanged;
-- generated outputs kept separate from source evidence.
-
-With Git, these source files also gain a reviewable history without manual copies such as `final_v2_revised`.
-
-The current traceability chain is:
-
-```text
-Initial input -> Planning decision -> Audit program -> Workpapers -> Observations -> Report -> Feedback -> Archive
-```
-
-Internal audit is not only about evidence, it is also about reasoning: why was this risk included, or this control considered key, or this sample selected? Which evidence supports this conclusion?
-If the source data changes tomorrow or we find a minor mistake in the file, can we rebuild everything quickly?
-
-The goal of this approach is to address these issues with an open-source free tool.
-
-I tried to link every stage of the audit:
-
-Risk → Control → Test → Evidence → Result → Observation → Action → Report
-
----
-
-AuditFlow is an opinionated framework. It assumes that:
-
-- planning creates most of the audit value;
-- data analysis should be reproducible;
-- documentation should explain reasoning;
-- professional judgment should remain human;
-- automation should remove mechanical work;
-- AI should challenge thinking, not replace it.
-
-
-> Disclaimer:
-- this is not a complete methodology needed for sound IA process in a company;
-- you need a little bit of Python practice to get most of this tool;
-- by default, AuditFlow should not send raw evidence or confidential data to any external LLM. Use either local LLM in a company (mind the risks) or thoroughly analyze what you give to an external model. 
-
-
-## Install
+Requirements: Python 3.11+ and [Quarto](https://quarto.org/) for QMD preview and rendering.
 
 ```bash
 git clone https://github.com/Kirk-KV/auditflow.git
 cd auditflow
-pip install -e .
-auditflow --help
-```
-
-The base installation contains the CLI only. To execute the bundled analytical example and QMD Python code, install the optional analysis dependencies:
-
-```bash
 pip install -e ".[analysis]"
+
+cd examples/procurement_audit
+auditflow status
+auditflow validate
+quarto preview 07_reporting/report.qmd
 ```
 
-Quarto is a separate application. Install it and confirm `quarto --version` works before previewing or rendering QMD documents.
+The analysis extra installs the Python dependencies used by the bundled example. Quarto is
+a separate application and must be available as `quarto` on `PATH`.
 
-## Basic Workflow
+Create a new audit project:
 
 ```bash
 auditflow init "C:/Audits/2026-001_procurement"
 cd "C:/Audits/2026-001_procurement"
-
 auditflow status
+```
+
+AuditFlow creates the staged workspace. The auditor edits its YAML and QMD files between
+commands. Follow the [user journey](./docs/user_journey.md) for the complete first audit.
+
+## How it works
+
+![AuditFlow lifecycle from initial data through planning, testing, observations, reporting, feedback, and archive](./assets/readme/workflow.svg)
+
+```text
+Risk -> Control -> Test -> Evidence -> Result -> Observation -> Action -> Report
+```
+
+The workflow is decision-oriented rather than form-oriented:
+
+1. Planning identifies what matters and why.
+2. The audit program connects significant risks, controls, and planned tests.
+3. Workpapers document the procedure, linked evidence, result, and conclusion.
+4. Observations are generated only from explicit workpaper proposals.
+5. Reports and the archive are rebuilt from structured source artifacts.
+
+Common commands:
+
+```bash
 auditflow create planning
 auditflow create audit-program
 auditflow create workpapers
 auditflow create observations
 auditflow create report
-auditflow feedback request
-auditflow feedback summary
-auditflow create archive
-auditflow timeline refresh
 auditflow validate
 ```
 
-In practice, the auditor edits files between commands:
+Use `auditflow validate` during drafting and `auditflow validate --strict` before sharing
+final materials. Validation checks structural integrity and traceability; it does not
+provide an automated opinion on audit quality.
 
-1. Complete `initial_data.yml` and `00_admin/*.yml`.
-2. Run `auditflow create planning`.
-3. Complete `01_planning/planning_document.qmd` and `01_planning/planning_decision.yml`.
-4. Run `auditflow create audit-program`.
-5. Complete `test_hypothesis` and `test_script` in `03_audit_program/audit_program.yml`.
-   Optionally run `auditflow ai review-audit-program --dry-run`, then the same command without `--dry-run`.
-6. Run `auditflow create workpapers`.
-7. Complete workpapers in `05_workpapers/`. Link supporting files using normal Markdown links such as `[source data](../04_evidence/02_raw_data/source.csv)`.
-8. Run `auditflow create observations`.
-9. Complete observation YAML files in `06_observations/`.
-   Optional AI commands are `auditflow ai draft-observation <workpaper_ref>` and `auditflow ai review-observation <observation_id>` (for instance `auditflow ai draft-observation WP-C-001` and `auditflow ai review-observation OBS-001`).
-10. Run `auditflow create report`.
-11. Run feedback and archive steps when the audit is complete.
-12. Run `auditflow timeline refresh` if timeline facts were edited or events were added manually.
-13. Run `auditflow validate` during drafting and `auditflow validate --strict` before sharing final materials.
+QMD documents can be previewed repeatedly with the Quarto extension in VS Code or
+`quarto preview`. Batch rendering is a finalization convenience, not a replacement for
+previewing workpapers and reports while they are being developed.
 
-QMD documents are previewed and rendered using the standard Quarto extension in VS Code or the `quarto preview` and `quarto render` commands. AuditFlow does not require a separate rendering workflow.
+## Plain files, explicit relationships
 
-## Optional Git Collaboration
+AuditFlow keeps each engagement inspectable without a database or proprietary file format:
 
-An AuditFlow project can be stored in a private GitLab, Azure DevOps, GitHub Enterprise, or equivalent repository. Protected branches and pull/merge requests let the audit manager comment on changes, request corrections, approve them, and safely revert earlier decisions.
+- **YAML** holds structured audit facts and relationships.
+- **QMD / Markdown** holds narratives, professional judgment, and conclusions.
+- **Python / SQL** keeps data analysis reproducible.
+- **Quarto** previews and renders workpapers and reports.
+- **Git**, when used, provides version history and manager review.
 
-Raw evidence and regulations stay outside Git. Their fingerprints are stored in a tracked manifest:
+The core model stays deliberately small. Companies can extend schemas, templates,
+validation rules, styling, and review processes without making enterprise governance
+fields mandatory for every user. See the
+[project structure](./docs/project_structure.md),
+[workflow](./docs/workflow.md), and
+[customization guide](./docs/customization.md).
+
+## Traceable evidence
+
+Raw evidence is ignored by Git by default and generated outputs are stored separately.
+Workpapers use ordinary Markdown links to the local files supporting their conclusions:
+
+```markdown
+[Test output](../04_evidence/99_generated/T001_result.csv)
+```
+
+`auditflow validate` checks those local links together with schemas, IDs, and artifact
+relationships. Teams that need change detection can also maintain a SHA-256 manifest:
 
 ```bash
 auditflow evidence refresh
 auditflow evidence status
 ```
 
-See `docs/git_collaboration.md` for the short setup and review workflow.
+A fingerprint detects a local file change. It does not prove provenance, completeness, or
+authenticity and does not replace secure evidence storage. See
+[reproducible data analysis](./docs/data_analysis.md) for the working conventions.
 
-## Project Structure
+## Optional AI
 
-```text
-audit_project/
-  initial_data.yml
-  _quarto.yml
-
-  00_admin/
-    ai.yml
-    stakeholders.yml
-    team.yml
-    decisions.yml
-    timeline.yml
-
-  01_planning/
-    planning_document.qmd
-    planning_decision.yml
-
-  03_audit_program/
-    audit_program.yml
-
-  04_evidence/
-    evidence_manifest.yml       # optional; created by evidence refresh
-    01_regulations/
-    02_raw_data/
-    03_correspondence/
-    04_reference_materials/
-    05_screenshots/
-    99_generated/
-
-  05_workpapers/
-  06_observations/
-  07_reporting/
-  08_feedback/
-  09_archive/
-
-  ai_outputs/                 # local AI review history; ignored by Git
-
-  styles/
-    auditflow.css
-    brand.css
-    report.css
-
-  .vscode/
-    settings.json
-    tasks.json
-    extensions.json
-```
-
-## Timeline Facts
-
-`00_admin/timeline.yml` contains planned dates, fact dates, and recorded workflow events.
-
-Planned dates are entered manually. Fact dates are updated by AuditFlow commands when workflow artifacts are created. For example, `auditflow create audit-program` records an `audit_program_created` event and can mark planning as completed.
-
-Use:
-
-```bash
-auditflow timeline refresh
-```
-
-to rebuild empty fact dates from recorded events.
-
-## Optional AI Assistance
-
-AI is disabled by default. The implemented provider adapter is Ollama; Qwen3 8B is the default demonstration model, not a framework requirement.
+AI assistance is disabled by default. The implemented runtime adapter uses
+[Ollama](https://ollama.com/); Qwen3 8B is the demonstration model, not a framework
+requirement.
 
 ```bash
 ollama pull qwen3:8b
-auditflow ai status
 auditflow ai review-audit-program --dry-run
-auditflow ai draft-observation <workpaper_ref> --dry-run
-auditflow ai review-observation <observation_id> --dry-run
+auditflow ai draft-observation WP-C-001 --dry-run
+auditflow ai review-observation OBS-001 --dry-run
 ```
 
-Set `enabled: true` in `00_admin/ai.yml` before a real model call. Always inspect the dry-run source manifest first.
+AI tasks receive selective context and write responses to separate sidecar files. Raw
+evidence is excluded by default, and company policy controls approved providers,
+destinations, models, classifications, confirmation, and retention. Model comments remain
+advisory. See [LLM integration](./docs/llm_integration.md) for setup and the security model.
 
-AuditFlow uses a company-policy layer to control approved profiles, destinations, models, classifications, external-provider use, confirmation, and output retention. Set the policy path with `AUDITFLOW_AI_POLICY`; audit projects cannot override provider URLs or security rules.
+## Optional Git review
 
-AI tasks use selective context and do not overwrite audit artifacts. Raw evidence is excluded by default. Audit-program review also excludes every `test_script`: it checks only risk formulation, coverage, risk-control-test traceability, and internal consistency. Model comments are advisory; the auditor remains responsible for scope, test design, facts, and conclusions.
+AuditFlow works without Git. A team that needs version history and manager approval can
+store the same plain-file project in a private GitLab, Azure DevOps, GitHub Enterprise, or
+another approved service. Protected branches and pull or merge requests then provide
+comments, approvals, and safe reverts without changing the AuditFlow core.
 
-See `docs/llm_integration.md` for setup, policy format, context boundaries, and output structure.
+Raw evidence remains outside the repository; only approved source artifacts and, when
+used, the evidence manifest are versioned. See
+[Git collaboration](./docs/git_collaboration.md) for the concise setup.
 
-## Styling
+## Scope
 
-`auditflow init` creates project-level style files:
+AuditFlow is currently an alpha-stage engagement framework. It is best suited to an auditor or a small team working on data-heavy audits.
 
-```text
-styles/auditflow.css
-styles/brand.css
-styles/report.css
-```
+Current boundaries:
 
-Default templates are stored in:
+- validation checks structure and traceability, not evidence sufficiency or conclusion quality;
+- long-term action tracking is outside the scope at the moment (should remain in a company system);
+- access control and electronic sign-off are not part of the model;
+- Ollama is the only implemented AI provider adapter, I'll add more later;
+- sensitive-data scanning is pattern-based and cannot prove that a prompt is safe.
 
-```text
-auditflow/templates/styles/
-```
-
-Customization priority:
-
-1. explicit CLI argument;
-2. environment variable;
-3. bundled default template.
-
-For `brand.css`:
-
-```bash
-auditflow init "C:/Audits/2026-001_procurement" --brand-css "C:/AuditFlowBrand/brand.css"
-```
-
-or set once:
-
-```powershell
-[Environment]::SetEnvironmentVariable("AUDITFLOW_BRAND_CSS", "C:\AuditFlowBrand\brand.css", "User")
-```
-
-For `report.css`:
-
-```bash
-auditflow init "C:/Audits/2026-001_procurement" --report-css "C:/AuditFlowBrand/report.css"
-```
-
-or set once:
-
-```powershell
-[Environment]::SetEnvironmentVariable("AUDITFLOW_REPORT_CSS", "C:\AuditFlowBrand\report.css", "User")
-```
-
-Generated `07_reporting/report.qmd` references:
-
-```yaml
-format:
-  html:
-    css: ../styles/report.css
-```
-
-## VSCode Support
-
-`auditflow init` creates `.vscode/settings.json`, `.vscode/tasks.json`, and `.vscode/extensions.json`.
-
-These files provide YAML/Quarto editor defaults, recommended extensions, and ready-to-run AuditFlow tasks such as `AuditFlow: status` and `AuditFlow: validate`. Use the standard Quarto extension in VS Code to preview and render QMD documents.
-
-## Current Limitations
-
-- `auditflow validate` checks structural integrity: schemas, IDs, artifact links, and local Markdown links from workpapers into `04_evidence`. `--strict` requires at least one such link per workpaper, adds finalization-oriented checks, and fails on warnings. Neither mode confirms audit quality or the correctness of conclusions.
-- Long-term management action tracking is outside the current project scope.
-- AI drafting and review are optional and currently use the Ollama runtime adapter. OpenAI-compatible and Hugging Face adapters are not implemented yet.
-- Sensitive-data scanning is pattern-based and cannot prove that context is safe to disclose.
-- Notification letter generation is not part of the current CLI workflow (however, you can see the notification template in 'auditflow/templates/').
+These boundaries keep the default workflow lightweight. They do not prevent a company
+from adding stricter schemas, controls, templates, or review requirements.
 
 ## Documentation
 
-- `docs/user_journey.md` — step-by-step user journey.
-- `docs/project_structure.md` — project folders and source-of-truth files.
-- `docs/workflow.md` — decision-oriented audit workflow.
-- `docs/methodology.md` — methodology principles.
-- `docs/customization.md` — customization approach.
-- `docs/git_collaboration.md` — version history and manager review with Git.
-- `examples/procurement_audit/` — synthetic example audit showing the generated structure, traceability chain, and reporting artifacts.
+- [User journey](./docs/user_journey.md)
+- [Audit workflow](./docs/workflow.md)
+- [Methodology principles](./docs/methodology.md)
+- [Project structure](./docs/project_structure.md)
+- [Reproducible data analysis](./docs/data_analysis.md)
+- [VS Code and CLI](./docs/vscode_cli.md)
+- [Customization](./docs/customization.md)
+- [LLM integration](./docs/llm_integration.md)
+- [Git collaboration](./docs/git_collaboration.md)
 
+## Development
+
+```bash
+pip install -e ".[analysis,test]"
+python -m pytest -q
+```
+
+Contributions should preserve the separation between source evidence and generated output,
+keep examples synthetic, and update documentation when commands or source-of-truth files
+change. See [CONTRIBUTING.md](./CONTRIBUTING.md).
+
+AuditFlow is released under the [MIT License](./LICENSE).

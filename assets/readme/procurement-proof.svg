@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="560" viewBox="0 0 1200 560" role="img" aria-labelledby="title desc">
+  <title id="title">Reproduced procurement audit results</title>
+  <desc id="desc">The synthetic example reproduces four test results and links them to three audit observations.</desc>
+  <rect width="1200" height="560" rx="8" fill="#ffffff"/>
+  <rect x="1" y="1" width="1198" height="558" rx="7" fill="none" stroke="#d7dee8" stroke-width="2"/>
+
+  <text x="48" y="50" fill="#64748b" font-family="Consolas, monospace" font-size="17">
+    REPRODUCED SYNTHETIC AUDIT / PROCUREMENT
+  </text>
+  <text x="48" y="101" fill="#111827" font-family="Segoe UI, Arial, sans-serif" font-size="40" font-weight="700">
+    The analysis, workpapers, and observations agree
+  </text>
+  <text x="48" y="137" fill="#64748b" font-family="Segoe UI, Arial, sans-serif" font-size="20">
+    Expected results are asserted by pytest. Evidence links and QMD rendering are checked separately.
+  </text>
+
+  <g transform="translate(48 179)" font-family="Segoe UI, Arial, sans-serif">
+    <rect width="252" height="126" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="22" y="29" fill="#64748b" font-family="Consolas, monospace" font-size="16">T-001 / APPROVAL TIMING</text>
+    <text x="22" y="78" fill="#1f4e79" font-size="40" font-weight="700">38</text>
+    <text x="89" y="76" fill="#475569" font-size="19">candidates</text>
+    <text x="22" y="108" fill="#b91c1c" font-size="18" font-weight="700">31 unresolved</text>
+
+    <g transform="translate(268 0)">
+      <rect width="252" height="126" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+      <text x="22" y="29" fill="#64748b" font-family="Consolas, monospace" font-size="16">T-002 / AUTHORITY</text>
+      <text x="22" y="78" fill="#386522" font-size="40" font-weight="700">0</text>
+      <text x="55" y="76" fill="#475569" font-size="19">exceptions</text>
+      <text x="22" y="108" fill="#386522" font-size="18" font-weight="700">control supported</text>
+    </g>
+
+    <g transform="translate(536 0)">
+      <rect width="276" height="126" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+      <text x="22" y="29" fill="#64748b" font-family="Consolas, monospace" font-size="16">T-003 / DUPLICATES</text>
+      <text x="22" y="78" fill="#1f4e79" font-size="40" font-weight="700">8 + 12</text>
+      <text x="145" y="76" fill="#475569" font-size="19">groups</text>
+      <text x="22" y="108" fill="#b45309" font-size="18" font-weight="700">3 unresolved</text>
+    </g>
+
+    <g transform="translate(828 0)">
+      <rect width="276" height="126" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+      <text x="22" y="29" fill="#64748b" font-family="Consolas, monospace" font-size="16">T-004 / SPLIT PURCHASES</text>
+      <text x="22" y="78" fill="#1f4e79" font-size="40" font-weight="700">12</text>
+      <text x="79" y="76" fill="#475569" font-size="19">groups</text>
+      <text x="22" y="108" fill="#b45309" font-size="18" font-weight="700">6 unresolved</text>
+    </g>
+  </g>
+
+  <path d="M48 338H1152" stroke="#d7dee8" stroke-width="1"/>
+  <text x="48" y="377" fill="#64748b" font-family="Consolas, monospace" font-size="16">LINKED OBSERVATIONS</text>
+
+  <g transform="translate(48 400)" font-family="Segoe UI, Arial, sans-serif">
+    <rect width="1104" height="42" rx="5" fill="#fff7ed"/>
+    <rect width="8" height="42" rx="4" fill="#b91c1c"/>
+    <text x="24" y="27" fill="#7f1d1d" font-family="Consolas, monospace" font-size="16" font-weight="700">HIGH</text>
+    <text x="100" y="27" fill="#111827" font-size="18">Purchase orders released before required approval</text>
+
+    <g transform="translate(0 54)">
+      <rect width="1104" height="42" rx="5" fill="#fffbeb"/>
+      <rect width="8" height="42" rx="4" fill="#d28a42"/>
+      <text x="24" y="27" fill="#8a4d16" font-family="Consolas, monospace" font-size="16" font-weight="700">MEDIUM</text>
+      <text x="112" y="27" fill="#111827" font-size="18">Weak duplicate invoice and payment review</text>
+    </g>
+
+    <g transform="translate(0 108)">
+      <rect width="1104" height="42" rx="5" fill="#fffbeb"/>
+      <rect width="8" height="42" rx="4" fill="#d28a42"/>
+      <text x="24" y="27" fill="#8a4d16" font-family="Consolas, monospace" font-size="16" font-weight="700">MEDIUM</text>
+      <text x="112" y="27" fill="#111827" font-size="18">No formal monitoring of split purchases below approval thresholds</text>
+    </g>
+  </g>
+</svg>
