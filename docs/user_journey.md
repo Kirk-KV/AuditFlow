@@ -39,11 +39,14 @@ auditflow init "C:/Audits/2026-001_procurement" \
 
 ```text
 initial_data.yml
-_quarto.yml
 
 00_admin/
 04_evidence/
 styles/
+  quarto-html.yml
+  auditflow.css
+  brand.css
+  report.css
 .vscode/
 ```
 

@@ -74,6 +74,7 @@ auditflow = [
     "templates/.gitignore",
     "templates/ai/*.md",
     "templates/styles/*.css",
+    "templates/styles/*.yml",
     "templates/.vscode/*.json"
 ]
 

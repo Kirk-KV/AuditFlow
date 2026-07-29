@@ -1,5 +1,11 @@
 ---
 title: "Internal Audit Report"
+metadata-files:
+  - ../styles/quarto-html.yml
+format:
+  html:
+    smooth-scroll: true
+    css: ../styles/report.css
 ---
 
 <!-- AUTO:COVER START -->

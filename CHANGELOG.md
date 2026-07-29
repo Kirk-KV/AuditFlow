@@ -13,6 +13,8 @@
 - prevented example evidence links in new workpapers from being validated as real files;
 - preserved empty evidence folders in Git so validation works after a clean checkout;
 - made synthetic generated CSV hashes stable across Windows and Linux;
+- replaced Quarto project configuration with shared per-document metadata so
+  rendering works reliably from Windows network and DFS drives;
 - clarified that AuditFlow is an engagement framework, not an audit management system.
 
 ## 0.1.0

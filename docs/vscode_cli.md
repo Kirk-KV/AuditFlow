@@ -191,6 +191,22 @@ quarto render 07_reporting/report.qmd
 
 Replace the path with the QMD document you are working on. Quarto must be installed and available on `PATH`; AuditFlow does not require a separate rendering workflow.
 
+Generated QMD files load shared HTML settings from `styles/quarto-html.yml`.
+AuditFlow does not create a Quarto project, so rendering temporary files stay
+in the local system temp directory. This also avoids known project-cache
+problems on some Windows network and DFS drives.
+
+For an audit created by an older AuditFlow version:
+
+1. Delete `_quarto.yml`.
+2. Add `styles/quarto-html.yml` from the current project template.
+3. Add this to the front matter of each QMD:
+
+```yaml
+metadata-files:
+  - ../styles/quarto-html.yml
+```
+
 ## VSCode Tasks
 
 The project template includes `.vscode` files so common commands can be exposed as tasks.

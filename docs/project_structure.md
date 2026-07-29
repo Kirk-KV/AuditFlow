@@ -14,7 +14,6 @@ Audit should remain practical.
 ```text
 audit_project/
   initial_data.yml              # info from the annual audit plan
-  _quarto.yml
 
   00_admin/
     ai.yml                      # project AI choices within company policy
@@ -65,6 +64,12 @@ audit_project/
 
   ai_outputs/                   # AI sidecar history; ignored by Git
 
+  styles/
+    quarto-html.yml             # shared Quarto HTML metadata loaded by each QMD
+    auditflow.css               # core document styles
+    brand.css                   # company/project overrides
+    report.css                  # report-specific styles
+
   .vscode/
     settings.json
     tasks.json
@@ -73,6 +78,11 @@ audit_project/
 ```
 
 This structure is a starting point. A small audit may use fewer files, a complex one may require additional folders, more detailed workpapers, or separate sub-projects.
+
+AuditFlow QMD files are rendered individually and load shared settings from
+`styles/quarto-html.yml`. The audit folder intentionally has no `_quarto.yml`,
+so Quarto keeps temporary rendering files in the local system temp directory
+instead of creating a project session under the audit folder.
 
 Optional files could be:
 - control_inventory.yml, if the team maintains a formal control matrix;

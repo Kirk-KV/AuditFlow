@@ -1,5 +1,7 @@
 ---
 title: "Audit Story"
+metadata-files:
+  - ../styles/quarto-html.yml
 ---
 
 <!-- AUTO:COVER START -->

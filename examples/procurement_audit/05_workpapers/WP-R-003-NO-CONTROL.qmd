@@ -1,5 +1,7 @@
 ---
 title: "WP-R-003-NO-CONTROL — Purchase splitting prevention/detection"
+metadata-files:
+  - ../styles/quarto-html.yml
 auditflow:
   workpaper_ref: "WP-R-003-NO-CONTROL"
 ---

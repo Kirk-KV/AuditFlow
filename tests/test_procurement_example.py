@@ -95,6 +95,15 @@ def test_procurement_example_has_no_legacy_workpaper_or_output_references() -> N
         assert legacy_value not in combined_text
 
 
+def test_procurement_qmd_uses_standalone_shared_metadata() -> None:
+    assert not (EXAMPLE_ROOT / "_quarto.yml").exists()
+    assert (EXAMPLE_ROOT / "styles" / "quarto-html.yml").exists()
+    assert (EXAMPLE_ROOT / "styles" / "brand.css").exists()
+
+    for document in EXAMPLE_ROOT.rglob("*.qmd"):
+        assert "../styles/quarto-html.yml" in document.read_text(encoding="utf-8")
+
+
 @pytest.mark.integration
 def test_procurement_qmd_renders_when_quarto_is_available(tmp_path: Path) -> None:
     quarto = shutil.which("quarto")
@@ -110,6 +119,7 @@ def test_procurement_qmd_renders_when_quarto_is_available(tmp_path: Path) -> Non
         "05_workpapers/WP-C-003.qmd",
         "05_workpapers/WP-R-003-NO-CONTROL.qmd",
         "07_reporting/report.qmd",
+        "08_feedback/feedback_summary.qmd",
         "09_archive/audit_story.qmd",
     ]
 

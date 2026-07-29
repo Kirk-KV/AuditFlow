@@ -1,5 +1,7 @@
 ---
 title: "WP-C-001 — PO release after approval"
+metadata-files:
+  - ../styles/quarto-html.yml
 auditflow:
   workpaper_ref: "WP-C-001"
 ---

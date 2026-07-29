@@ -135,6 +135,16 @@ def ensure_report_css_reference(content: str) -> str:
     if not isinstance(front_matter, dict):
         return content
 
+    metadata_path = "../styles/quarto-html.yml"
+    metadata_files = front_matter.get("metadata-files")
+    if isinstance(metadata_files, str):
+        metadata_files = [metadata_files]
+    elif not isinstance(metadata_files, list):
+        metadata_files = []
+    if metadata_path not in metadata_files:
+        metadata_files.insert(0, metadata_path)
+    front_matter["metadata-files"] = metadata_files
+
     report_format = front_matter.get("format")
     if not isinstance(report_format, dict):
         report_format = {}
@@ -145,20 +155,8 @@ def ensure_report_css_reference(content: str) -> str:
         html_format = {}
         report_format["html"] = html_format
 
-    html_format.setdefault("toc", True)
-    html_format.setdefault("toc-depth", 3)
-    html_format.setdefault("number-sections", False)
     html_format.setdefault("smooth-scroll", True)
-    html_format.setdefault("code-fold", True)
-    html_format.setdefault("theme", "cosmo")
     html_format["css"] = "../styles/report.css"
-
-    if "execute" not in front_matter:
-        front_matter["execute"] = {
-            "echo": False,
-            "warning": False,
-            "message": False,
-        }
 
     body = content[match.end() :]
     updated_front_matter = yaml.safe_dump(

@@ -756,16 +756,8 @@ def build_summary_qmd(responses: list[dict[str, Any]]) -> str:
 
     return f"""---
 title: "Feedback Summary"
-format:
-  html:
-    toc: true
-    toc-depth: 3
-    number-sections: false
-    theme: cosmo
-execute:
-  echo: false
-  warning: false
-  message: false
+metadata-files:
+  - ../styles/quarto-html.yml
 ---
 
 # Feedback summary

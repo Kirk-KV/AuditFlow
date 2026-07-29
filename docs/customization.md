@@ -72,6 +72,7 @@ Avoid designing a perfect methodology before testing the workflow.
 styles/auditflow.css
 styles/brand.css
 styles/report.css
+styles/quarto-html.yml
 ```
 
 Default CSS files live in:
@@ -81,6 +82,8 @@ auditflow/templates/styles/
 ```
 
 Use `brand.css` for general project/company branding and `report.css` for report-specific layout.
+`quarto-html.yml` contains shared Quarto options and references the common CSS files.
+Keep the `metadata-files` reference in generated QMD front matter when customizing documents.
 
 You can pass CSS files explicitly:
 

@@ -1,5 +1,7 @@
 ---
 title: "WP-C-003 — Duplicate invoice review"
+metadata-files:
+  - ../styles/quarto-html.yml
 auditflow:
   workpaper_ref: "WP-C-003"
 ---

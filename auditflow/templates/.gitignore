@@ -9,6 +9,12 @@ secrets.yml
 secrets.yaml
 ai_outputs/
 
+# Local Quarto and Python artifacts.
+/.quarto/
+**/*.quarto_ipynb
+**/__pycache__/
+*.html
+
 # Evidence contents stay outside Git; the hash manifest and folder metadata remain tracked.
 04_evidence/**
 !04_evidence/**/

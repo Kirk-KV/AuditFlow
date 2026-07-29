@@ -1,5 +1,7 @@
 ---
 title: "Planning Document — Procurement Process Audit"
+metadata-files:
+  - ../styles/quarto-html.yml
 ---
 
 ```{python}

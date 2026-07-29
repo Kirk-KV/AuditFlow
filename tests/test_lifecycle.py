@@ -30,6 +30,12 @@ def test_cli_lifecycle_preserves_manual_work_and_validates_strictly(
     project_arg = str(project)
 
     invoke(runner, "init", project_arg)
+    assert not (project / "_quarto.yml").exists()
+    shared_quarto_metadata = project / "styles" / "quarto-html.yml"
+    assert shared_quarto_metadata.exists()
+    assert "../styles/auditflow.css" in shared_quarto_metadata.read_text(
+        encoding="utf-8"
+    )
 
     write_yaml(
         project / "initial_data.yml",
@@ -86,6 +92,9 @@ def test_cli_lifecycle_preserves_manual_work_and_validates_strictly(
     )
 
     invoke(runner, "create", "planning", "--project", project_arg)
+    assert "../styles/quarto-html.yml" in (
+        project / "01_planning" / "planning_document.qmd"
+    ).read_text(encoding="utf-8")
     write_yaml(
         project / "01_planning" / "planning_decision.yml",
         {
@@ -151,6 +160,7 @@ def test_cli_lifecycle_preserves_manual_work_and_validates_strictly(
 
     invoke(runner, "create", "workpapers", "--project", project_arg)
     workpaper_path = project / "05_workpapers" / "WP-C-001.qmd"
+    assert "../styles/quarto-html.yml" in workpaper_path.read_text(encoding="utf-8")
 
     template_validation = validate_project(project)
     assert template_validation.errors == []
@@ -210,9 +220,11 @@ def test_cli_lifecycle_preserves_manual_work_and_validates_strictly(
 
     invoke(runner, "create", "report", "--project", project_arg)
     report_path = project / "07_reporting" / "report.qmd"
+    report_content = report_path.read_text(encoding="utf-8")
+    assert "../styles/quarto-html.yml" in report_content
+    assert "../styles/report.css" in report_content
     report_path.write_text(
-        report_path.read_text(encoding="utf-8")
-        + "\n<!-- lifecycle-report-manual-note -->\n",
+        report_content + "\n<!-- lifecycle-report-manual-note -->\n",
         encoding="utf-8",
     )
     invoke(runner, "create", "report", "--project", project_arg)
@@ -223,9 +235,13 @@ def test_cli_lifecycle_preserves_manual_work_and_validates_strictly(
 
     invoke(runner, "feedback", "request", "--project", project_arg)
     invoke(runner, "feedback", "summary", "--project", project_arg)
+    assert "../styles/quarto-html.yml" in (
+        project / "08_feedback" / "feedback_summary.qmd"
+    ).read_text(encoding="utf-8")
 
     invoke(runner, "create", "archive", "--project", project_arg)
     archive_path = project / "09_archive" / "audit_story.qmd"
+    assert "../styles/quarto-html.yml" in archive_path.read_text(encoding="utf-8")
     archive_path.write_text(
         archive_path.read_text(encoding="utf-8")
         + "\n<!-- lifecycle-archive-manual-note -->\n",

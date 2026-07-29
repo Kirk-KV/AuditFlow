@@ -1,5 +1,7 @@
 ---
 title: "$title"
+metadata-files:
+  - ../styles/quarto-html.yml
 auditflow:
   workpaper_ref: "$workpaper_ref"
 ---

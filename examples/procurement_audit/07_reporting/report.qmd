@@ -1,18 +1,11 @@
 ---
 title: "Internal Audit Report"
+metadata-files:
+  - ../styles/quarto-html.yml
 format:
   html:
-    toc: true
-    toc-depth: 3
-    number-sections: false
     smooth-scroll: true
-    code-fold: true
-    theme: cosmo
     css: report.css
-execute:
-  echo: false
-  warning: false
-  message: false
 ---
 
 ```{python}

@@ -308,6 +308,6 @@ def update_archive(project_root: Path, reset: bool = False) -> Path:
 def write_css(project_root: Path, overwrite_css: bool = False) -> Path:
     """Compatibility shim.
 
-    Archive styling now comes from project-level _quarto.yml and styles/*.css.
+    Archive styling comes from styles/quarto-html.yml and styles/*.css.
     """
     return project_root / "styles" / "auditflow.css"

@@ -152,8 +152,8 @@ def create_initial_project(
 
     project_text_templates = {
         ".gitignore": project_root / ".gitignore",
-        "_quarto.yml": project_root / "_quarto.yml",
         "styles/auditflow.css": project_root / "styles" / "auditflow.css",
+        "styles/quarto-html.yml": project_root / "styles" / "quarto-html.yml",
     }
 
     for template_name, target_path in project_text_templates.items():
