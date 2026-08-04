@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## 0.2.0 - 2026-08-04
+
+- added Russian document templates selected with `auditflow init --language ru`;
+- added project language settings, Russian workpaper parsing, and Russian documentation;
+- added OpenAI-compatible and Anthropic Claude provider adapters with structured output;
+- made automatic AI output language follow the project language;
+- added `auditflow --version` and a single package-version source;
 - fixed and consolidated the procurement example analysis;
 - added candidate review evidence and reproducible example tests;
 - added optional analysis and test dependencies;

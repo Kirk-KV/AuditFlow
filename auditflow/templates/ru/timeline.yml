@@ -1,0 +1,32 @@
+timeline:
+  plan:
+    start: ""
+    notification: ""
+    planning_document: ""
+    audit_program: ""
+    fieldwork_end: ""
+    draft_report: ""
+    final_report: ""
+  fact:
+    start: ""
+    notification: ""
+    planning_document: ""
+    audit_program: ""
+    fieldwork_end: ""
+    draft_report: ""
+    final_report: ""
+    planning_completed: ""
+    audit_program_initiated: ""
+    fieldwork_started: ""
+    fieldwork_completed: ""
+    draft_report_created: ""
+    feedback_requested: ""
+    archive_created: ""
+
+events: []
+
+notes: >
+  Плановые даты вводятся вручную. Фактические даты обновляются командами AuditFlow
+  на основании зарегистрированных событий. Введенные вручную фактические даты
+  сохраняются, если явно не выбран режим перезаписи.
+

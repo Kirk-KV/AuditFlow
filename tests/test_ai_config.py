@@ -38,6 +38,28 @@ class AIConfigTests(unittest.TestCase):
         self.assertEqual(config.model, "qwen3:8b")
         self.assertFalse(config.rules.allow_raw_evidence)
         self.assertTrue(config.rules.require_preflight)
+        self.assertEqual(config.output_language, "English")
+
+    def test_auto_output_language_uses_project_language(self) -> None:
+        project_root = self.make_project({"output_language": "auto"})
+        (project_root / "00_admin" / "settings.yml").write_text(
+            "language: ru\n",
+            encoding="utf-8",
+        )
+
+        config = resolve_ai_config(project_root, environ={})
+
+        self.assertEqual(config.output_language, "Russian")
+
+    def test_invalid_project_language_is_reported_as_ai_config_error(self) -> None:
+        project_root = self.make_project({"output_language": "auto"})
+        (project_root / "00_admin" / "settings.yml").write_text(
+            "language: unsupported\n",
+            encoding="utf-8",
+        )
+
+        with self.assertRaisesRegex(AIConfigError, "automatic AI output language"):
+            resolve_ai_config(project_root, environ={})
 
     def test_company_policy_controls_destination_and_allowed_model(self) -> None:
         project_root = self.make_project(
@@ -158,6 +180,46 @@ class AIConfigTests(unittest.TestCase):
                 project_root,
                 environ={"AUDITFLOW_AI_POLICY": str(policy_path)},
             )
+
+    def test_anthropic_profile_is_supported(self) -> None:
+        project_root = self.make_project(
+            {
+                "enabled": True,
+                "profile": "external_claude",
+                "project_classification": "internal",
+            }
+        )
+        policy_path = self.write_policy(
+            project_root,
+            {
+                "schema_version": 1,
+                "policy_id": "company-policy-1",
+                "default_profile": "external_claude",
+                "profiles": {
+                    "external_claude": {
+                        "provider": "anthropic",
+                        "base_url": "https://api.anthropic.com/v1",
+                        "api_key_env": "ANTHROPIC_API_KEY",
+                        "default_model": "claude-approved",
+                        "allowed_models": ["claude-approved"],
+                        "data_boundary": "external",
+                        "allowed_classifications": ["internal"],
+                    }
+                },
+                "rules": {"allow_external_providers": True},
+            },
+        )
+
+        config = resolve_ai_config(
+            project_root,
+            environ={
+                "AUDITFLOW_AI_POLICY": str(policy_path),
+                "ANTHROPIC_API_KEY": "secret-value",
+            },
+        )
+
+        self.assertEqual(config.profile.provider, "anthropic")
+        self.assertTrue(config.api_key_configured)
 
 
 if __name__ == "__main__":

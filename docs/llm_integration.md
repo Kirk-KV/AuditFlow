@@ -22,7 +22,14 @@ Use `--dry-run` first. It resolves the effective policy, assembles the exact sou
 
 ## Current Provider Support
 
-The implemented runtime adapter is Ollama. The policy schema reserves `openai_compatible` and `huggingface` provider names for future adapters, but those adapters are not implemented yet.
+Implemented provider adapters:
+
+- `ollama` for local or company-hosted Ollama;
+- `openai_compatible` for OpenAI and compatible corporate gateways;
+- `anthropic` for Claude through the
+  [Anthropic Messages API](https://platform.claude.com/docs/en/api/messages/create).
+
+OpenAI-compatible profiles use `json_schema` structured output by default. A compatible gateway that supports JSON mode but not JSON Schema can set `options.response_format: json_object`. Anthropic profiles use `output_config.format` and therefore require a Claude model that supports structured outputs. AuditFlow validates every returned object again against its full local schema.
 
 Qwen3 8B is the default demonstration model, not a framework requirement. A company can approve another model through its policy. Hardware sizing and model selection belong to the deployment environment, not to an audit project.
 
@@ -70,6 +77,7 @@ The built-in local profile uses `http://127.0.0.1:11434`. Local-machine profiles
 - output language.
 
 It cannot set a provider URL, API key, or relax security rules.
+`output_language: auto` resolves to the document language stored in `00_admin/settings.yml`; it can also be set explicitly.
 
 Company-wide settings belong in a separate policy file referenced by `AUDITFLOW_AI_POLICY`:
 
@@ -116,6 +124,66 @@ rules:
 The policy controls destinations, model allowlists, permitted classifications, external-provider use, confirmation, sensitive-data handling, and retention of prompts/responses. API keys belong in the environment variable named by `api_key_env`; they must not be stored in YAML.
 
 `require_preflight` cannot be disabled. Non-local endpoints must use HTTPS. An external profile is rejected unless the policy explicitly allows external providers.
+
+### OpenAI-compatible profile
+
+Add a profile like this to the company policy and replace the model allowlist with models
+approved by the company:
+
+```yaml
+profiles:
+  external_openai:
+    provider: openai_compatible
+    base_url: https://api.openai.com/v1
+    api_key_env: OPENAI_API_KEY
+    default_model: company-approved-openai-model
+    allowed_models: [company-approved-openai-model]
+    data_boundary: external
+    allowed_classifications: [public, internal]
+    options:
+      response_format: json_schema
+      temperature: 0
+      timeout_seconds: 300
+
+rules:
+  allow_external_providers: true
+  require_confirmation_for_external: true
+```
+
+Set the key outside the project:
+
+```powershell
+$env:OPENAI_API_KEY = "<key>"
+```
+
+### Anthropic Claude profile
+
+```yaml
+profiles:
+  external_claude:
+    provider: anthropic
+    base_url: https://api.anthropic.com/v1
+    api_key_env: ANTHROPIC_API_KEY
+    default_model: company-approved-claude-model
+    allowed_models: [company-approved-claude-model]
+    data_boundary: external
+    allowed_classifications: [public, internal]
+    options:
+      max_tokens: 4096
+      temperature: 0
+      timeout_seconds: 300
+
+rules:
+  allow_external_providers: true
+  require_confirmation_for_external: true
+```
+
+```powershell
+$env:ANTHROPIC_API_KEY = "<key>"
+```
+
+Select the approved profile in `00_admin/ai.yml`, run `auditflow ai status`, and then perform a `--dry-run`. Provider model names and capabilities change independently of AuditFlow, so keep them in company policy rather than in project templates.
+The commands above set keys only for the current PowerShell session. In a company deployment, inject them through the approved secret manager instead of storing them in the audit project or policy file.
 
 ## Data-Minimization Rules
 
@@ -188,4 +256,4 @@ The manifest records the policy ID/hash, destination, requested and returned mod
 - Investigate sensitive-data warnings before sending context outside an approved boundary.
 - Keep final wording, ratings, scope, test design, and conclusions auditor-owned.
 
-The local Qwen3 8B profile is suitable for demonstrating the integration but may still lose qualifiers, infer unsupported causes, or classify a risk inconsistently with the elements it extracted. AuditFlow adds deterministic warnings for some known drafting and risk-structure errors, but these checks do not make model output authoritative.
+The local Qwen3 8B profile is suitable for demonstrating the integration but may still lose qualifiers, infer unsupported causes, or classify a risk inconsistently with the elements it extracted. The same limitations apply to external models. AuditFlow adds deterministic warnings for some known drafting and risk-structure errors, but these checks do not make model output authoritative.

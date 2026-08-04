@@ -1,0 +1,59 @@
+---
+title: "История аудита"
+metadata-files:
+  - ../styles/quarto-html.yml
+---
+
+<!-- AUTO:COVER START -->
+<!-- AUTO:COVER END -->
+
+# История аудита на одной странице
+
+<!-- AUTO:ONE_PAGE_STORY START -->
+<!-- AUTO:ONE_PAGE_STORY END -->
+
+# Исходные предпосылки
+
+<!-- AUTO:INITIAL_ASSUMPTIONS START -->
+<!-- AUTO:INITIAL_ASSUMPTIONS END -->
+
+# Что изменилось при планировании и почему
+
+<!-- AUTO:PLANNING_DECISIONS START -->
+<!-- AUTO:PLANNING_DECISIONS END -->
+
+# Изменение периметра и рисков
+
+<!-- AUTO:SCOPE_RISK_EVOLUTION START -->
+<!-- AUTO:SCOPE_RISK_EVOLUTION END -->
+
+# Что было протестировано и какие выводы получены
+
+<!-- AUTO:TESTING_TRACEABILITY START -->
+<!-- AUTO:TESTING_TRACEABILITY END -->
+
+# Наблюдения и итоговый результат
+
+<!-- AUTO:OBSERVATIONS_OUTCOME START -->
+<!-- AUTO:OBSERVATIONS_OUTCOME END -->
+
+# Карта доказательств и документов
+
+<!-- AUTO:EVIDENCE_MAP START -->
+<!-- AUTO:EVIDENCE_MAP END -->
+
+# Полученный опыт
+
+<!-- MANUAL:LESSONS_LEARNED START -->
+::: {.manual-block}
+После завершения аудита зафиксируйте полученный опыт.
+
+Возможные вопросы:
+
+- Какие предпосылки планирования оказались неверными?
+- Какие аналитические процедуры или скрипты стоит использовать повторно?
+- Какие ограничения данных следует устранить до следующего мониторинга?
+- Что команда сделала бы иначе в следующий раз?
+:::
+<!-- MANUAL:LESSONS_LEARNED END -->
+

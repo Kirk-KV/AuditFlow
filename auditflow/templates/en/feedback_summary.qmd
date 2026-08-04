@@ -1,0 +1,58 @@
+---
+title: "Feedback Summary"
+metadata-files:
+  - ../styles/quarto-html.yml
+---
+
+# Feedback summary
+
+**Audit:** $audit_title
+
+**Generated:** $generated_date
+
+## Executive view
+
+| Metric | Value |
+|---|---:|
+| Requests sent | $sent_count |
+| Responses received | $received_count |
+| Responses not received | $missing_count |
+| Overall average score | $overall_average |
+
+## Response status by recipient
+
+| Name | Role | Email | Request sent | Response status | Received date | Average score | Original response file |
+|---|---|---|---|---|---|---:|---|
+$recipient_rows
+
+## Results by question
+
+| Question ID | Question | Responses | Average score | Comments |
+|---|---|---:|---:|---|
+$question_rows
+
+## Detailed answers
+
+| Recipient | Response received | Question ID | Question | Score | Comment |
+|---|---|---|---|---|---|
+$detailed_rows
+
+## Open feedback
+
+$open_feedback
+
+## Requests without response
+
+$missing_items
+
+## Validation notes
+
+$validation_notes
+
+## Notes for auditor
+
+This summary is generated from YAML response templates in `08_feedback/response/`.
+
+Original replies should be saved in `08_feedback/response/original/` and referenced in
+`response.original_response_file` inside each response template.
+

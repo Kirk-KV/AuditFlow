@@ -54,6 +54,75 @@ class AIQualityTests(unittest.TestCase):
 
         self.assertFalse(evaluate_observation_draft(self.context(), content))
 
+    def test_flags_russian_lost_qualifier_and_control_failure_as_cause(self) -> None:
+        context = ObservationContext(
+            workpaper_ref="WP-C-001",
+            test_id="T-001",
+            risk_id="R-001",
+            risk_text="Риск несогласованных закупок",
+            control_id="C-001",
+            fragments=(),
+            workpaper_sections={
+                "Results": (
+                    "Подтвержден 31 случай, еще 7 случаев остались "
+                    "неразрешёнными."
+                ),
+                "Conclusion": "Необходимо сформировать наблюдение.",
+            },
+        )
+        content = {
+            "observation_needed": True,
+            "draft": {
+                "title": "Несогласованные закупки",
+                "condition": "Выявлен 31 подтвержденный случай.",
+                "criteria": "Закупки должны быть согласованы.",
+                "cause": "Контроль не сработал эффективно.",
+                "risk_effect": "Возможны несанкционированные закупки.",
+                "recommendation": "Усилить контроль согласования.",
+            },
+            "missing_information": [],
+        }
+
+        findings = evaluate_observation_draft(context, content)
+
+        self.assertEqual(
+            {item.code for item in findings},
+            {"qualifier_not_preserved", "cause_restates_control_failure"},
+        )
+
+    def test_accepts_russian_unresolved_qualifier_with_another_ending(self) -> None:
+        context = ObservationContext(
+            workpaper_ref="WP-C-001",
+            test_id="T-001",
+            risk_id="R-001",
+            risk_text="Риск несогласованных закупок",
+            control_id="C-001",
+            fragments=(),
+            workpaper_sections={
+                "Results": "7 случаев остались неразрешёнными.",
+                "Conclusion": "Необходимо сформировать наблюдение.",
+            },
+        )
+        content = {
+            "observation_needed": True,
+            "draft": {
+                "title": "Несогласованные закупки",
+                "condition": "7 случаев остаются неразрешенными.",
+                "criteria": "Закупки должны быть согласованы.",
+                "cause": "Маршрут согласования не учитывает замещение.",
+                "risk_effect": "Возможны несанкционированные закупки.",
+                "recommendation": "Настроить маршрут замещения.",
+            },
+            "missing_information": [],
+        }
+
+        findings = evaluate_observation_draft(context, content)
+
+        self.assertNotIn(
+            "qualifier_not_preserved",
+            {item.code for item in findings},
+        )
+
     def test_flags_risk_structure_that_omits_a_populated_cause(self) -> None:
         content = {
             "risk_reviews": [

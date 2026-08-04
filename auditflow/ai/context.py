@@ -21,6 +21,11 @@ WORKPAPER_SECTIONS = {
     "conclusion": "Conclusion",
     "observation proposal": "Observation proposal",
     "potential observation": "Observation proposal",
+    "выполненная работа": "Work performed",
+    "использованные и оцененные доказательства": "Evidence used and evaluated",
+    "результаты": "Results",
+    "вывод": "Conclusion",
+    "предлагаемое наблюдение": "Observation proposal",
 }
 
 

@@ -1,0 +1,145 @@
+planning:
+  audit_default: Audit
+  not_documented: _Not documented._
+  annual_plan_rows:
+    - Audit source
+    - Annual plan year
+    - Original topic
+    - Why included
+    - Expected value
+  field_header: Field
+  value_header: Value
+  objective_headers: [Objective ID, Statement]
+  risk_headers: [Risk ID, Title, Source, Preliminary rating, Rationale]
+  in_scope: In scope
+  out_of_scope: Out of scope
+  rationale: Rationale
+  required_attention: Required attention
+  keep_in_mind: Keep in mind
+
+audit_program:
+  no_control_design: No control is identified in planning_decision.yml.
+  no_control_warning: No valid control id is identified for this included risk in planning_decision.yml.
+  note: >-
+    This audit program is a working matrix generated from planning_decision.yml.
+    The auditor completes or adjusts test_hypothesis and test_script here.
+    Conclusions and evidence evaluation are documented in workpapers.
+
+workpaper:
+  default_title: Workpaper
+
+report:
+  internal_audit: Internal Audit
+  company_logo_alt: Company logo
+  audit_objective: Audit objective
+  scope: Scope
+  in_scope: In scope
+  out_of_scope: Out of scope
+  period_reviewed: Period reviewed
+  audit_id: Audit ID
+  not_documented: Not documented
+  not_assessed: Not assessed
+  no_observations: _No observations created yet._
+  untitled_observation: Untitled observation
+  executive_summary_placeholder: Executive summary wording to be completed by auditor.
+  action_plan: Management action plan
+  action_plan_missing: Management action plan has not yet been documented or agreed.
+  status: Status
+  risk: Risk
+  workpaper: Workpaper
+  criteria: Criteria
+  condition: Condition
+  cause: Cause
+  risk_effect: Risk / Effect
+  recommendation: Internal audit recommendation
+  to_be_completed: To be completed.
+  engagement_lead: Engagement Lead
+  reviewer: Reviewer
+  report_recipients: Report recipients
+  audit_team: Audit team
+  no_recipients: No report recipients documented.
+  no_team: No audit team documented.
+
+archive:
+  internal_audit: Internal Audit
+  no_data: _No data available._
+  company: Company
+  audit_period: Audit period
+  audit_id: Audit ID
+  item: Item
+  value: Value
+  audit: Audit
+  program_rows: Program rows
+  observations: Observations
+  story_prompt: Add a short narrative explaining what changed from initial plan to final conclusion.
+  risk_headers: [Risk ID, Title, Initial rationale, Preliminary rating]
+  included_risks: Included risks
+  included_headers: [Risk ID, Title, Rationale, Planned response]
+  excluded_risks: Excluded risks
+  excluded_headers: [Risk ID, Title, Rationale]
+  final_in_scope: Final in-scope areas
+  final_out_of_scope: Final out-of-scope areas
+  not_documented: _Not documented._
+  testing_headers: [Test ID, Risk, Control, Hypothesis, Workpaper]
+  observation_headers: [ID, Title, Severity, Status, Workpaper]
+  evidence_headers: [File, Notes]
+
+feedback:
+  audit_default: Audit
+  request_subject: "Feedback request: {audit_name}"
+  requested_response_date: "Requested response date: {date}"
+  score: Score
+  comment: Comment
+  answer: Answer
+  "yes": "Yes"
+  "no": "No"
+  received: Received
+  received_inferred: Received (inferred)
+  not_received: Not received
+  no_validation_notes: _No validation notes._
+  inferred_note: >-
+    {name}: response was treated as received because the template contains entered
+    scores/comments, but `response.received` is still `false`.
+  no_open_feedback: _No open feedback captured._
+  all_received: _All requested responses were received._
+  score_guidance: >-
+    Please score each question from 1 (disagree) to 5 (strongly agree).
+    Use N/A only if the question does not apply.
+  questions:
+    - id: Q01
+      question: The audit objectives, scope, and expected outcome were clear.
+    - id: Q02
+      question: The audit was planned and organized in a way that made the required involvement clear in advance.
+    - id: Q03
+      question: Communication throughout the audit was timely and effective.
+    - id: Q04
+      question: Internal Audit demonstrated a good understanding of our business process, risks, and controls.
+    - id: Q05
+      question: Information requests were clear, reasonable, and proportionate to the audit objectives.
+    - id: Q06
+      question: Facts, comments, and your point of view were properly considered when preparing the audit report.
+    - id: Q07
+      question: Audit observations and recommendations were practical, realistic, and likely to improve the process or control environment.
+    - id: Q08
+      question: The audit focused on the areas that mattered most.
+    - id: Q09
+      question: If another audit were performed in your area, you would welcome Internal Audit involvement again.
+  open_questions:
+    - id: O01
+      question: What was most useful in this audit?
+    - id: O02
+      question: What should Internal Audit improve in future audits?
+    - id: O03
+      question: Is there anything you expected from this audit but did not receive?
+
+terms:
+  severity:
+    high: High
+    medium: Medium
+    low: Low
+    not assessed: Not assessed
+  status:
+    draft: Draft
+    validated: Validated
+    final: Final
+    closed: Closed

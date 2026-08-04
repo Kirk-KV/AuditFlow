@@ -1,6 +1,6 @@
 # Contributing
 
-AuditFlow is a file-based internal audit workflow tool. Changes should keep audit work traceable, reproducible, and practical.
+Changes should keep audit work traceable, reproducible, and practical.
 
 ## Setup
 
@@ -9,8 +9,7 @@ python -m pip install -c requirements-dev.lock -e ".[analysis,test]"
 auditflow --help
 ```
 
-`requirements-dev.lock` pins the direct dependencies selected for development
-and CI. End users do not need this file for a normal AuditFlow installation.
+`requirements-dev.lock` pins the direct dependencies selected for development and CI. End users do not need this file for a normal AuditFlow installation.
 
 ## Checks
 
@@ -37,3 +36,28 @@ If you change schemas, validate the synthetic example files against the updated 
 ## Documentation
 
 Update documentation when a command, folder, template, or source-of-truth file changes.
+
+## Release
+
+1. Change `auditflow.__version__` in `auditflow/__init__.py`.
+2. Move the completed items from `Unreleased` in `CHANGELOG.md` to
+   `## <version> - <YYYY-MM-DD>` and add a new empty `Unreleased` section.
+3. Run the checks and build the wheel:
+
+```powershell
+python -m compileall auditflow
+python -m pytest -q
+python -m pip wheel . --no-deps --no-build-isolation --wheel-dir dist
+auditflow --version
+```
+
+4. Commit and create an annotated tag matching the package version:
+
+```powershell
+git add .
+git commit -m "Release <version>"
+git tag -a "v<version>" -m "AuditFlow <version>"
+git push origin main --follow-tags
+```
+
+5. In GitHub, open **Releases**, choose **Draft a new release**, select the tag, use the matching changelog section as release notes, attach the wheel from `dist/`, and publish.

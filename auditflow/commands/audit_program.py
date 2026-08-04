@@ -7,6 +7,8 @@ from typing import Any
 
 import yaml
 
+from auditflow.localization import load_messages, message, project_messages
+
 
 MANUAL_FIELDS = [
     "test_hypothesis",
@@ -149,6 +151,7 @@ def build_control_program_row(
     control: dict[str, Any],
     risk: dict[str, Any],
     existing_row: dict[str, Any] | None,
+    no_control_design: str,
 ) -> dict[str, Any]:
     control_id = get_control_id(control)
     test_id = make_test_id(index)
@@ -156,7 +159,7 @@ def build_control_program_row(
     default_design_assessment = ""
 
     if not control_id:
-        default_design_assessment = "No control is identified in planning_decision.yml."
+        default_design_assessment = no_control_design
 
     new_row = {
         "test_id": test_id,
@@ -199,6 +202,7 @@ def existing_rows_by_key(existing_program: dict[str, Any] | None) -> dict[str, d
 def build_program_rows(
     planning_decision: dict[str, Any],
     existing_program: dict[str, Any] | None,
+    messages: dict[str, Any],
 ) -> list[dict[str, Any]]:
     included_risks = planning_decision.get("included_risks", [])
     risks_by_id = index_by(included_risks, "id")
@@ -234,7 +238,7 @@ def build_program_rows(
                 "risk_id": risk_id,
                 "description": "",
                 "owner": "",
-                "design_assessment": "No control is identified in planning_decision.yml.",
+                "design_assessment": message(messages, "audit_program.no_control_design"),
             }
         ]
 
@@ -249,6 +253,7 @@ def build_program_rows(
                 control=control,
                 risk=risks_by_id[risk_id],
                 existing_row=existing_row,
+                no_control_design=message(messages, "audit_program.no_control_design"),
             )
 
             rows.append(row)
@@ -257,7 +262,10 @@ def build_program_rows(
     return rows
 
 
-def build_planning_warnings(planning_decision: dict[str, Any]) -> dict[str, Any]:
+def build_planning_warnings(
+    planning_decision: dict[str, Any],
+    messages: dict[str, Any],
+) -> dict[str, Any]:
     included_risks = planning_decision.get("included_risks", [])
     risks_by_id = index_by(included_risks, "id")
     included_risk_ids = set(risks_by_id)
@@ -281,7 +289,7 @@ def build_planning_warnings(planning_decision: dict[str, Any]) -> dict[str, Any]
             {
                 "risk_id": risk_id,
                 "risk_title": get_risk_title(risk),
-                "message": "No valid control id is identified for this included risk in planning_decision.yml.",
+                "message": message(messages, "audit_program.no_control_warning"),
             }
         )
 
@@ -293,24 +301,23 @@ def build_planning_warnings(planning_decision: dict[str, Any]) -> dict[str, Any]
 def build_audit_program(
     planning_decision: dict[str, Any],
     existing_program: dict[str, Any] | None,
+    messages: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
+    messages = messages or load_messages("en")
     return {
         "program": {
             "status": "draft",
             "source": {
                 "planning_decision": "01_planning/planning_decision.yml",
             },
-            "note": (
-                "This audit program is a working matrix generated from planning_decision.yml. "
-                "The auditor completes or adjusts test_hypothesis and test_script here. "
-                "Conclusions and evidence evaluation are documented in workpapers."
-            ),
+            "note": message(messages, "audit_program.note"),
         },
         "program_rows": build_program_rows(
             planning_decision=planning_decision,
             existing_program=existing_program,
+            messages=messages,
         ),
-        "planning_warnings": build_planning_warnings(planning_decision),
+        "planning_warnings": build_planning_warnings(planning_decision, messages),
     }
 
 
@@ -327,6 +334,7 @@ def create_audit_program(project_root: Path, overwrite: bool = False) -> dict[st
     audit_program = build_audit_program(
         planning_decision=planning_decision,
         existing_program=existing_program,
+        messages=project_messages(project_root),
     )
 
     write_yaml(audit_program_path, audit_program)

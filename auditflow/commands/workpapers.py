@@ -7,7 +7,12 @@ from typing import Any
 
 import yaml
 
-from auditflow.template_utils import render_template
+from auditflow.localization import (
+    message,
+    project_messages,
+    read_project_language,
+    render_localized_template,
+)
 
 
 def load_yaml(path: Path) -> dict[str, Any]:
@@ -26,13 +31,13 @@ def text_value(value: Any) -> str:
     return "" if value is None else str(value).strip()
 
 
-def workpaper_title(row: dict[str, Any]) -> str:
+def workpaper_title(row: dict[str, Any], default_title: str = "Workpaper") -> str:
     workpaper_ref = text_value(row.get("workpaper_ref", ""))
     control_description = text_value(row.get("control_description", ""))
     risk_title = text_value(row.get("risk_title", ""))
     test_id = text_value(row.get("test_id", ""))
 
-    subject = control_description or risk_title or test_id or "Workpaper"
+    subject = control_description or risk_title or test_id or default_title
 
     if workpaper_ref:
         return f"{workpaper_ref} — {subject}"
@@ -40,18 +45,24 @@ def workpaper_title(row: dict[str, Any]) -> str:
     return subject
 
 
-def build_workpaper_qmd(row: dict[str, Any]) -> str:
+def build_workpaper_qmd(
+    row: dict[str, Any],
+    *,
+    language: str = "en",
+    default_title: str = "Workpaper",
+) -> str:
     workpaper_ref = text_value(row.get("workpaper_ref", ""))
 
     if not workpaper_ref:
         raise ValueError("Program row is missing workpaper_ref.")
 
-    return render_template(
+    return render_localized_template(
         "workpaper.qmd",
         {
-            "title": workpaper_title(row).replace('"', "'"),
+            "title": workpaper_title(row, default_title=default_title).replace('"', "'"),
             "workpaper_ref": workpaper_ref,
         },
+        language,
     )
 
 
@@ -62,6 +73,8 @@ def generate_workpapers(project_root: Path, overwrite: bool = False) -> dict[str
 
     audit_program = load_yaml(audit_program_path)
     rows = audit_program.get("program_rows", [])
+    language = read_project_language(project_root)
+    messages = project_messages(project_root)
 
     if not isinstance(rows, list):
         raise ValueError("Expected audit_program.yml to contain a list field: program_rows")
@@ -86,7 +99,14 @@ def generate_workpapers(project_root: Path, overwrite: bool = False) -> dict[str
             skipped += 1
             continue
 
-        target.write_text(build_workpaper_qmd(row), encoding="utf-8")
+        target.write_text(
+            build_workpaper_qmd(
+                row,
+                language=language,
+                default_title=message(messages, "workpaper.default_title"),
+            ),
+            encoding="utf-8",
+        )
         created += 1
 
     return {

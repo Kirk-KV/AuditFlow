@@ -16,6 +16,7 @@ audit_project/
   initial_data.yml              # info from the annual audit plan
 
   00_admin/
+    settings.yml                # document language; absent means en
     ai.yml                      # project AI choices within company policy
     stakeholders.yml            # those who will receive the report
     team.yml                    # audit team
@@ -79,9 +80,7 @@ audit_project/
 
 This structure is a starting point. A small audit may use fewer files, a complex one may require additional folders, more detailed workpapers, or separate sub-projects.
 
-AuditFlow QMD files are rendered individually and load shared settings from
-`styles/quarto-html.yml`. The audit folder intentionally has no `_quarto.yml`,
-so Quarto keeps temporary rendering files in the local system temp directory
+AuditFlow QMD files are rendered individually and load shared settings from `styles/quarto-html.yml`. The audit folder intentionally has no `_quarto.yml`, so Quarto keeps temporary rendering files in the local system temp directory
 instead of creating a project session under the audit folder.
 
 Optional files could be:
@@ -154,7 +153,15 @@ Do not use `initial_data.yml` as the live current state of the audit. Later deci
 
 ## `00_admin/`
 
-The folder contains administrative and governance information about the audit: AI choices, stakeholders, team, timeline and decisions.
+The folder contains administrative and governance information about the audit: project language, AI choices, stakeholders, team, timeline and decisions.
+
+`settings.yml` is intentionally small:
+
+```yaml
+language: en
+```
+
+Supported values are `en` and `ru`. The setting changes human-readable templates and generated labels, not YAML keys, IDs, statuses, paths, or CLI commands. Existing projects without the file default to English.
 
 ### `ai.yml`
 

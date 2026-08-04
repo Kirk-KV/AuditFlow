@@ -1,0 +1,218 @@
+---
+title: "$title"
+metadata-files:
+  - ../styles/quarto-html.yml
+auditflow:
+  workpaper_ref: "$workpaper_ref"
+---
+
+```{python}
+#| label: setup
+#| echo: false
+
+from pathlib import Path
+import html
+import yaml
+from IPython.display import HTML, display
+
+
+def find_audit_project_root(start: Path) -> Path:
+    current = start.resolve()
+
+    while current != current.parent:
+        if (current / "03_audit_program" / "audit_program.yml").exists():
+            return current
+        current = current.parent
+
+    raise FileNotFoundError(
+        "Не найден 03_audit_program/audit_program.yml. "
+        "Запустите документ из проекта аудита."
+    )
+
+
+def escape(value) -> str:
+    return html.escape("" if value is None else str(value))
+
+
+def text_value(value) -> str:
+    return "" if value is None else str(value).strip()
+
+
+def render_metadata_card(row: dict) -> str:
+    control_id = text_value(row.get("control_id", ""))
+    gap_id = text_value(row.get("gap_id", ""))
+
+    if control_id:
+        control_or_gap = f'{control_id} — {text_value(row.get("control_description", ""))}'
+    elif gap_id:
+        control_or_gap = f'{gap_id} — {text_value(row.get("control_description", ""))}'
+    else:
+        control_or_gap = text_value(row.get("control_description", ""))
+
+    fields = [
+        ("Рабочий документ", row.get("workpaper_ref", "")),
+        ("ID теста", row.get("test_id", "")),
+        ("Риск", f'{text_value(row.get("risk_id", ""))} — {text_value(row.get("risk_title", ""))}'),
+        ("Контроль / пробел", control_or_gap),
+        ("Владелец", row.get("control_owner", "")),
+        ("Оценка дизайна", row.get("design_assessment", "")),
+        ("Подход к тестированию", row.get("planning_approach", "")),
+    ]
+
+    rows_html = "\n".join(
+        f"<dt>{escape(label)}</dt><dd>{escape(value)}</dd>"
+        for label, value in fields
+        if text_value(value)
+    )
+
+    return f"""
+<div class="audit-meta">
+<div class="audit-meta-title">Метаданные рабочего документа</div>
+<dl>
+{rows_html}
+</dl>
+</div>
+"""
+
+
+def render_text_block(value) -> str:
+    text = text_value(value)
+
+    if not text:
+        return "<p><em>Не заполнено в audit_program.yml.</em></p>"
+
+    return "<p>" + escape(text).replace("\n", "<br>") + "</p>"
+
+
+def render_ordered_list(items) -> str:
+    if not items:
+        return "<p><em>Не заполнено в audit_program.yml.</em></p>"
+
+    if isinstance(items, str):
+        items = [items]
+
+    list_items = "\n".join(
+        f"<li>{escape(item)}</li>"
+        for item in items
+    )
+
+    return f"""
+<ol class="audit-procedure-list">
+{list_items}
+</ol>
+"""
+
+
+audit_project_root = find_audit_project_root(Path.cwd())
+audit_program_path = audit_project_root / "03_audit_program" / "audit_program.yml"
+
+audit_program = yaml.safe_load(
+    audit_program_path.read_text(encoding="utf-8")
+) or {}
+
+workpaper_ref = "$workpaper_ref"
+
+program_rows = audit_program.get("program_rows", [])
+matching_rows = [
+    row for row in program_rows
+    if row.get("workpaper_ref") == workpaper_ref
+]
+
+if not matching_rows:
+    raise ValueError(f"Ссылка на рабочий документ не найдена в audit_program.yml: {workpaper_ref}")
+
+program_row = matching_rows[0]
+```
+
+```{python}
+#| label: workpaper-context
+#| echo: false
+
+display(HTML(render_metadata_card(program_row)))
+```
+
+## Гипотеза теста
+
+```{python}
+#| label: test-hypothesis
+#| echo: false
+
+display(HTML(render_text_block(program_row.get("test_hypothesis", ""))))
+```
+
+## Плановая процедура тестирования
+
+```{python}
+#| label: planned-test-script
+#| echo: false
+
+display(HTML(render_ordered_list(program_row.get("test_script", []) or [])))
+```
+
+---
+
+## Выполненная работа
+
+Опишите выполненную работу
+
+Укажите существенные детали:
+
+- использованные источники данных;
+- выполненные скрипты, запросы или аналитические процедуры;
+- отобранные выборки;
+- направленные дополнительные запросы;
+- полученные пояснения менеджмента;
+- выявленные ограничения.
+
+## Доказательства
+
+Перечислите фактически использованные доказательства и поясните, были ли они достаточными
+и надежными для цели теста.
+
+Ссылайтесь на файлы, не копируя их содержимое.
+
+Примеры:
+
+```markdown
+- [Исходные данные](../04_evidence/02_raw_data/source_file.ext)
+- [Дополнительный запрос](../04_evidence/03_correspondence/follow_up.ext)
+- [Снимок экрана](../04_evidence/05_screenshots/screenshot.png)
+- [Результат анализа](../04_evidence/99_generated/result.ext)
+```
+
+Используйте обычные Markdown-ссылки. `auditflow validate` проверяет локальные ссылки,
+которые разрешаются внутри `04_evidence`.
+
+## Результаты
+
+Кратко изложите результаты теста.
+
+Укажите:
+
+- проверенную генеральную совокупность;
+- количество исключений;
+- сумму исключений, если применимо;
+- рассмотренные примеры;
+- подтвержденные исключения;
+- ложноположительные или исключенные элементы;
+- неразрешенные вопросы.
+
+## Вывод
+
+Сформулируйте вывод по рабочей бумаге.
+
+При тестировании контроля укажите, работал ли контроль эффективно.
+
+При анализе данных или индикаторов риска укажите, подтвердился ли индикатор и требуется ли
+формирование аудиторского наблюдения.
+
+## Предлагаемое наблюдение
+
+Заполните небольшой YAML-блок, только если вывод по рабочей бумаге требует создания наблюдения.
+
+Если наблюдение не требуется, оставьте название пустым.
+
+```yaml
+proposed_observation:
+  title: ""
+```

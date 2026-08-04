@@ -5,6 +5,7 @@ from pathlib import Path
 import yaml
 from typer.testing import CliRunner
 
+from auditflow import __version__
 from auditflow.cli import app
 from auditflow.commands.validate import validate_project
 
@@ -22,6 +23,13 @@ def invoke(runner: CliRunner, *args: str) -> str:
     return result.output
 
 
+def test_cli_reports_installed_version() -> None:
+    result = CliRunner().invoke(app, ["--version"])
+
+    assert result.exit_code == 0
+    assert result.stdout.strip() == f"AuditFlow {__version__}"
+
+
 def test_cli_lifecycle_preserves_manual_work_and_validates_strictly(
     tmp_path: Path,
 ) -> None:
@@ -30,6 +38,10 @@ def test_cli_lifecycle_preserves_manual_work_and_validates_strictly(
     project_arg = str(project)
 
     invoke(runner, "init", project_arg)
+    settings = yaml.safe_load(
+        (project / "00_admin" / "settings.yml").read_text(encoding="utf-8")
+    )
+    assert settings == {"language": "en"}
     assert not (project / "_quarto.yml").exists()
     shared_quarto_metadata = project / "styles" / "quarto-html.yml"
     assert shared_quarto_metadata.exists()

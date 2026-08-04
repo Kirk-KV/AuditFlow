@@ -14,11 +14,26 @@ from auditflow.ai.context import (
 
 
 TEMPLATE_GUIDANCE = {
-    "Work performed": "Describe what was actually done.",
-    "Evidence used": "List evidence actually used",
-    "Evidence used and evaluated": "List evidence actually used",
-    "Results": "Summarize the test results.",
-    "Conclusion": "State the workpaper conclusion.",
+    "Work performed": (
+        "Describe what was actually done.",
+        "Опишите выполненную работу",
+    ),
+    "Evidence used": (
+        "List evidence actually used",
+        "Перечислите фактически использованные доказательства",
+    ),
+    "Evidence used and evaluated": (
+        "List evidence actually used",
+        "Перечислите фактически использованные доказательства",
+    ),
+    "Results": (
+        "Summarize the test results.",
+        "Кратко изложите результаты теста.",
+    ),
+    "Conclusion": (
+        "State the workpaper conclusion.",
+        "Сформулируйте вывод по рабочей бумаге.",
+    ),
 }
 
 SENSITIVE_PATTERNS = {
@@ -106,7 +121,10 @@ def _check_required_context(context: ObservationContext) -> list[PreflightFindin
                     source,
                 )
             )
-        elif TEMPLATE_GUIDANCE[section_name].lower() in content.lower():
+        elif any(
+            guidance.lower() in content.lower()
+            for guidance in TEMPLATE_GUIDANCE[section_name]
+        ):
             findings.append(
                 PreflightFinding(
                     "error",
@@ -121,7 +139,7 @@ def _check_required_context(context: ObservationContext) -> list[PreflightFindin
             continue
         content = context.workpaper_sections[section_name].strip()
         guidance = TEMPLATE_GUIDANCE[section_name]
-        if not content or guidance.lower() in content.lower():
+        if not content or any(item.lower() in content.lower() for item in guidance):
             findings.append(
                 PreflightFinding(
                     "warning",

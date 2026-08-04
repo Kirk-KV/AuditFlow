@@ -5,6 +5,7 @@ from typing import Optional
 
 import typer
 
+from auditflow import __version__
 from auditflow.ai.config import AIConfigError, resolve_ai_config
 from auditflow.ai.providers import AIProviderError, create_provider
 from auditflow.ai.service import (
@@ -35,6 +36,7 @@ from auditflow.commands.report import update_report_qmd
 from auditflow.commands.status import get_status
 from auditflow.commands.validate import validate_project
 from auditflow.commands.workpapers import generate_workpapers
+from auditflow.localization import UnsupportedLanguageError
 from auditflow.project import AuditFlowProjectNotFound, relative_to_cwd, resolve_project
 from auditflow.timeline import record_event, refresh_timeline
 
@@ -59,6 +61,25 @@ app.add_typer(ai_app, name="ai")
 app.add_typer(evidence_app, name="evidence")
 
 
+def _version_callback(value: bool) -> None:
+    if value:
+        typer.echo(f"AuditFlow {__version__}")
+        raise typer.Exit()
+
+
+@app.callback()
+def main(
+    version: bool = typer.Option(
+        False,
+        "--version",
+        callback=_version_callback,
+        is_eager=True,
+        help="Show the installed AuditFlow version and exit.",
+    ),
+) -> None:
+    """Run AuditFlow commands."""
+
+
 def project_option() -> Optional[Path]:
     return typer.Option(
         None,
@@ -80,6 +101,12 @@ def require_project(project: Optional[Path]) -> Path:
 def init(
     path: Path = typer.Argument(..., help="Path where the audit project should be created. Use . for the current folder."),
     overwrite: bool = typer.Option(False, help="Overwrite existing starter files if they already exist."),
+    language: str = typer.Option(
+        "en",
+        "--language",
+        "-l",
+        help="Document language for the project: en or ru.",
+    ),
     brand_css: Optional[Path] = typer.Option(
         None,
         "--brand-css",
@@ -98,15 +125,21 @@ def init(
     ),
 ) -> None:
     """Create a new staged AuditFlow project."""
-    result = create_initial_project(
-        path,
-        overwrite=overwrite,
-        brand_css=brand_css,
-        report_css=report_css,
-    )
+    try:
+        result = create_initial_project(
+            path,
+            overwrite=overwrite,
+            brand_css=brand_css,
+            report_css=report_css,
+            language=language,
+        )
+    except UnsupportedLanguageError as exc:
+        typer.echo(f"Error: {exc}", err=True)
+        raise typer.Exit(code=2) from exc
     typer.echo(f"AuditFlow project created: {result['project_root']}")
     typer.echo(f"Created folders: {len(result['created_dirs'])}")
     typer.echo(f"Created files: {len(result['created_files'])}")
+    typer.echo(f"Document language: {result['language']}")
     record_event(
         result["project_root"],
         event="project_initialized",

@@ -7,7 +7,14 @@ from typing import Any
 
 import yaml
 
-from auditflow.template_utils import read_template
+from auditflow.localization import (
+    load_messages,
+    message,
+    project_messages,
+    read_localized_template,
+    read_project_language,
+    translated_term,
+)
 
 
 AUTO_BLOCK_RE = re.compile(
@@ -57,22 +64,28 @@ def nested_dict(data: dict[str, Any], key: str) -> dict[str, Any]:
     return value if isinstance(value, dict) else {}
 
 
-def list_items_html(items: Any, class_name: str = "scope-list") -> str:
+def list_items_html(
+    items: Any,
+    class_name: str = "scope-list",
+    not_documented: str = "Not documented.",
+) -> str:
     if not isinstance(items, list):
-        return "<p><em>Not documented.</em></p>"
+        return f"<p><em>{esc(not_documented)}</em></p>"
 
     values = [text(item) for item in items if text(item)]
     if not values:
-        return "<p><em>Not documented.</em></p>"
+        return f"<p><em>{esc(not_documented)}</em></p>"
 
     items_html = "".join(f"<li>{esc(item)}</li>" for item in values)
     return f'<ul class="{class_name}">{items_html}</ul>'
 
 
-def severity_badge(severity: Any) -> str:
-    value = text(severity) or "Not assessed"
+def severity_badge(severity: Any, messages: dict[str, Any] | None = None) -> str:
+    messages = messages or load_messages("en")
+    value = text(severity) or message(messages, "report.not_assessed")
     css_value = re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-") or "not-assessed"
-    return f'<span class="severity-badge severity-{esc(css_value)}">{esc(value)}</span>'
+    display_value = translated_term(messages, "severity", value)
+    return f'<span class="severity-badge severity-{esc(css_value)}">{esc(display_value)}</span>'
 
 
 def person_value(item: dict[str, Any], default_role: str = "") -> tuple[str, str, str]:
@@ -89,7 +102,11 @@ def person_value(item: dict[str, Any], default_role: str = "") -> tuple[str, str
     return name, role, email
 
 
-def person_card(item: dict[str, Any], default_role: str = "") -> str:
+def person_card(
+    item: dict[str, Any],
+    default_role: str = "",
+    not_documented: str = "Not documented",
+) -> str:
     name, role, email = person_value(item, default_role=default_role)
     if not name and not role and not email:
         return ""
@@ -98,7 +115,7 @@ def person_card(item: dict[str, Any], default_role: str = "") -> str:
     meta_html = f'<div class="person-meta">{esc(meta)}</div>' if meta else ""
     return (
         '<div class="person-card">'
-        f'<div class="person-name">{esc(name) or "Not documented"}</div>'
+        f'<div class="person-name">{esc(name) or esc(not_documented)}</div>'
         f"{meta_html}"
         "</div>"
     )
@@ -203,9 +220,13 @@ def read_stakeholders(project_root: Path) -> dict[str, Any]:
     return load_yaml(project_root / "00_admin" / "stakeholders.yml")
 
 
-def audit_title(initial_data: dict[str, Any]) -> str:
+def audit_title(
+    initial_data: dict[str, Any],
+    messages: dict[str, Any] | None = None,
+) -> str:
+    messages = messages or load_messages("en")
     audit = initial_data.get("audit", {})
-    return text(audit.get("title")) or "Internal Audit"
+    return text(audit.get("title")) or message(messages, "report.internal_audit")
 
 
 def audit_id(initial_data: dict[str, Any]) -> str:
@@ -246,10 +267,14 @@ def sponsor_name(stakeholders: dict[str, Any]) -> str:
 
 def build_cover(project_root: Path) -> str:
     initial = read_initial_data(project_root)
+    messages = project_messages(project_root)
     logo_path = project_root / "07_reporting" / "assets" / "company_logo.svg"
     logo_html = ""
     if logo_path.exists():
-        logo_html = '<div class="cover-logo"><img class="report-logo" src="assets/company_logo.svg" alt="Company logo"></div>'
+        logo_html = (
+            '<div class="cover-logo"><img class="report-logo" '
+            f'src="assets/company_logo.svg" alt="{esc(message(messages, "report.company_logo_alt"))}"></div>'
+        )
 
     return f"""```{{=html}}
 <div class="report-cover">
@@ -258,7 +283,7 @@ def build_cover(project_root: Path) -> str:
 <div class="cover-company">{esc(company(initial))}</div>
 </div>
 <div class="cover-title-block">
-<h1><span>{esc(audit_title(initial))}</span></h1>
+<h1><span>{esc(audit_title(initial, messages))}</span></h1>
 </div>
 </div>
 ```"""
@@ -266,6 +291,8 @@ def build_cover(project_root: Path) -> str:
 
 def build_audit_facts(project_root: Path) -> str:
     initial = read_initial_data(project_root)
+    messages = project_messages(project_root)
+    not_documented = message(messages, "report.not_documented")
     objectives = initial.get("objectives", [])
     scope = initial.get("scope", {})
     scope = scope if isinstance(scope, dict) else {}
@@ -283,24 +310,24 @@ def build_audit_facts(project_root: Path) -> str:
     return f"""```{{=html}}
 <div class="executive-facts-card">
 <div class="fact-row">
-<div class="fact-label">Audit objective</div>
-<div class="fact-value">{list_items_html(objective_items)}</div>
+<div class="fact-label">{esc(message(messages, "report.audit_objective"))}</div>
+<div class="fact-value">{list_items_html(objective_items, not_documented=not_documented)}</div>
 </div>
 <div class="fact-row">
-<div class="fact-label">Scope</div>
+<div class="fact-label">{esc(message(messages, "report.scope"))}</div>
 <div class="fact-value">
 <div class="scope-block">
-<div><strong>In scope</strong>{list_items_html(scope.get("in_scope", []))}</div>
-<div><strong>Out of scope</strong>{list_items_html(scope.get("out_of_scope", []))}</div>
+<div><strong>{esc(message(messages, "report.in_scope"))}</strong>{list_items_html(scope.get("in_scope", []), not_documented=not_documented)}</div>
+<div><strong>{esc(message(messages, "report.out_of_scope"))}</strong>{list_items_html(scope.get("out_of_scope", []), not_documented=not_documented)}</div>
 </div>
 </div>
 </div>
 <div class="fact-row">
-<div class="fact-label">Period reviewed</div>
+<div class="fact-label">{esc(message(messages, "report.period_reviewed"))}</div>
 <div class="fact-value">{esc(period(initial))}</div>
 </div>
 <div class="fact-row">
-<div class="fact-label">Audit ID</div>
+<div class="fact-label">{esc(message(messages, "report.audit_id"))}</div>
 <div class="fact-value">{esc(audit_id(initial))}</div>
 </div>
 </div>
@@ -309,19 +336,23 @@ def build_audit_facts(project_root: Path) -> str:
 
 def build_summary_observations(project_root: Path) -> str:
     observations = read_observations(project_root)
+    messages = project_messages(project_root)
 
     if not observations:
-        return "_No observations created yet._"
+        return message(messages, "report.no_observations")
 
     items = []
     for obs in observations:
-        title = text(obs.get("title")) or "Untitled observation"
-        summary = text(obs.get("executive_summary")) or "Executive summary wording to be completed by auditor."
+        title = text(obs.get("title")) or message(messages, "report.untitled_observation")
+        summary = text(obs.get("executive_summary")) or message(
+            messages,
+            "report.executive_summary_placeholder",
+        )
         items.append(
             '<li class="summary-observation-item">'
             '<div class="summary-observation-main">'
             f'<div class="summary-observation-title">{esc(title)}</div>'
-            f'<div class="summary-observation-meta">{severity_badge(obs.get("severity"))}</div>'
+            f'<div class="summary-observation-meta">{severity_badge(obs.get("severity"), messages)}</div>'
             '</div>'
             f'<div class="summary-observation-text">{esc(summary)}</div>'
             '</li>'
@@ -332,16 +363,17 @@ def build_summary_observations(project_root: Path) -> str:
 
 def build_detailed_observations(project_root: Path) -> str:
     observations = read_observations(project_root)
+    messages = project_messages(project_root)
 
     if not observations:
-        return "_No observations created yet._"
+        return message(messages, "report.no_observations")
 
     blocks = []
 
     for obs in observations:
         obs_id = text(obs.get("observation_id"))
-        title = text(obs.get("title")) or "Untitled observation"
-        severity = severity_badge(obs.get("severity"))
+        title = text(obs.get("title")) or message(messages, "report.untitled_observation")
+        severity = severity_badge(obs.get("severity"), messages)
 
         map_items = []
         for action in obs.get("management_action_plan", []) or []:
@@ -361,15 +393,15 @@ def build_detailed_observations(project_root: Path) -> str:
         if map_items:
             map_html = (
                 '<div class="map-box map-agreed">'
-                '<div class="map-title">Management action plan</div>'
+                f'<div class="map-title">{esc(message(messages, "report.action_plan"))}</div>'
                 f'<ul class="scope-list">{"".join(map_items)}</ul>'
                 "</div>"
             )
         else:
             map_html = (
                 '<div class="map-box map-not-agreed">'
-                '<div class="map-title">Management action plan</div>'
-                "<p><em>Management action plan has not yet been documented or agreed.</em></p>"
+                f'<div class="map-title">{esc(message(messages, "report.action_plan"))}</div>'
+                f'<p><em>{esc(message(messages, "report.action_plan_missing"))}</em></p>'
                 "</div>"
             )
 
@@ -382,27 +414,27 @@ def build_detailed_observations(project_root: Path) -> str:
 <div class="observation-body">
 <div class="observation-meta">
 <strong>ID:</strong> {esc(obs_id)} ·
-<strong>Status:</strong> {esc(text(obs.get("status")))} ·
-<strong>Risk:</strong> {esc(text(obs.get("risk_id")))} — {esc(text(obs.get("risk_title")))} ·
-<strong>Workpaper:</strong> {esc(text(obs.get("source_workpaper")))}
+<strong>{esc(message(messages, "report.status"))}:</strong> {esc(translated_term(messages, "status", obs.get("status")))} ·
+<strong>{esc(message(messages, "report.risk"))}:</strong> {esc(text(obs.get("risk_id")))} — {esc(text(obs.get("risk_title")))} ·
+<strong>{esc(message(messages, "report.workpaper"))}:</strong> {esc(text(obs.get("source_workpaper")))}
 </div>
-<h4>Criteria</h4>
-<p>{esc(text(obs.get("criteria")) or "To be completed.")}</p>
-<h4>Condition</h4>
-<p>{esc(text(obs.get("condition")) or "To be completed.")}</p>
+<h4>{esc(message(messages, "report.criteria"))}</h4>
+<p>{esc(text(obs.get("criteria")) or message(messages, "report.to_be_completed"))}</p>
+<h4>{esc(message(messages, "report.condition"))}</h4>
+<p>{esc(text(obs.get("condition")) or message(messages, "report.to_be_completed"))}</p>
 <div class="two-column-section">
 <div>
-<h4>Cause</h4>
-<p>{esc(text(obs.get("cause")) or "To be completed.")}</p>
+<h4>{esc(message(messages, "report.cause"))}</h4>
+<p>{esc(text(obs.get("cause")) or message(messages, "report.to_be_completed"))}</p>
 </div>
 <div>
-<h4>Risk / Effect</h4>
-<p>{esc(text(obs.get("risk_effect")) or "To be completed.")}</p>
+<h4>{esc(message(messages, "report.risk_effect"))}</h4>
+<p>{esc(text(obs.get("risk_effect")) or message(messages, "report.to_be_completed"))}</p>
 </div>
 </div>
-<h4>Internal audit recommendation</h4>
+<h4>{esc(message(messages, "report.recommendation"))}</h4>
 <div class="recommendation-box">
-<p>{esc(text(obs.get("recommendation")) or "To be completed.")}</p>
+<p>{esc(text(obs.get("recommendation")) or message(messages, "report.to_be_completed"))}</p>
 </div>
 {map_html}
 </div>
@@ -415,16 +447,20 @@ def build_detailed_observations(project_root: Path) -> str:
 def build_distribution_team(project_root: Path) -> str:
     stakeholders = read_stakeholders(project_root)
     team = read_team(project_root)
+    messages = project_messages(project_root)
+    not_documented = message(messages, "report.not_documented")
 
     recipients = stakeholders.get("report_recipients", [])
     recipient_cards = []
     for item in recipients or []:
         if isinstance(item, dict):
-            card = person_card(item)
+            card = person_card(item, not_documented=not_documented)
             if card:
                 recipient_cards.append(card)
         else:
-            recipient_cards.append(person_card({"name": item}))
+            recipient_cards.append(
+                person_card({"name": item}, not_documented=not_documented)
+            )
 
     team_data = nested_dict(team, "team") or team
     lead = team_data.get("engagement_lead", {})
@@ -434,31 +470,43 @@ def build_distribution_team(project_root: Path) -> str:
 
     team_cards = []
     if lead:
-        card = person_card(lead, default_role="Engagement Lead")
+        card = person_card(
+            lead,
+            default_role=message(messages, "report.engagement_lead"),
+            not_documented=not_documented,
+        )
         if card:
             team_cards.append(card)
 
     for member in members:
         if isinstance(member, dict):
-            card = person_card(member)
+            card = person_card(member, not_documented=not_documented)
             if card:
                 team_cards.append(card)
 
     if reviewer:
-        card = person_card(reviewer, default_role="Reviewer")
+        card = person_card(
+            reviewer,
+            default_role=message(messages, "report.reviewer"),
+            not_documented=not_documented,
+        )
         if card:
             team_cards.append(card)
 
-    recipients_html = "\n".join(recipient_cards) or "<p><em>No report recipients documented.</em></p>"
-    team_html = "\n".join(team_cards) or "<p><em>No audit team documented.</em></p>"
+    recipients_html = "\n".join(recipient_cards) or (
+        f'<p><em>{esc(message(messages, "report.no_recipients"))}</em></p>'
+    )
+    team_html = "\n".join(team_cards) or (
+        f'<p><em>{esc(message(messages, "report.no_team"))}</em></p>'
+    )
 
     return f"""```{{=html}}
 <section class="distribution-section">
-<h2>Report recipients</h2>
+<h2>{esc(message(messages, "report.report_recipients"))}</h2>
 <div class="people-grid">
 {recipients_html}
 </div>
-<h2>Audit team</h2>
+<h2>{esc(message(messages, "report.audit_team"))}</h2>
 <div class="people-grid">
 {team_html}
 </div>
@@ -482,7 +530,10 @@ def update_report_qmd(project_root: Path, reset_report: bool = False) -> Path:
     report_path = reporting_dir / "report.qmd"
 
     if reset_report or not report_path.exists():
-        report_path.write_text(read_template("report.qmd"), encoding="utf-8")
+        report_path.write_text(
+            read_localized_template("report.qmd", read_project_language(project_root)),
+            encoding="utf-8",
+        )
 
     content = report_path.read_text(encoding="utf-8")
     content = ensure_report_css_reference(content)

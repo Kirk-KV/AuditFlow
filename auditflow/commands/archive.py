@@ -7,7 +7,14 @@ from typing import Any
 
 import yaml
 
-from auditflow.template_utils import read_template
+from auditflow.localization import (
+    load_messages,
+    message,
+    project_messages,
+    read_localized_template,
+    read_project_language,
+    translated_term,
+)
 
 
 AUTO_BLOCK_RE = re.compile(
@@ -41,9 +48,13 @@ def text(value: Any) -> str:
     return "" if value is None else str(value).strip()
 
 
-def md_table(headers: list[str], rows: list[list[Any]]) -> str:
+def md_table(
+    headers: list[str],
+    rows: list[list[Any]],
+    empty_text: str = "_No data available._",
+) -> str:
     if not rows:
-        return "_No data available._"
+        return empty_text
 
     header = "| " + " | ".join(headers) + " |"
     separator = "| " + " | ".join(["---"] * len(headers)) + " |"
@@ -97,9 +108,13 @@ def read_stakeholders(project_root: Path) -> dict[str, Any]:
     return load_yaml(project_root / "00_admin" / "stakeholders.yml")
 
 
-def audit_title(initial_data: dict[str, Any]) -> str:
+def audit_title(
+    initial_data: dict[str, Any],
+    messages: dict[str, Any] | None = None,
+) -> str:
+    messages = messages or load_messages("en")
     audit = initial_data.get("audit", {})
-    return text(audit.get("title")) or "Internal Audit"
+    return text(audit.get("title")) or message(messages, "archive.internal_audit")
 
 
 def audit_id(initial_data: dict[str, Any]) -> str:
@@ -139,29 +154,35 @@ def sponsor_name(stakeholders: dict[str, Any]) -> str:
 
 def build_cover(project_root: Path) -> str:
     initial = read_initial_data(project_root)
+    messages = project_messages(project_root)
     return f"""::: {{.audit-card}}
-# {audit_title(initial)}
+# {audit_title(initial, messages)}
 
-**Company:** {company(initial)}<br>
-**Audit period:** {period(initial)}<br>
-**Audit ID:** {audit_id(initial)}
+**{message(messages, 'archive.company')}:** {company(initial)}<br>
+**{message(messages, 'archive.audit_period')}:** {period(initial)}<br>
+**{message(messages, 'archive.audit_id')}:** {audit_id(initial)}
 :::"""
 
 
 def build_one_page_story(project_root: Path) -> str:
     observations = read_observations(project_root)
+    messages = project_messages(project_root)
     rows = [
-        ["Audit", audit_title(read_initial_data(project_root))],
-        ["Program rows", len(read_audit_program_rows(project_root))],
-        ["Observations", len(observations)],
+        [message(messages, "archive.audit"), audit_title(read_initial_data(project_root), messages)],
+        [message(messages, "archive.program_rows"), len(read_audit_program_rows(project_root))],
+        [message(messages, "archive.observations"), len(observations)],
     ]
 
     return "\n".join(
         [
-            md_table(["Item", "Value"], rows),
+            md_table(
+                [message(messages, "archive.item"), message(messages, "archive.value")],
+                rows,
+                empty_text=message(messages, "archive.no_data"),
+            ),
             "",
             "::: {.manual-block}",
-            "Add a short narrative explaining what changed from initial plan to final conclusion.",
+            message(messages, "archive.story_prompt"),
             ":::",
         ]
     )
@@ -169,6 +190,7 @@ def build_one_page_story(project_root: Path) -> str:
 
 def build_initial_assumptions(project_root: Path) -> str:
     initial = read_initial_data(project_root)
+    messages = project_messages(project_root)
     risks = initial.get("risks", [])
     rows = []
     if isinstance(risks, list):
@@ -181,13 +203,18 @@ def build_initial_assumptions(project_root: Path) -> str:
                     risk.get("preliminary_rating", ""),
                 ])
 
-    return md_table(["Risk ID", "Title", "Initial rationale", "Preliminary rating"], rows)
+    return md_table(
+        message(messages, "archive.risk_headers"),
+        rows,
+        empty_text=message(messages, "archive.no_data"),
+    )
 
 
 def build_planning_decisions(project_root: Path) -> str:
     planning = load_yaml(project_root / "01_planning" / "planning_decision.yml")
     included = planning.get("included_risks", [])
     excluded = planning.get("excluded_risks", [])
+    messages = project_messages(project_root)
 
     included_rows = []
     for risk in included or []:
@@ -210,11 +237,19 @@ def build_planning_decisions(project_root: Path) -> str:
 
     return "\n\n".join(
         [
-            "## Included risks",
-            md_table(["Risk ID", "Title", "Rationale", "Planned response"], included_rows),
+            f"## {message(messages, 'archive.included_risks')}",
+            md_table(
+                message(messages, "archive.included_headers"),
+                included_rows,
+                empty_text=message(messages, "archive.no_data"),
+            ),
             "",
-            "## Excluded risks",
-            md_table(["Risk ID", "Title", "Rationale"], excluded_rows),
+            f"## {message(messages, 'archive.excluded_risks')}",
+            md_table(
+                message(messages, "archive.excluded_headers"),
+                excluded_rows,
+                empty_text=message(messages, "archive.no_data"),
+            ),
         ]
     )
 
@@ -224,19 +259,23 @@ def build_scope_risk_evolution(project_root: Path) -> str:
     scope = planning.get("scope", {})
     in_scope = scope.get("in_scope", []) or []
     out_scope = scope.get("out_of_scope", []) or []
+    messages = project_messages(project_root)
 
     return "\n".join(
         [
-            "## Final in-scope areas",
-            "\n".join(f"- {text(item)}" for item in in_scope if text(item)) or "_Not documented._",
+            f"## {message(messages, 'archive.final_in_scope')}",
+            "\n".join(f"- {text(item)}" for item in in_scope if text(item))
+            or message(messages, "archive.not_documented"),
             "",
-            "## Final out-of-scope areas",
-            "\n".join(f"- {text(item)}" for item in out_scope if text(item)) or "_Not documented._",
+            f"## {message(messages, 'archive.final_out_of_scope')}",
+            "\n".join(f"- {text(item)}" for item in out_scope if text(item))
+            or message(messages, "archive.not_documented"),
         ]
     )
 
 
 def build_testing_traceability(project_root: Path) -> str:
+    messages = project_messages(project_root)
     rows = []
     for row in read_audit_program_rows(project_root):
         if isinstance(row, dict):
@@ -248,33 +287,47 @@ def build_testing_traceability(project_root: Path) -> str:
                 row.get("workpaper_ref", ""),
             ])
 
-    return md_table(["Test ID", "Risk", "Control", "Hypothesis", "Workpaper"], rows)
+    return md_table(
+        message(messages, "archive.testing_headers"),
+        rows,
+        empty_text=message(messages, "archive.no_data"),
+    )
 
 
 def build_observations_outcome(project_root: Path) -> str:
     observations = read_observations(project_root)
+    messages = project_messages(project_root)
     rows = [
         [
             obs.get("observation_id", ""),
             obs.get("title", ""),
-            obs.get("severity", ""),
-            obs.get("status", ""),
+            translated_term(messages, "severity", obs.get("severity", "")),
+            translated_term(messages, "status", obs.get("status", "")),
             obs.get("source_workpaper", ""),
         ]
         for obs in observations
     ]
-    return md_table(["ID", "Title", "Severity", "Status", "Workpaper"], rows)
+    return md_table(
+        message(messages, "archive.observation_headers"),
+        rows,
+        empty_text=message(messages, "archive.no_data"),
+    )
 
 
 def build_evidence_map(project_root: Path) -> str:
     evidence_dir = project_root / "04_evidence"
     rows = []
+    messages = project_messages(project_root)
     if evidence_dir.exists():
         for path in sorted(evidence_dir.rglob("*")):
             if path.is_file():
                 rows.append([str(path.relative_to(project_root)), ""])
 
-    return md_table(["File", "Notes"], rows)
+    return md_table(
+        message(messages, "archive.evidence_headers"),
+        rows,
+        empty_text=message(messages, "archive.no_data"),
+    )
 
 
 def build_blocks(project_root: Path) -> dict[str, str]:
@@ -296,7 +349,10 @@ def update_archive(project_root: Path, reset: bool = False) -> Path:
     archive_path = archive_dir / "audit_story.qmd"
 
     if reset or not archive_path.exists():
-        archive_path.write_text(read_template("audit_story.qmd"), encoding="utf-8")
+        archive_path.write_text(
+            read_localized_template("audit_story.qmd", read_project_language(project_root)),
+            encoding="utf-8",
+        )
 
     content = archive_path.read_text(encoding="utf-8")
     content = replace_auto_blocks(content, build_blocks(project_root))

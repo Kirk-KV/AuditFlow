@@ -7,9 +7,17 @@ from typing import Any
 from auditflow.ai.context import ObservationContext
 
 
+# Russian alternatives match inflected forms; \w* consumes the remaining suffix.
 CAUSE_RESTATEMENT_PATTERN = re.compile(
-    r"\bcontrol\b.{0,80}\b(?:did not operate|not effective|ineffective|failed|failure)\b",
+    r"(?:\bcontrol\b.{0,80}\b(?:did not operate|not effective|ineffective|failed|failure)\b|"
+    r"\bконтрол(?:ь|я|ю|ем|е|и|ей|ям|ями|ях)\b.{0,80}"
+    r"\b(?:не\s+(?:сработал\w*|работал\w*)|неэффектив\w*|сбо(?:й|я|ем|и))\b)",
     re.IGNORECASE | re.DOTALL,
+)
+
+UNRESOLVED_QUALIFIER_PATTERN = re.compile(
+    r"\b(?:unresolved|неразреш[её]н\w*|неурегулирован\w*)\b",
+    re.IGNORECASE,
 )
 
 
@@ -40,8 +48,10 @@ def evaluate_observation_draft(
         if str(item).strip()
     ]
 
-    results_source = context.workpaper_sections.get("Results", "").lower()
-    if "unresolved" in results_source and "unresolved" not in condition.lower():
+    results_source = context.workpaper_sections.get("Results", "")
+    if UNRESOLVED_QUALIFIER_PATTERN.search(
+        results_source
+    ) and not UNRESOLVED_QUALIFIER_PATTERN.search(condition):
         findings.append(
             DraftQualityFinding(
                 code="qualifier_not_preserved",

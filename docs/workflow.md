@@ -201,7 +201,6 @@ The current workflow does not yet include:
 - automated notification letter generation;
 - deep methodology validation;
 - automated management action export;
-- OpenAI-compatible and Hugging Face provider adapters;
 - long-term action tracking.
 
 Those are possible future extensions. The current version intentionally stays small.

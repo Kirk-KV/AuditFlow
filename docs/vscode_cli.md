@@ -41,6 +41,14 @@ Creates a new audit project.
 auditflow init "C:/Audits/2026-001_procurement"
 ```
 
+Russian document templates:
+
+```bash
+auditflow init "C:/Audits/2026-001_procurement" --language ru
+```
+
+The selection is stored in `00_admin/settings.yml`. Existing projects without this file continue to use English templates.
+
 Optional styling arguments:
 
 ```bash

@@ -5,7 +5,8 @@ from typing import Any
 
 import yaml
 
-from auditflow.template_utils import load_yaml_template, render_template, write_text_if_missing
+from auditflow.localization import message, project_messages, read_project_language, render_localized_template
+from auditflow.template_utils import load_yaml_template, write_text_if_missing
 
 
 def load_yaml(path: Path, default: Any | None = None) -> Any:
@@ -70,62 +71,76 @@ def markdown_table(headers: list[str], rows: list[list[Any]], empty_text: str = 
     return "\n".join([header, separator, body])
 
 
-def build_annual_plan_context(initial_data: dict[str, Any]) -> str:
+def build_annual_plan_context(initial_data: dict[str, Any], messages: dict[str, Any]) -> str:
     annual_plan = initial_data.get("annual_plan", {})
     audit = initial_data.get("audit", {})
+    labels = message(messages, "planning.annual_plan_rows")
     rows = [
-        ["Audit source", audit.get("source", "")],
-        ["Annual plan year", annual_plan.get("year", "")],
-        ["Original topic", annual_plan.get("original_topic", "")],
-        ["Why included", annual_plan.get("why_included", "")],
-        ["Expected value", annual_plan.get("expected_value", "")],
+        [labels[0], audit.get("source", "")],
+        [labels[1], annual_plan.get("year", "")],
+        [labels[2], annual_plan.get("original_topic", "")],
+        [labels[3], annual_plan.get("why_included", "")],
+        [labels[4], annual_plan.get("expected_value", "")],
     ]
-    return markdown_table(["Field", "Value"], rows)
+    return markdown_table(
+        [message(messages, "planning.field_header"), message(messages, "planning.value_header")],
+        rows,
+        empty_text=message(messages, "planning.not_documented"),
+    )
 
 
-def build_objectives_block(initial_data: dict[str, Any]) -> str:
+def build_objectives_block(initial_data: dict[str, Any], messages: dict[str, Any]) -> str:
     objectives = initial_data.get("objectives", [])
     if not isinstance(objectives, list):
-        return "_Not documented._"
+        return message(messages, "planning.not_documented")
     rows = []
     for objective in objectives:
         if isinstance(objective, dict):
             rows.append([objective.get("id", ""), objective.get("statement", "")])
         else:
             rows.append(["", objective])
-    return markdown_table(["Objective ID", "Statement"], rows)
+    return markdown_table(
+        message(messages, "planning.objective_headers"),
+        rows,
+        empty_text=message(messages, "planning.not_documented"),
+    )
 
 
-def build_risks_block(initial_data: dict[str, Any]) -> str:
+def build_risks_block(initial_data: dict[str, Any], messages: dict[str, Any]) -> str:
     risks = initial_data.get("risks", [])
     if not isinstance(risks, list):
-        return "_Not documented._"
+        return message(messages, "planning.not_documented")
     rows = []
     for risk in risks:
         if isinstance(risk, dict):
             rows.append([risk.get("id", ""), risk.get("title", ""), risk.get("source", ""), risk.get("preliminary_rating", ""), risk.get("rationale", "")])
-    return markdown_table(["Risk ID", "Title", "Source", "Preliminary rating", "Rationale"], rows)
+    return markdown_table(
+        message(messages, "planning.risk_headers"),
+        rows,
+        empty_text=message(messages, "planning.not_documented"),
+    )
 
 
-def build_scope_block(initial_data: dict[str, Any]) -> str:
+def build_scope_block(initial_data: dict[str, Any], messages: dict[str, Any]) -> str:
     scope = initial_data.get("scope", {})
     if not isinstance(scope, dict):
-        return "_Not documented._"
-    return f"""**In scope**
+        return message(messages, "planning.not_documented")
+    empty_text = message(messages, "planning.not_documented")
+    return f"""**{message(messages, 'planning.in_scope')}**
 
-{markdown_list(scope.get("in_scope", []))}
+{markdown_list(scope.get("in_scope", []), empty_text=empty_text)}
 
-**Out of scope**
+**{message(messages, 'planning.out_of_scope')}**
 
-{markdown_list(scope.get("out_of_scope", []))}
+{markdown_list(scope.get("out_of_scope", []), empty_text=empty_text)}
 
-**Rationale**
+**{message(messages, 'planning.rationale')}**
 
-{markdown_list(scope.get("rationale", []))}
+{markdown_list(scope.get("rationale", []), empty_text=empty_text)}
 """
 
 
-def build_notes_block(initial_data: dict[str, Any]) -> str:
+def build_notes_block(initial_data: dict[str, Any], messages: dict[str, Any]) -> str | None:
     notes = initial_data.get("notes", {})
     if not isinstance(notes, dict):
         return None
@@ -135,9 +150,15 @@ def build_notes_block(initial_data: dict[str, Any]) -> str:
         return None
     parts = []
     if required_attention:
-        parts.append("**Required attention**\n\n" + markdown_list(required_attention))
+        parts.append(
+            f"**{message(messages, 'planning.required_attention')}**\n\n"
+            + markdown_list(required_attention)
+        )
     if keep_in_mind:
-        parts.append("**Keep in mind**\n\n" + markdown_list(keep_in_mind))
+        parts.append(
+            f"**{message(messages, 'planning.keep_in_mind')}**\n\n"
+            + markdown_list(keep_in_mind)
+        )
     return "\n\n".join(parts)
 
 
@@ -150,10 +171,17 @@ def create_planning_files(project_root: Path, overwrite: bool = False) -> dict[s
     initial_data = load_yaml(project_root / "initial_data.yml", default={})
     stakeholders = load_yaml(project_root / "00_admin" / "stakeholders.yml", default={})
     team = load_yaml(project_root / "00_admin" / "team.yml", default={})
+    language = read_project_language(project_root)
+    messages = project_messages(project_root)
 
     context = {
         "audit_id": get_nested(initial_data, "audit", "id"),
-        "audit_title": get_nested(initial_data, "audit", "title", default="Audit"),
+        "audit_title": get_nested(
+            initial_data,
+            "audit",
+            "title",
+            default=message(messages, "planning.audit_default"),
+        ),
         "company": get_nested(initial_data, "audit", "company"),
         "audit_type": get_nested(initial_data, "audit", "type"),
         "audit_source": get_nested(initial_data, "audit", "source"),
@@ -162,16 +190,20 @@ def create_planning_files(project_root: Path, overwrite: bool = False) -> dict[s
         "sponsor_name": first_person_name(stakeholders.get("sponsor")),
         "engagement_lead": first_person_name(team.get("engagement_lead")),
         "reviewer": first_person_name(team.get("reviewer")),
-        "annual_plan_context": build_annual_plan_context(initial_data),
-        "objectives_block": build_objectives_block(initial_data),
-        "risks_block": build_risks_block(initial_data),
-        "scope_block": build_scope_block(initial_data),
-        "notes_block": build_notes_block(initial_data),
+        "annual_plan_context": build_annual_plan_context(initial_data, messages),
+        "objectives_block": build_objectives_block(initial_data, messages),
+        "risks_block": build_risks_block(initial_data, messages),
+        "scope_block": build_scope_block(initial_data, messages),
+        "notes_block": build_notes_block(initial_data, messages),
     }
 
     planning_document = planning_dir / "planning_document.qmd"
     planning_decision = planning_dir / "planning_decision.yml"
-    rendered_planning_document = render_template("planning_document.qmd", context)
+    rendered_planning_document = render_localized_template(
+        "planning_document.qmd",
+        context,
+        language,
+    )
 
     if write_text_if_missing(planning_document, rendered_planning_document, overwrite=overwrite):
         created.append(str(planning_document.relative_to(project_root)))

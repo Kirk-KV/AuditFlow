@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "auditflow"
-version = "0.1.0"
+dynamic = ["version"]
 description = "A VSCode-based framework for reproducible, data-driven internal audits."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -63,6 +63,9 @@ Changelog = "https://github.com/Kirk-KV/auditflow/blob/main/CHANGELOG.md"
 include = ["auditflow*"]
 exclude = ["docs*", "examples*", "schemas*", "styles*", "tests*"]
 
+[tool.setuptools.dynamic]
+version = {attr = "auditflow.__version__"}
+
 [tool.setuptools.package-data]
 auditflow = [
     "schemas/*.json",
@@ -75,7 +78,15 @@ auditflow = [
     "templates/ai/*.md",
     "templates/styles/*.css",
     "templates/styles/*.yml",
-    "templates/.vscode/*.json"
+    "templates/.vscode/*.json",
+    "templates/en/*.yml",
+    "templates/en/*.qmd",
+    "templates/en/*.md",
+    "templates/en/*.txt",
+    "templates/ru/*.yml",
+    "templates/ru/*.qmd",
+    "templates/ru/*.md",
+    "templates/ru/*.txt"
 ]
 
 [tool.ruff]

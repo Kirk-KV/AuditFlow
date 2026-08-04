@@ -10,9 +10,11 @@ from urllib.parse import urlparse
 
 import yaml
 
+from auditflow.localization import read_project_language
+
 
 POLICY_ENV_VAR = "AUDITFLOW_AI_POLICY"
-SUPPORTED_PROVIDERS = {"ollama", "openai_compatible", "huggingface"}
+SUPPORTED_PROVIDERS = {"anthropic", "ollama", "openai_compatible"}
 CLASSIFICATION_LEVELS = ("public", "internal", "confidential", "restricted")
 DATA_BOUNDARIES = {"local_machine", "company_network", "external"}
 
@@ -370,6 +372,15 @@ def resolve_ai_config(
     output_language = str(settings.get("output_language") or "auto").strip()
     if not output_language:
         raise AIConfigError("ai.output_language must not be empty")
+    if output_language.lower() == "auto":
+        try:
+            project_language = read_project_language(project_root)
+        except (OSError, UnicodeError, ValueError, yaml.YAMLError) as exc:
+            raise AIConfigError(
+                "Cannot resolve automatic AI output language from project settings: "
+                f"{exc}"
+            ) from exc
+        output_language = {"en": "English", "ru": "Russian"}[project_language]
 
     api_key_configured = None
     if profile.api_key_env:

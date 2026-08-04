@@ -27,6 +27,8 @@ The base installation is sufficient for the CLI. To run the bundled analytical e
 auditflow init "C:/Audits/2026-001_procurement"
 ```
 
+Use `--language ru` to create Russian human-readable documents. The selected language is stored in `00_admin/settings.yml`; YAML keys, IDs, statuses, paths, and CLI commands remain unchanged.
+
 Optional style overrides:
 
 ```bash
@@ -41,6 +43,7 @@ auditflow init "C:/Audits/2026-001_procurement" \
 initial_data.yml
 
 00_admin/
+  settings.yml
 04_evidence/
 styles/
   quarto-html.yml
@@ -66,6 +69,7 @@ Complete:
 
 ```text
 initial_data.yml
+00_admin/settings.yml
 00_admin/stakeholders.yml
 00_admin/team.yml
 00_admin/timeline.yml
@@ -86,7 +90,7 @@ auditflow status
 
 ## 4. Create Notification Letter
 
-I will automate it later. Use the template from auditflow/templates/
+I will automate it later. Use the language-specific template from `auditflow/templates/en/` or `auditflow/templates/ru/`.
 
 Note that notification letter includes scope and risks from the annual plan (preliminary ones). Final risks would be included in the audit program after the meeting with the Sponsor. 
 
@@ -456,7 +460,6 @@ The current CLI does not yet implement:
 
 - notification letter generation;
 - automated management action export;
-- OpenAI-compatible and Hugging Face provider adapters;
 - long-term action tracking.
 
 Those may be added later, but the current workflow should stay small until it is sufficiently tested several times on real audits.

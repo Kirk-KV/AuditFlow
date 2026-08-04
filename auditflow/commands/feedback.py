@@ -9,6 +9,12 @@ from pathlib import Path
 from statistics import mean
 from typing import Any
 
+from auditflow.localization import (
+    load_messages,
+    message,
+    read_project_language,
+    render_localized_template,
+)
 from auditflow.template_utils import render_template
 
 try:
@@ -17,63 +23,10 @@ except ImportError as exc:
     raise SystemExit("PyYAML is required. Install it with: pip install pyyaml") from exc
 
 
-QUESTIONS: list[dict[str, str]] = [
-    {
-        "id": "Q01",
-        "question": "The audit objectives, scope, and expected outcome were clear.",
-    },
-    {
-        "id": "Q02",
-        "question": "The audit was planned and organized in a way that made the required involvement clear in advance.",
-    },
-    {
-        "id": "Q03",
-        "question": "Communication throughout the audit was timely and effective.",
-    },
-    {
-        "id": "Q04",
-        "question": "Internal Audit demonstrated a good understanding of our business process, risks, and controls.",
-    },
-    {
-        "id": "Q05",
-        "question": "Information requests were clear, reasonable, and proportionate to the audit objectives.",
-    },
-    {
-        "id": "Q06",
-        "question": "Facts, comments, and your point of view were properly considered when preparing the audit report.",
-    },
-    {
-        "id": "Q07",
-        "question": "Audit observations and recommendations were practical, realistic, and likely to improve the process or control environment.",
-    },
-    {
-        "id": "Q08",
-        "question": "The audit focused on the areas that mattered most.",
-    },
-    {
-        "id": "Q09",
-        "question": "If another audit were performed in your area, you would welcome Internal Audit involvement again.",
-    },
-]
-
-
-OPEN_QUESTIONS: list[dict[str, str]] = [
-    {
-        "id": "O01",
-        "question": "What was most useful in this audit?",
-    },
-    {
-        "id": "O02",
-        "question": "What should Internal Audit improve in future audits?",
-    },
-    {
-        "id": "O03",
-        "question": "Is there anything you expected from this audit but did not receive?",
-    },
-]
-
-
-SCORE_GUIDANCE = "Please score each question from 1 (disagree) to 5 (strongly agree). Use N/A only if the question does not apply."
+EN_MESSAGES = load_messages("en")
+QUESTIONS: list[dict[str, str]] = message(EN_MESSAGES, "feedback.questions")
+OPEN_QUESTIONS: list[dict[str, str]] = message(EN_MESSAGES, "feedback.open_questions")
+SCORE_GUIDANCE = message(EN_MESSAGES, "feedback.score_guidance")
 
 
 def load_yaml(path: Path, default: Any | None = None) -> Any:
@@ -121,11 +74,12 @@ def qmd_escape(value: Any) -> str:
     return str(value if value is not None else "").replace("|", "\\|").replace("\n", " ")
 
 
-def audit_title(initial_data: dict[str, Any]) -> str:
+def audit_title(initial_data: dict[str, Any], language: str = "en") -> str:
+    default_title = message(load_messages(language), "feedback.audit_default")
     audit = initial_data.get("audit", {})
     if isinstance(audit, dict):
-        return str(audit.get("title") or audit.get("id") or "Audit")
-    return "Audit"
+        return str(audit.get("title") or audit.get("id") or default_title)
+    return default_title
 
 
 def text(value: Any) -> str:
@@ -216,19 +170,25 @@ def recipients_from_stakeholders(
     return result
 
 
-def request_subject(audit_name: str) -> str:
-    return f"Feedback request: {audit_name}"
+def request_subject(audit_name: str, language: str = "en") -> str:
+    template = message(load_messages(language), "feedback.request_subject")
+    return str(template).format(audit_name=audit_name)
 
 
-def format_questions_for_request(questions: list[dict[str, str]]) -> str:
+def format_questions_for_request(
+    questions: list[dict[str, str]],
+    *,
+    score_label: str = "Score",
+    comment_label: str = "Comment",
+) -> str:
     lines: list[str] = []
 
     for index, item in enumerate(questions, start=1):
         lines.extend(
             [
                 f"{index}. {item['question']}",
-                "Score: ",
-                "Comment: ",
+                f"{score_label}: ",
+                f"{comment_label}: ",
                 "",
             ]
         )
@@ -236,14 +196,18 @@ def format_questions_for_request(questions: list[dict[str, str]]) -> str:
     return "\n".join(lines).rstrip()
 
 
-def format_open_questions_for_request(open_questions: list[dict[str, str]]) -> str:
+def format_open_questions_for_request(
+    open_questions: list[dict[str, str]],
+    *,
+    answer_label: str = "Answer",
+) -> str:
     lines: list[str] = []
 
     for index, item in enumerate(open_questions, start=1):
         lines.extend(
             [
                 f"{index}. {item['question']}",
-                "Answer: ",
+                f"{answer_label}: ",
                 "",
             ]
         )
@@ -256,15 +220,21 @@ def render_plain_text_request(
     recipient: dict[str, str],
     audit_name: str,
     response_due_date: str,
+    language: str = "en",
 ) -> str:
+    messages = load_messages(language)
+    questions = message(messages, "feedback.questions")
+    open_questions = message(messages, "feedback.open_questions")
     response_due_date_line = ""
     if response_due_date:
-        response_due_date_line = f"Requested response date: {response_due_date}"
+        response_due_date_line = str(
+            message(messages, "feedback.requested_response_date")
+        ).format(date=response_due_date)
 
     recipient_role = recipient.get("role", "")
     recipient_role_suffix = f", {recipient_role}" if recipient_role else ""
 
-    return render_template(
+    return render_localized_template(
         "feedback_request.txt",
         {
             "audit_name": audit_name,
@@ -272,10 +242,18 @@ def render_plain_text_request(
             "recipient_role": recipient.get("role", ""),
             "recipient_role_suffix": recipient_role_suffix,
             "response_due_date_line": response_due_date_line,
-            "score_guidance": SCORE_GUIDANCE,
-            "questions_block": format_questions_for_request(QUESTIONS),
-            "open_questions_block": format_open_questions_for_request(OPEN_QUESTIONS),
+            "score_guidance": message(messages, "feedback.score_guidance"),
+            "questions_block": format_questions_for_request(
+                questions,
+                score_label=message(messages, "feedback.score"),
+                comment_label=message(messages, "feedback.comment"),
+            ),
+            "open_questions_block": format_open_questions_for_request(
+                open_questions,
+                answer_label=message(messages, "feedback.answer"),
+            ),
         },
+        language,
     ).strip() + "\n"
 
 
@@ -321,6 +299,8 @@ def response_template(
     recipient: dict[str, str],
     audit_name: str,
     request_file: str,
+    questions: list[dict[str, str]] = QUESTIONS,
+    open_questions: list[dict[str, str]] = OPEN_QUESTIONS,
 ) -> dict[str, Any]:
     rendered = render_template(
         "feedback_response.yml",
@@ -331,8 +311,8 @@ def response_template(
             "recipient_email": yaml_double_quote_escape(recipient.get("email", "")),
             "recipient_source": yaml_double_quote_escape(recipient.get("source", "")),
             "request_file": yaml_double_quote_escape(request_file.replace(chr(92), "/")),
-            "scores_block": format_scores_for_response_template(QUESTIONS),
-            "open_feedback_block": format_open_feedback_for_response_template(OPEN_QUESTIONS),
+            "scores_block": format_scores_for_response_template(questions),
+            "open_feedback_block": format_open_feedback_for_response_template(open_questions),
         },
     )
     return yaml.safe_load(rendered) or {}
@@ -370,10 +350,14 @@ def create_requests(
     overwrite_requests: bool,
     reset_response_templates: bool,
 ) -> None:
+    language = read_project_language(project_root)
+    messages = load_messages(language)
+    questions = message(messages, "feedback.questions")
+    open_questions = message(messages, "feedback.open_questions")
     initial_data = load_yaml(project_root / "initial_data.yml", default={})
     stakeholders = load_yaml(project_root / "00_admin" / "stakeholders.yml", default={})
 
-    audit_name = audit_title(initial_data)
+    audit_name = audit_title(initial_data, language=language)
     recipients = recipients_from_stakeholders(stakeholders, include_sponsor=include_sponsor)
 
     if not recipients:
@@ -401,6 +385,7 @@ def create_requests(
             recipient=recipient,
             audit_name=audit_name,
             response_due_date=response_due_date,
+            language=language,
         )
         request_path.write_text(request_text, encoding="utf-8")
 
@@ -408,6 +393,8 @@ def create_requests(
             recipient=recipient,
             audit_name=audit_name,
             request_file=request_path.relative_to(feedback_dir).as_posix(),
+            questions=questions,
+            open_questions=open_questions,
         )
 
         if response_path.exists():
@@ -424,29 +411,14 @@ def create_requests(
     readme_path = feedback_dir / "README.md"
     if not readme_path.exists():
         readme_path.write_text(
-            f"""# Feedback workflow
-
-Generated: {date.today().isoformat()}
-
-Audit: {audit_name}
-
-Folders:
-- `request/` — plain-text email bodies to send to recipients. The email includes score questions and open feedback questions.
-- `response/` — YAML templates to be completed by the auditor after replies are received. A template is treated as received if scores/comments/open answers are entered, even if `response.received` is still false.
-- `response/original/` — original replies from management, such as .eml, .msg, .pdf, or screenshots.
-
-Workflow:
-1. Open the relevant `*_request.txt`.
-2. Copy the text into an email and send it to the recipient.
-3. Save the recipient's original reply in `response/original/`.
-4. Complete the corresponding `*_response.yml`. You may either set `response.received: true` or just enter scores/comments; the summary will infer that a response was received.
-5. Run `auditflow feedback summary`.
-6. Review `08_feedback/feedback_summary.qmd`.
-
-Important:
-- Request files are safe to regenerate with `--overwrite`.
-- Response templates are not reset unless you explicitly use `--reset-response-templates`.
-""",
+            render_localized_template(
+                "feedback_readme.md",
+                {
+                    "generated_date": date.today().isoformat(),
+                    "audit_name": audit_name,
+                },
+                language,
+            ),
             encoding="utf-8",
         )
 
@@ -537,14 +509,18 @@ def response_received(data: dict[str, Any]) -> bool:
     return response_received_explicit(data) or response_has_entered_content(data)
 
 
-def response_status_label(data: dict[str, Any]) -> str:
+def response_status_label(
+    data: dict[str, Any],
+    messages: dict[str, Any] | None = None,
+) -> str:
+    messages = messages or EN_MESSAGES
     if response_received_explicit(data):
-        return "Received"
+        return message(messages, "feedback.received")
 
     if response_has_entered_content(data):
-        return "Received (inferred)"
+        return message(messages, "feedback.received_inferred")
 
-    return "Not received"
+    return message(messages, "feedback.not_received")
 
 
 def load_response_files(feedback_dir: Path) -> list[dict[str, Any]]:
@@ -587,7 +563,14 @@ def format_avg(value: float | None) -> str:
     return f"{value:.2f}"
 
 
-def build_summary_qmd(responses: list[dict[str, Any]]) -> str:
+def build_summary_qmd(
+    responses: list[dict[str, Any]],
+    language: str = "en",
+) -> str:
+    messages = load_messages(language)
+    questions = message(messages, "feedback.questions")
+    yes = message(messages, "feedback.yes")
+    no = message(messages, "feedback.no")
     audit_title_value = ""
     if responses:
         audit = responses[0].get("audit", {})
@@ -617,7 +600,7 @@ def build_summary_qmd(responses: list[dict[str, Any]]) -> str:
         response = data.get("response", {}) if isinstance(data.get("response"), dict) else {}
         request = data.get("request", {}) if isinstance(data.get("request"), dict) else {}
 
-        status = response_status_label(data)
+        status = response_status_label(data, messages)
 
         recipient_rows.append(
             "| "
@@ -626,7 +609,7 @@ def build_summary_qmd(responses: list[dict[str, Any]]) -> str:
                     qmd_escape(recipient.get("name", "")),
                     qmd_escape(recipient.get("role", "")),
                     qmd_escape(recipient.get("email", "")),
-                    qmd_escape("Yes" if request.get("sent") else "No"),
+                    qmd_escape(yes if request.get("sent") else no),
                     qmd_escape(status),
                     qmd_escape(response.get("received_date", "")),
                     qmd_escape(format_avg(response_average(data)) if response_received(data) else "—"),
@@ -637,7 +620,7 @@ def build_summary_qmd(responses: list[dict[str, Any]]) -> str:
         )
 
     question_rows = []
-    for question in QUESTIONS:
+    for question in questions:
         values: list[float] = []
         comments: list[str] = []
 
@@ -687,7 +670,7 @@ def build_summary_qmd(responses: list[dict[str, Any]]) -> str:
                 + " | ".join(
                     [
                         qmd_escape(name),
-                        qmd_escape("Yes" if received else "No"),
+                        qmd_escape(yes if received else no),
                         qmd_escape(item.get("id", "")),
                         qmd_escape(item.get("question", "")),
                         qmd_escape(score_label(item.get("score"))),
@@ -749,68 +732,40 @@ def build_summary_qmd(responses: list[dict[str, Any]]) -> str:
     for data in inferred_received:
         recipient = data.get("recipient", {}) if isinstance(data.get("recipient"), dict) else {}
         inferred_items.append(
-            f"- {qmd_escape(recipient.get('name', ''))}: response was treated as received because the template contains entered scores/comments, but `response.received` is still `false`."
+            "- "
+            + str(message(messages, "feedback.inferred_note")).format(
+                name=qmd_escape(recipient.get("name", ""))
+            )
         )
 
-    validation_notes = "\n".join(inferred_items) if inferred_items else "_No validation notes._"
+    validation_notes = (
+        "\n".join(inferred_items)
+        if inferred_items
+        else message(messages, "feedback.no_validation_notes")
+    )
 
-    return f"""---
-title: "Feedback Summary"
-metadata-files:
-  - ../styles/quarto-html.yml
----
-
-# Feedback summary
-
-**Audit:** {qmd_escape(audit_title_value)}
-
-**Generated:** {date.today().isoformat()}
-
-## Executive view
-
-| Metric | Value |
-|---|---:|
-| Requests sent | {sent_count} |
-| Responses received | {received_count} |
-| Responses not received | {missing_count} |
-| Overall average score | {format_avg(overall_average)} |
-
-## Response status by recipient
-
-| Name | Role | Email | Request sent | Response status | Received date | Average score | Original response file |
-|---|---|---|---|---|---|---:|---|
-{chr(10).join(recipient_rows) if recipient_rows else "| — | — | — | — | — | — | — | — |"}
-
-## Results by question
-
-| Question ID | Question | Responses | Average score | Comments |
-|---|---|---:|---:|---|
-{chr(10).join(question_rows) if question_rows else "| — | — | — | — | — |"}
-
-## Detailed answers
-
-| Recipient | Response received | Question ID | Question | Score | Comment |
-|---|---|---|---|---|---|
-{chr(10).join(detailed_rows) if detailed_rows else "| — | — | — | — | — | — |"}
-
-## Open feedback
-
-{''.join(open_feedback_blocks) if open_feedback_blocks else "_No open feedback captured._"}
-
-## Requests without response
-
-{chr(10).join(missing_items) if missing_items else "_All requested responses were received._"}
-
-## Validation notes
-
-{validation_notes}
-
-## Notes for auditor
-
-This summary is generated from YAML response templates in `08_feedback/response/`.
-
-Original replies should be saved in `08_feedback/response/original/` and referenced in `response.original_response_file` inside each response template.
-"""
+    return render_localized_template(
+        "feedback_summary.qmd",
+        {
+            "audit_title": qmd_escape(audit_title_value),
+            "generated_date": date.today().isoformat(),
+            "sent_count": sent_count,
+            "received_count": received_count,
+            "missing_count": missing_count,
+            "overall_average": format_avg(overall_average),
+            "recipient_rows": "\n".join(recipient_rows)
+            or "| — | — | — | — | — | — | — | — |",
+            "question_rows": "\n".join(question_rows) or "| — | — | — | — | — |",
+            "detailed_rows": "\n".join(detailed_rows)
+            or "| — | — | — | — | — | — |",
+            "open_feedback": "".join(open_feedback_blocks)
+            or message(messages, "feedback.no_open_feedback"),
+            "missing_items": "\n".join(missing_items)
+            or message(messages, "feedback.all_received"),
+            "validation_notes": validation_notes,
+        },
+        language,
+    )
 
 
 def create_summary(project_root: Path) -> None:
@@ -821,7 +776,10 @@ def create_summary(project_root: Path) -> None:
         raise SystemExit("No response templates found in 08_feedback/response/. Run --request first.")
 
     summary_path = feedback_dir / "feedback_summary.qmd"
-    summary_path.write_text(build_summary_qmd(responses), encoding="utf-8")
+    summary_path.write_text(
+        build_summary_qmd(responses, language=read_project_language(project_root)),
+        encoding="utf-8",
+    )
 
     print(f"Feedback summary created: {summary_path}")
 

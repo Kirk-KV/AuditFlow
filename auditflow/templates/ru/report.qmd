@@ -1,0 +1,81 @@
+---
+title: "Отчет внутреннего аудита"
+metadata-files:
+  - ../styles/quarto-html.yml
+format:
+  html:
+    smooth-scroll: true
+    css: ../styles/report.css
+---
+
+<!-- AUTO:COVER START -->
+<!-- AUTO:COVER END -->
+
+<!-- MANUAL:DRAFT_NOTICE START -->
+::: {.limitation-box}
+**Проект отчета.** Удалите этот блок перед выпуском финального отчета.
+:::
+<!-- MANUAL:DRAFT_NOTICE END -->
+
+# Резюме для руководства
+
+<!-- AUTO:AUDIT_FACTS START -->
+<!-- AUTO:AUDIT_FACTS END -->
+
+## Обзор процесса и ключевые показатели
+
+<!-- MANUAL:PROCESS_OVERVIEW START -->
+::: {.manual-block}
+Добавьте описание процесса и его ключевые показатели.
+:::
+<!-- MANUAL:PROCESS_OVERVIEW END -->
+
+## Общий вывод
+
+<!-- MANUAL:OVERALL_CONCLUSION START -->
+::: {.manual-block}
+Добавьте общий вывод по результатам аудита.
+:::
+<!-- MANUAL:OVERALL_CONCLUSION END -->
+
+## Краткое описание наблюдений
+
+<!-- AUTO:SUMMARY_OBSERVATIONS START -->
+<!-- AUTO:SUMMARY_OBSERVATIONS END -->
+
+# Детальные наблюдения
+
+<!-- AUTO:DETAILED_OBSERVATIONS START -->
+<!-- AUTO:DETAILED_OBSERVATIONS END -->
+
+# Приложение
+
+## Методология и ограничения аудита
+
+<!-- MANUAL:AUDIT_METHODOLOGY START -->
+::: {.manual-block}
+Добавьте описание методологии, ограничений и ссылки на рабочие документы.
+:::
+<!-- MANUAL:AUDIT_METHODOLOGY END -->
+
+## Подтверждающие графики и анализ
+
+<!-- MANUAL:SUPPORTING_CHARTS START -->
+::: {.manual-block}
+Добавьте графики или подтверждающий визуальный анализ.
+:::
+<!-- MANUAL:SUPPORTING_CHARTS END -->
+
+## Дополнительная информация
+
+<!-- MANUAL:ADDITIONAL_SUPPORT START -->
+::: {.manual-block}
+Добавьте дополнительную подтверждающую информацию.
+:::
+<!-- MANUAL:ADDITIONAL_SUPPORT END -->
+
+# Адресаты отчета и команда аудита
+
+<!-- AUTO:DISTRIBUTION_TEAM START -->
+<!-- AUTO:DISTRIBUTION_TEAM END -->
+

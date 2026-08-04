@@ -9,7 +9,8 @@ import yaml
 
 
 OBSERVATION_SECTION_PATTERN = re.compile(
-    r"^##[ \t]+(?:Observation proposal|Potential observation)[ \t]*$",
+    r"^##[ \t]+(?:Observation proposal|Potential observation|"
+    r"Предлагаемое наблюдение)[ \t]*$",
     re.IGNORECASE | re.MULTILINE,
 )
 

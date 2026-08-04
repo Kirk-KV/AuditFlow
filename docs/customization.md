@@ -102,6 +102,19 @@ AUDITFLOW_REPORT_CSS
 
 Do not edit bundled package templates for one audit project. Edit the project-level files in `styles/`.
 
+## Document Language
+
+Select the language when creating a project:
+
+```bash
+auditflow init "C:/Audits/2026-001_procurement" --language ru
+```
+
+Localized human-readable templates live in `auditflow/templates/en/` and `auditflow/templates/ru/`. Shared YAML contracts, schemas, CSS, VS Code settings, and AI system prompts remain common.
+Existing projects without `00_admin/settings.yml` use English, so upgrades do not change their generated documents.
+
+When adding a localized template, add it to both language folders, preserve the same `$placeholders`, update package data, and run the locale parity and lifecycle tests.
+
 ---
 
 ## Some More Notes

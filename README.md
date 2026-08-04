@@ -1,16 +1,16 @@
 ![AuditFlow: a lightweight framework for reproducible, data-driven internal audits](./assets/readme/hero.svg)
 
-AuditFlow turns internal audit engagement into a transparent project of structured
-files, reproducible analysis, linked evidence, workpapers, observations, and reports.
-It is intended for auditors who want more control than a folder of Word and Excel files
-without introducing a large workflow system.
+**English** | [Русский](./README.ru.md)
+
+AuditFlow turns internal audit engagement into a transparent project of structured files, reproducible analysis, linked evidence, workpapers, observations, and reports.
+It is intended for auditors who want more control than a folder of Word and Excel files without introducing a large workflow system.
 
 > **AuditFlow** does not replace TeamMate, AuditBoard, Pentana, or company systems for portfolio management.
 
 ## See it work
 
 The repository includes a complete synthetic procurement audit. Its analysis is executed
-in the test suite, its evidence links are validated, and its seven QMD documents are
+in the test suite, its evidence links are validated, and its eight QMD documents are
 rendered in the Quarto integration test.
 
 ![Reproduced procurement audit results and three linked observations](./assets/readme/procurement-proof.svg)
@@ -53,6 +53,16 @@ cd "C:/Audits/2026-001_procurement"
 auditflow status
 ```
 
+Create the same workspace with Russian document templates:
+
+```bash
+auditflow init "C:/Audits/2026-001_procurement" --language ru
+```
+
+The selected language is stored in `00_admin/settings.yml`. YAML keys, identifiers,
+statuses, folder names, and CLI commands remain language-neutral and use the existing
+English contract.
+
 AuditFlow creates the staged workspace. The auditor edits its YAML and QMD files between
 commands. Follow the [user journey](./docs/user_journey.md) for the complete first audit.
 
@@ -83,13 +93,9 @@ auditflow create report
 auditflow validate
 ```
 
-Use `auditflow validate` during drafting and `auditflow validate --strict` before sharing
-final materials. Validation checks structural integrity and traceability; it does not
-provide an automated opinion on audit quality.
+Use `auditflow validate` during drafting and `auditflow validate --strict` before sharing final materials. Validation checks structural integrity and traceability; it does not provide an automated opinion on audit quality.
 
-QMD documents can be previewed repeatedly with the Quarto extension in VS Code or
-`quarto preview`. Batch rendering is a finalization convenience, not a replacement for
-previewing workpapers and reports while they are being developed.
+QMD documents can be previewed repeatedly with the Quarto extension in VS Code or `quarto preview`.
 
 ## Plain files, explicit relationships
 
@@ -101,9 +107,7 @@ AuditFlow keeps each engagement inspectable without a database or proprietary fi
 - **Quarto** previews and renders workpapers and reports.
 - **Git**, when used, provides version history and manager review.
 
-The core model stays deliberately small. Companies can extend schemas, templates,
-validation rules, styling, and review processes without making enterprise governance
-fields mandatory for every user. See the
+The core model stays deliberately small. Companies can extend schemas, templates, validation rules, styling, and review processes without making enterprise governance fields mandatory for every user. See the
 [project structure](./docs/project_structure.md),
 [workflow](./docs/workflow.md), and
 [customization guide](./docs/customization.md).
@@ -125,15 +129,13 @@ auditflow evidence refresh
 auditflow evidence status
 ```
 
-A fingerprint detects a local file change. It does not prove provenance, completeness, or
-authenticity and does not replace secure evidence storage. See
+A fingerprint detects a local file change. It does not prove provenance, completeness, or authenticity and does not replace secure evidence storage. See
 [reproducible data analysis](./docs/data_analysis.md) for the working conventions.
 
 ## Optional AI
 
-AI assistance is disabled by default. The implemented runtime adapter uses
-[Ollama](https://ollama.com/); Qwen3 8B is the demonstration model, not a framework
-requirement.
+AI assistance is disabled by default. AuditFlow supports local models through [Ollama](https://ollama.com/), OpenAI-compatible APIs, and Anthropic's Claude API.
+Qwen3 8B is the local demonstration model, not a framework requirement.
 
 ```bash
 ollama pull qwen3:8b
@@ -142,20 +144,13 @@ auditflow ai draft-observation WP-C-001 --dry-run
 auditflow ai review-observation OBS-001 --dry-run
 ```
 
-AI tasks receive selective context and write responses to separate sidecar files. Raw
-evidence is excluded by default, and company policy controls approved providers,
-destinations, models, classifications, confirmation, and retention. Model comments remain
-advisory. See [LLM integration](./docs/llm_integration.md) for setup and the security model.
+AI tasks receive selective context and write responses to separate sidecar files. Raw evidence is excluded by default, and company policy controls approved providers, destinations, models, classifications, confirmation, and retention. Model comments remain advisory. See [LLM integration](./docs/llm_integration.md) for setup and the security model.
 
 ## Optional Git review
 
-AuditFlow works without Git. A team that needs version history and manager approval can
-store the same plain-file project in a private GitLab, Azure DevOps, GitHub Enterprise, or
-another approved service. Protected branches and pull or merge requests then provide
-comments, approvals, and safe reverts without changing the AuditFlow core.
+AuditFlow works without Git. A team that needs version history and manager approval can store the same plain-file project in a private GitLab, Azure DevOps, GitHub Enterprise, or another approved service. Protected branches and pull or merge requests then provide comments, approvals, and safe reverts without changing the AuditFlow core.
 
-Raw evidence remains outside the repository; only approved source artifacts and, when
-used, the evidence manifest are versioned. See
+Raw evidence remains outside the repository; only approved source artifacts and, when used, the evidence manifest are versioned. See
 [Git collaboration](./docs/git_collaboration.md) for the concise setup.
 
 ## Scope
@@ -167,11 +162,10 @@ Current boundaries:
 - validation checks structure and traceability, not evidence sufficiency or conclusion quality;
 - long-term action tracking is outside the scope at the moment (should remain in a company system);
 - access control and electronic sign-off are not part of the model;
-- Ollama is the only implemented AI provider adapter, I'll add more later;
+- external AI availability, model capabilities, cost, and data handling depend on the company-approved provider configuration;
 - sensitive-data scanning is pattern-based and cannot prove that a prompt is safe.
 
-These boundaries keep the default workflow lightweight. They do not prevent a company
-from adding stricter schemas, controls, templates, or review requirements.
+These boundaries keep the default workflow lightweight. They do not prevent a company from adding stricter schemas, controls, templates, or review requirements.
 
 ## Documentation
 
@@ -192,8 +186,7 @@ pip install -e ".[analysis,test]"
 python -m pytest -q
 ```
 
-Contributions should preserve the separation between source evidence and generated output,
-keep examples synthetic, and update documentation when commands or source-of-truth files
-change. See [CONTRIBUTING.md](./CONTRIBUTING.md).
+Contributions should preserve the separation between source evidence and generated output, keep examples synthetic, and update documentation when commands or source-of-truth files change.
+See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 AuditFlow is released under the [MIT License](./LICENSE).

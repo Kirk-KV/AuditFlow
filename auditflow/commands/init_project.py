@@ -6,6 +6,12 @@ from typing import Any
 
 import yaml
 
+from auditflow.localization import (
+    DEFAULT_LANGUAGE,
+    language_settings,
+    normalize_language,
+    read_localized_template,
+)
 from auditflow.template_utils import load_yaml_template, read_template
 
 
@@ -93,8 +99,10 @@ def create_initial_project(
     overwrite: bool = False,
     brand_css: Path | None = None,
     report_css: Path | None = None,
+    language: str = DEFAULT_LANGUAGE,
 ) -> dict[str, Any]:
     """Create the staged AuditFlow starter structure."""
+    language = normalize_language(language)
     project_root = path.resolve()
     project_root.mkdir(parents=True, exist_ok=True)
 
@@ -133,10 +141,7 @@ def create_initial_project(
 
     starter_yaml_templates = {
         "initial_data.yml": project_root / "initial_data.yml",
-        "stakeholders.yml": project_root / "00_admin" / "stakeholders.yml",
-        "team.yml": project_root / "00_admin" / "team.yml",
         "decisions.yml": project_root / "00_admin" / "decisions.yml",
-        "timeline.yml": project_root / "00_admin" / "timeline.yml",
         "ai.yml": project_root / "00_admin" / "ai.yml",
     }
 
@@ -149,6 +154,32 @@ def create_initial_project(
             ),
             target_path,
         )
+
+    localized_yaml_templates = {
+        "stakeholders.yml": project_root / "00_admin" / "stakeholders.yml",
+        "team.yml": project_root / "00_admin" / "team.yml",
+        "timeline.yml": project_root / "00_admin" / "timeline.yml",
+    }
+
+    for template_name, target_path in localized_yaml_templates.items():
+        record_file(
+            write_yaml_if_missing(
+                target_path,
+                yaml.safe_load(read_localized_template(template_name, language)) or {},
+                overwrite=overwrite,
+            ),
+            target_path,
+        )
+
+    settings_path = project_root / "00_admin" / "settings.yml"
+    record_file(
+        write_yaml_if_missing(
+            settings_path,
+            language_settings(language),
+            overwrite=overwrite,
+        ),
+        settings_path,
+    )
 
     project_text_templates = {
         ".gitignore": project_root / ".gitignore",
@@ -187,17 +218,7 @@ def create_initial_project(
     record_file(
         write_text_if_missing(
             project_root / "04_evidence" / "README.md",
-            """# Evidence folder
-
-Use this folder during pre-planning, planning, and fieldwork.
-
-- `01_regulations/` — policies, procedures, process descriptions.
-- `02_raw_data/` — raw exports received from systems or management.
-- `03_correspondence/` — important emails and written confirmations.
-- `04_reference_materials/` — background materials, org charts, prior reports.
-- `05_screenshots/` — screenshots used as evidence.
-- `99_generated/` — generated outputs from analysis scripts or notebooks.
-""",
+            read_localized_template("evidence_readme.md", language),
             overwrite=overwrite,
         ),
         project_root / "04_evidence" / "README.md",
@@ -216,6 +237,7 @@ Use this folder during pre-planning, planning, and fieldwork.
 
     return {
         "project_root": project_root,
+        "language": language,
         "created_files": created_files,
         "created_dirs": created_dirs,
     }
