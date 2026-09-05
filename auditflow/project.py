@@ -4,11 +4,13 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Optional
 
+from auditflow.errors import AuditFlowError
+
 
 PROJECT_MARKER_FILE = "initial_data.yml"
 
 
-class AuditFlowProjectNotFound(FileNotFoundError):
+class AuditFlowProjectNotFound(AuditFlowError, FileNotFoundError):
     """Raised when a command cannot locate an AuditFlow project root."""
 
 

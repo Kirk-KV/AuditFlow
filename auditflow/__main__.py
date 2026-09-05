@@ -1,4 +1,4 @@
-from auditflow.cli import app
+from auditflow.cli import main
 
 if __name__ == "__main__":
-    app()
+    main()

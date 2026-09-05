@@ -1,11 +1,13 @@
 from __future__ import annotations
 
-import argparse
 import re
 from pathlib import Path
 from typing import Any
 
 import yaml
+
+from auditflow.errors import AuditFlowDataError
+from auditflow.yaml_io import read_yaml_mapping, write_yaml
 
 
 OBSERVATION_SECTION_PATTERN = re.compile(
@@ -22,39 +24,13 @@ FENCED_YAML_PATTERN = re.compile(
 OBS_ID_PATTERN = re.compile(r"^OBS-(\d{3,})$", re.IGNORECASE)
 
 
-def load_yaml(path: Path) -> dict[str, Any]:
-    if not path.exists():
-        raise FileNotFoundError(f"File not found: {path}")
-
-    with path.open("r", encoding="utf-8") as file:
-        data = yaml.safe_load(file) or {}
-
-    if not isinstance(data, dict):
-        raise ValueError(f"Expected YAML mapping in {path}")
-
-    return data
-
-
 def load_yaml_text(text: str, source: Path) -> dict[str, Any]:
     data = yaml.safe_load(text) or {}
 
     if not isinstance(data, dict):
-        raise ValueError(f"Observation block must be a YAML mapping: {source}")
+        raise AuditFlowDataError(f"Observation block must be a YAML mapping: {source}")
 
     return data
-
-
-def write_yaml(path: Path, data: dict[str, Any]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-
-    with path.open("w", encoding="utf-8") as file:
-        yaml.safe_dump(
-            data,
-            file,
-            sort_keys=False,
-            allow_unicode=True,
-            width=120,
-        )
 
 
 def safe_obs_id(value: Any) -> str | None:
@@ -135,7 +111,7 @@ def index_program_rows(audit_program: dict[str, Any]) -> dict[str, dict[str, Any
     rows = audit_program.get("program_rows", [])
 
     if not isinstance(rows, list):
-        raise ValueError("audit_program.yml: program_rows must be a list")
+        raise AuditFlowDataError("audit_program.yml: program_rows must be a list")
 
     result = {}
 
@@ -165,8 +141,10 @@ def read_existing_observations(
 
     for path in existing_observation_files(observations_dir):
         try:
-            obs = load_yaml(path)
-        except Exception:
+            obs = read_yaml_mapping(path, label="Observation")
+        except AuditFlowDataError:
+            # A hand-edited observation that no longer parses must not silently
+            # disappear from the run; validate reports it in detail.
             continue
 
         obs_id = safe_obs_id(obs.get("observation_id")) or safe_obs_id(path.stem)
@@ -253,7 +231,10 @@ def generate_observations(
     workpapers_dir = audit_project_root / "05_workpapers"
     observations_dir = audit_project_root / "06_observations"
 
-    audit_program = load_yaml(audit_program_path)
+    audit_program = read_yaml_mapping(
+        audit_program_path,
+        label="Audit program (run 'auditflow create audit-program' first)",
+    )
     program_rows_by_workpaper = index_program_rows(audit_program)
     observations_dir.mkdir(parents=True, exist_ok=True)
 
@@ -283,9 +264,11 @@ def generate_observations(
 
         program_row = program_rows_by_workpaper.get(workpaper_ref)
         if program_row is None:
-            raise ValueError(
+            raise AuditFlowDataError(
                 f"Workpaper {workpaper_ref} has a proposed observation, but no matching "
-                "workpaper_ref was found in 03_audit_program/audit_program.yml."
+                "workpaper_ref was found in 03_audit_program/audit_program.yml. "
+                "Run 'auditflow create audit-program' and 'auditflow create workpapers' "
+                "so the program and the workpaper file names agree."
             )
 
         existing = existing_by_workpaper.get(workpaper_ref)

@@ -2,7 +2,9 @@
   "title": "AuditFlow Risk Assessment",
   "description": "Risk assessment model for an audit engagement.",
   "type": "object",
-  "required": ["risks"],
+  "required": [
+    "risks"
+  ],
   "additionalProperties": true,
   "properties": {
     "risks": {
@@ -10,13 +12,21 @@
       "minItems": 1,
       "items": {
         "type": "object",
-        "required": ["id", "title", "rationale"],
+        "required": [
+          "id",
+          "title",
+          "rationale"
+        ],
         "additionalProperties": true,
         "properties": {
           "id": {
             "type": "string",
-            "pattern": "^R-[0-9]{3,}$",
-            "examples": ["R-001"]
+            "examples": [
+              "R-001"
+            ],
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Risk identifier from the company's own risk register. AuditFlow does not impose a format."
           },
           "title": {
             "type": "string",
@@ -27,12 +37,21 @@
           },
           "category": {
             "type": "string",
-            "examples": ["financial", "operational", "fraud", "compliance"]
+            "examples": [
+              "financial",
+              "operational",
+              "fraud",
+              "compliance"
+            ]
           },
           "rating": {
             "type": "string",
             "description": "Risk rating according to the company's own scale.",
-            "examples": ["high", "medium", "low"]
+            "examples": [
+              "high",
+              "medium",
+              "low"
+            ]
           },
           "included_in_scope": {
             "type": "boolean"

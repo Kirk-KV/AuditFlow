@@ -51,7 +51,7 @@ test = [
 ]
 
 [project.scripts]
-auditflow = "auditflow.cli:app"
+auditflow = "auditflow.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/Kirk-KV/auditflow"
@@ -93,6 +93,9 @@ auditflow = [
 line-length = 100
 
 [tool.pytest.ini_options]
+# Quarto rendering dominates the run time, so the default suite is the fast one.
+# Use `python -m pytest -m integration` (or `-m ""`) to include it.
+addopts = "-m 'not integration'"
 markers = [
     "integration: checks external tools such as Quarto when they are available"
 ]

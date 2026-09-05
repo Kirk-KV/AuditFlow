@@ -36,6 +36,7 @@ from auditflow.commands.report import update_report_qmd
 from auditflow.commands.status import get_status
 from auditflow.commands.validate import validate_project
 from auditflow.commands.workpapers import generate_workpapers
+from auditflow.errors import AuditFlowError
 from auditflow.localization import UnsupportedLanguageError
 from auditflow.project import AuditFlowProjectNotFound, relative_to_cwd, resolve_project
 from auditflow.timeline import record_event, refresh_timeline
@@ -68,7 +69,7 @@ def _version_callback(value: bool) -> None:
 
 
 @app.callback()
-def main(
+def root(
     version: bool = typer.Option(
         False,
         "--version",
@@ -78,6 +79,21 @@ def main(
     ),
 ) -> None:
     """Run AuditFlow commands."""
+
+
+def main() -> None:
+    """Console entry point.
+
+    Commands raise AuditFlowError for problems an auditor can fix, such as running
+    a command before its prerequisite file exists. Those are reported as a plain
+    message. Anything else is a defect and keeps its traceback.
+    """
+
+    try:
+        app()
+    except AuditFlowError as exc:
+        typer.echo(f"Error: {exc}", err=True)
+        raise SystemExit(1) from exc
 
 
 def project_option() -> Optional[Path]:
@@ -268,6 +284,28 @@ def create_observations_command(
     )
 
 
+def _echo_missing_blocks(missing: tuple[str, ...], document: str) -> None:
+    """Report AUTO blocks the document no longer contains.
+
+    Without this, deleting a marker looks like a successful generation while the
+    generated section quietly stops appearing in the document.
+    """
+
+    if not missing:
+        return
+    typer.echo("")
+    typer.echo(
+        f"Warning: {document} has no marker for {len(missing)} generated "
+        "section(s), so their content was not written:"
+    )
+    for name in missing:
+        typer.echo(f"- AUTO:{name}")
+    typer.echo(
+        "Restore the '<!-- AUTO:NAME START -->' and '<!-- AUTO:NAME END -->' "
+        "comment pair, or regenerate the document with --reset-report/--reset-archive."
+    )
+
+
 @create_app.command("report")
 def create_report_command(
     project: Optional[Path] = project_option(),
@@ -275,8 +313,9 @@ def create_report_command(
 ) -> None:
     """Create or update 07_reporting/report.qmd using protected AUTO blocks."""
     project_root = require_project(project)
-    report_path = update_report_qmd(project_root, reset_report=reset_report)
-    typer.echo(f"Report updated: {report_path}")
+    result = update_report_qmd(project_root, reset_report=reset_report)
+    typer.echo(f"Report updated: {result.path}")
+    _echo_missing_blocks(result.missing_blocks, "07_reporting/report.qmd")
     record_event(
         project_root,
         event="report_created",
@@ -292,8 +331,9 @@ def create_archive_command(
 ) -> None:
     """Create or update 09_archive/audit_story.qmd."""
     project_root = require_project(project)
-    archive_path = update_archive(project_root, reset=reset_archive)
-    typer.echo(f"Audit story updated: {archive_path}")
+    result = update_archive(project_root, reset=reset_archive)
+    typer.echo(f"Audit story updated: {result.path}")
+    _echo_missing_blocks(result.missing_blocks, "09_archive/audit_story.qmd")
     record_event(
         project_root,
         event="archive_created",
@@ -312,13 +352,20 @@ def feedback_request_command(
 ) -> None:
     """Create plain-text feedback requests and response templates."""
     project_root = require_project(project)
-    create_requests(
+    result = create_requests(
         project_root=project_root,
         include_sponsor=include_sponsor,
         response_due_date=response_due_date,
         overwrite_requests=overwrite,
         reset_response_templates=reset_response_templates,
     )
+    typer.echo(f"Generated feedback requests: {result['generated']}")
+    typer.echo(f"Request directory: {result['request_dir']}")
+    typer.echo(f"Response directory: {result['response_dir']}")
+    for path in result["kept_filled"]:
+        typer.echo(f"Kept filled response template: {path}")
+    for path in result["kept_blank"]:
+        typer.echo(f"Kept existing response template: {path}")
     record_event(
         project_root,
         event="feedback_requested",
@@ -333,7 +380,9 @@ def feedback_summary_command(
 ) -> None:
     """Create one 08_feedback/feedback_summary.qmd from response templates."""
     project_root = require_project(project)
-    create_summary(project_root)
+    result = create_summary(project_root)
+    typer.echo(f"Feedback summary created: {result['summary_path']}")
+    typer.echo(f"Responses: {result['received']} received of {result['responses']}")
 
 
 @timeline_app.command("refresh")

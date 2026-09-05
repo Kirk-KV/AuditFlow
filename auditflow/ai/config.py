@@ -10,6 +10,7 @@ from urllib.parse import urlparse
 
 import yaml
 
+from auditflow.errors import AuditFlowError
 from auditflow.localization import read_project_language
 
 
@@ -51,7 +52,7 @@ BUILT_IN_POLICY: dict[str, Any] = {
 }
 
 
-class AIConfigError(ValueError):
+class AIConfigError(AuditFlowError, ValueError):
     """Raised when AI policy or project settings are invalid or conflict."""
 
 

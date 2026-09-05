@@ -7,6 +7,7 @@ from typing import Any
 
 import yaml
 
+from auditflow.errors import AuditFlowError
 from auditflow.template_utils import load_yaml_template, read_template
 
 
@@ -15,7 +16,7 @@ SUPPORTED_LANGUAGES = ("en", "ru")
 SETTINGS_PATH = Path("00_admin") / "settings.yml"
 
 
-class UnsupportedLanguageError(ValueError):
+class UnsupportedLanguageError(AuditFlowError, ValueError):
     """Raised when a project requests an unsupported document language."""
 
 

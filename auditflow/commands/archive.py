@@ -1,12 +1,18 @@
 from __future__ import annotations
 
 import html
-import re
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-import yaml
-
+from auditflow.blocks import (
+    ARCHIVE_BLOCK_NAMES,
+    missing_block_names,
+    observations_digest,
+    replace_auto_blocks,
+    stamp_observations_digest,
+    update_front_matter,
+)
 from auditflow.localization import (
     load_messages,
     message,
@@ -15,29 +21,14 @@ from auditflow.localization import (
     read_project_language,
     translated_term,
 )
+from auditflow.yaml_io import read_optional_yaml_mapping
+from auditflow.commands.evidence import EXCLUDED_FILE_NAMES
 
 
-AUTO_BLOCK_RE = re.compile(
-    r"<!-- AUTO:(?P<name>[A-Z0-9_]+) START -->.*?<!-- AUTO:(?P=name) END -->",
-    re.DOTALL,
-)
-
-
-def load_yaml(path: Path) -> dict[str, Any]:
-    if not path.exists():
-        return {}
-
-    with path.open("r", encoding="utf-8") as file:
-        data = yaml.safe_load(file) or {}
-
-    return data if isinstance(data, dict) else {}
-
-
-def load_yaml_list(path: Path) -> list[dict[str, Any]]:
-    data = load_yaml(path)
-    if isinstance(data, list):
-        return data
-    return []
+@dataclass(frozen=True)
+class ArchiveUpdate:
+    path: Path
+    missing_blocks: tuple[str, ...]
 
 
 def esc(value: Any) -> str:
@@ -65,15 +56,6 @@ def md_table(
     return "\n".join([header, separator, body])
 
 
-def replace_auto_blocks(content: str, blocks: dict[str, str]) -> str:
-    def repl(match: re.Match[str]) -> str:
-        name = match.group("name")
-        replacement = blocks.get(name, "").strip()
-        return f"<!-- AUTO:{name} START -->\n{replacement}\n<!-- AUTO:{name} END -->"
-
-    return AUTO_BLOCK_RE.sub(repl, content)
-
-
 def read_observations(project_root: Path) -> list[dict[str, Any]]:
     observations = []
     observations_dir = project_root / "06_observations"
@@ -82,7 +64,7 @@ def read_observations(project_root: Path) -> list[dict[str, Any]]:
         return observations
 
     for path in sorted(observations_dir.glob("OBS-*.yml")):
-        data = load_yaml(path)
+        data = read_optional_yaml_mapping(path)
         if data:
             data["_path"] = path
             observations.append(data)
@@ -91,21 +73,21 @@ def read_observations(project_root: Path) -> list[dict[str, Any]]:
 
 
 def read_audit_program_rows(project_root: Path) -> list[dict[str, Any]]:
-    data = load_yaml(project_root / "03_audit_program" / "audit_program.yml")
+    data = read_optional_yaml_mapping(project_root / "03_audit_program" / "audit_program.yml")
     rows = data.get("program_rows", [])
     return rows if isinstance(rows, list) else []
 
 
 def read_initial_data(project_root: Path) -> dict[str, Any]:
-    return load_yaml(project_root / "initial_data.yml")
+    return read_optional_yaml_mapping(project_root / "initial_data.yml")
 
 
 def read_team(project_root: Path) -> dict[str, Any]:
-    return load_yaml(project_root / "00_admin" / "team.yml")
+    return read_optional_yaml_mapping(project_root / "00_admin" / "team.yml")
 
 
 def read_stakeholders(project_root: Path) -> dict[str, Any]:
-    return load_yaml(project_root / "00_admin" / "stakeholders.yml")
+    return read_optional_yaml_mapping(project_root / "00_admin" / "stakeholders.yml")
 
 
 def audit_title(
@@ -135,22 +117,6 @@ def period(initial_data: dict[str, Any]) -> str:
         return f"{start} — {end}"
     return start or end
 
-
-def lead_name(team: dict[str, Any]) -> str:
-    team_data = team.get("team", {})
-    lead = team_data.get("engagement_lead", {})
-    return text(lead.get("name"))
-
-
-def reviewer_name(team: dict[str, Any]) -> str:
-    review = team.get("review", {})
-    reviewer = review.get("reviewer", {})
-    return text(reviewer.get("name"))
-
-
-def sponsor_name(stakeholders: dict[str, Any]) -> str:
-    sponsor = stakeholders.get("sponsor", {})
-    return text(sponsor.get("name"))
 
 def build_cover(project_root: Path) -> str:
     initial = read_initial_data(project_root)
@@ -211,7 +177,7 @@ def build_initial_assumptions(project_root: Path) -> str:
 
 
 def build_planning_decisions(project_root: Path) -> str:
-    planning = load_yaml(project_root / "01_planning" / "planning_decision.yml")
+    planning = read_optional_yaml_mapping(project_root / "01_planning" / "planning_decision.yml")
     included = planning.get("included_risks", [])
     excluded = planning.get("excluded_risks", [])
     messages = project_messages(project_root)
@@ -255,7 +221,7 @@ def build_planning_decisions(project_root: Path) -> str:
 
 
 def build_scope_risk_evolution(project_root: Path) -> str:
-    planning = load_yaml(project_root / "01_planning" / "planning_decision.yml")
+    planning = read_optional_yaml_mapping(project_root / "01_planning" / "planning_decision.yml")
     scope = planning.get("scope", {})
     in_scope = scope.get("in_scope", []) or []
     out_scope = scope.get("out_of_scope", []) or []
@@ -320,8 +286,13 @@ def build_evidence_map(project_root: Path) -> str:
     messages = project_messages(project_root)
     if evidence_dir.exists():
         for path in sorted(evidence_dir.rglob("*")):
-            if path.is_file():
-                rows.append([str(path.relative_to(project_root)), ""])
+            if (
+                path.is_file()
+                and "__pycache__" not in path.relative_to(evidence_dir).parts
+                and path.suffix.lower() not in {".pyc", ".pyo"}
+                and path.name not in EXCLUDED_FILE_NAMES
+            ):
+                rows.append([path.relative_to(project_root).as_posix(), ""])
 
     return md_table(
         message(messages, "archive.evidence_headers"),
@@ -343,7 +314,7 @@ def build_blocks(project_root: Path) -> dict[str, str]:
     }
 
 
-def update_archive(project_root: Path, reset: bool = False) -> Path:
+def update_archive(project_root: Path, reset: bool = False) -> ArchiveUpdate:
     archive_dir = project_root / "09_archive"
     archive_dir.mkdir(parents=True, exist_ok=True)
     archive_path = archive_dir / "audit_story.qmd"
@@ -355,15 +326,13 @@ def update_archive(project_root: Path, reset: bool = False) -> Path:
         )
 
     content = archive_path.read_text(encoding="utf-8")
+    missing = missing_block_names(content, ARCHIVE_BLOCK_NAMES)
+    digest = observations_digest(project_root)
+    content = update_front_matter(
+        content,
+        lambda front_matter: stamp_observations_digest(front_matter, digest),
+    )
     content = replace_auto_blocks(content, build_blocks(project_root))
     archive_path.write_text(content, encoding="utf-8")
 
-    return archive_path
-
-
-def write_css(project_root: Path, overwrite_css: bool = False) -> Path:
-    """Compatibility shim.
-
-    Archive styling comes from styles/quarto-html.yml and styles/*.css.
-    """
-    return project_root / "styles" / "auditflow.css"
+    return ArchiveUpdate(path=archive_path, missing_blocks=missing)

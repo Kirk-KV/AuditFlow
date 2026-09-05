@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import argparse
-import html
 import re
 import unicodedata
 from datetime import date
@@ -9,6 +7,9 @@ from pathlib import Path
 from statistics import mean
 from typing import Any
 
+import yaml
+
+from auditflow.errors import AuditFlowDataError, AuditFlowFileError
 from auditflow.localization import (
     load_messages,
     message,
@@ -16,51 +17,7 @@ from auditflow.localization import (
     render_localized_template,
 )
 from auditflow.template_utils import render_template
-
-try:
-    import yaml
-except ImportError as exc:
-    raise SystemExit("PyYAML is required. Install it with: pip install pyyaml") from exc
-
-
-EN_MESSAGES = load_messages("en")
-QUESTIONS: list[dict[str, str]] = message(EN_MESSAGES, "feedback.questions")
-OPEN_QUESTIONS: list[dict[str, str]] = message(EN_MESSAGES, "feedback.open_questions")
-SCORE_GUIDANCE = message(EN_MESSAGES, "feedback.score_guidance")
-
-
-def load_yaml(path: Path, default: Any | None = None) -> Any:
-    if default is None:
-        default = {}
-
-    if not path.exists():
-        return default
-
-    with path.open("r", encoding="utf-8") as file:
-        return yaml.safe_load(file) or default
-
-
-def write_yaml(path: Path, data: Any) -> None:
-    path.write_text(
-        yaml.safe_dump(data, allow_unicode=True, sort_keys=False, width=100),
-        encoding="utf-8",
-    )
-
-
-def find_project_root(start_paths: list[Path]) -> Path:
-    for start in start_paths:
-        current = start.resolve()
-
-        while current != current.parent:
-            if (current / "initial_data.yml").exists() and (current / "00_admin" / "stakeholders.yml").exists():
-                return current
-
-            current = current.parent
-
-    raise FileNotFoundError(
-        "Could not find audit project root. Expected initial_data.yml in the root "
-        "and 00_admin/stakeholders.yml."
-    )
+from auditflow.yaml_io import read_optional_yaml_mapping, write_yaml
 
 
 def slugify(value: str, fallback: str) -> str:
@@ -299,8 +256,8 @@ def response_template(
     recipient: dict[str, str],
     audit_name: str,
     request_file: str,
-    questions: list[dict[str, str]] = QUESTIONS,
-    open_questions: list[dict[str, str]] = OPEN_QUESTIONS,
+    questions: list[dict[str, str]],
+    open_questions: list[dict[str, str]],
 ) -> dict[str, Any]:
     rendered = render_template(
         "feedback_response.yml",
@@ -318,30 +275,6 @@ def response_template(
     return yaml.safe_load(rendered) or {}
 
 
-def response_is_filled(path: Path) -> bool:
-    data = load_yaml(path, default={})
-    if not isinstance(data, dict):
-        return False
-
-    response = data.get("response", {})
-    if isinstance(response, dict) and response.get("received"):
-        return True
-
-    scores = data.get("scores", [])
-    if isinstance(scores, list):
-        for item in scores:
-            if isinstance(item, dict) and (item.get("score") not in (None, "") or item.get("comment")):
-                return True
-
-    open_feedback = data.get("open_feedback", [])
-    if isinstance(open_feedback, list):
-        for item in open_feedback:
-            if isinstance(item, dict) and item.get("answer"):
-                return True
-
-    return False
-
-
 def create_requests(
     *,
     project_root: Path,
@@ -349,19 +282,22 @@ def create_requests(
     response_due_date: str,
     overwrite_requests: bool,
     reset_response_templates: bool,
-) -> None:
+) -> dict[str, Any]:
     language = read_project_language(project_root)
     messages = load_messages(language)
     questions = message(messages, "feedback.questions")
     open_questions = message(messages, "feedback.open_questions")
-    initial_data = load_yaml(project_root / "initial_data.yml", default={})
-    stakeholders = load_yaml(project_root / "00_admin" / "stakeholders.yml", default={})
+    initial_data = read_optional_yaml_mapping(project_root / "initial_data.yml")
+    stakeholders = read_optional_yaml_mapping(project_root / "00_admin" / "stakeholders.yml")
 
     audit_name = audit_title(initial_data, language=language)
     recipients = recipients_from_stakeholders(stakeholders, include_sponsor=include_sponsor)
 
     if not recipients:
-        raise SystemExit("No recipients found in 00_admin/stakeholders.yml.")
+        raise AuditFlowDataError(
+            "No recipients found in 00_admin/stakeholders.yml. Fill in 'auditees' "
+            "or 'report_recipients', or pass --include-sponsor."
+        )
 
     feedback_dir = project_root / "08_feedback"
     request_dir = feedback_dir / "request"
@@ -372,6 +308,9 @@ def create_requests(
     response_dir.mkdir(parents=True, exist_ok=True)
     original_dir.mkdir(parents=True, exist_ok=True)
 
+    kept_filled: list[str] = []
+    kept_blank: list[str] = []
+
     for index, recipient in enumerate(recipients, start=1):
         slug = slugify(recipient["name"], fallback=f"recipient_{index:02d}")
 
@@ -379,7 +318,9 @@ def create_requests(
         response_path = response_dir / f"{index:02d}_{slug}_response.yml"
 
         if request_path.exists() and not overwrite_requests:
-            raise FileExistsError(f"{request_path} already exists. Use --overwrite to replace request files.")
+            raise AuditFlowFileError(
+                f"{request_path} already exists. Use --overwrite to replace request files."
+            )
 
         request_text = render_plain_text_request(
             recipient=recipient,
@@ -399,14 +340,14 @@ def create_requests(
 
         if response_path.exists():
             if reset_response_templates:
-                write_yaml(response_path, template)
-            elif response_is_filled(response_path):
-                print(f"Response template kept because it appears filled: {response_path}")
+                write_yaml(response_path, template, width=100)
+            elif response_received(read_optional_yaml_mapping(response_path)):
+                kept_filled.append(str(response_path))
             else:
                 # Keep an existing blank template to avoid unnecessary churn.
-                print(f"Response template already exists and was kept: {response_path}")
+                kept_blank.append(str(response_path))
         else:
-            write_yaml(response_path, template)
+            write_yaml(response_path, template, width=100)
 
     readme_path = feedback_dir / "README.md"
     if not readme_path.exists():
@@ -422,10 +363,14 @@ def create_requests(
             encoding="utf-8",
         )
 
-    print(f"Generated {len(recipients)} feedback request(s).")
-    print(f"Feedback directory: {feedback_dir}")
-    print(f"Request directory: {request_dir}")
-    print(f"Response directory: {response_dir}")
+    return {
+        "generated": len(recipients),
+        "feedback_dir": str(feedback_dir),
+        "request_dir": str(request_dir),
+        "response_dir": str(response_dir),
+        "kept_filled": kept_filled,
+        "kept_blank": kept_blank,
+    }
 
 
 def parse_score(value: Any) -> float | None:
@@ -513,7 +458,7 @@ def response_status_label(
     data: dict[str, Any],
     messages: dict[str, Any] | None = None,
 ) -> str:
-    messages = messages or EN_MESSAGES
+    messages = messages or load_messages("en")
     if response_received_explicit(data):
         return message(messages, "feedback.received")
 
@@ -531,7 +476,7 @@ def load_response_files(feedback_dir: Path) -> list[dict[str, Any]]:
         return responses
 
     for path in sorted(response_dir.glob("*_response.yml")):
-        data = load_yaml(path, default={})
+        data = read_optional_yaml_mapping(path)
         if isinstance(data, dict):
             data["_path"] = path
             responses.append(data)
@@ -768,12 +713,15 @@ def build_summary_qmd(
     )
 
 
-def create_summary(project_root: Path) -> None:
+def create_summary(project_root: Path) -> dict[str, Any]:
     feedback_dir = project_root / "08_feedback"
     responses = load_response_files(feedback_dir)
 
     if not responses:
-        raise SystemExit("No response templates found in 08_feedback/response/. Run --request first.")
+        raise AuditFlowDataError(
+            "No response templates found in 08_feedback/response/. "
+            "Run 'auditflow feedback request' first."
+        )
 
     summary_path = feedback_dir / "feedback_summary.qmd"
     summary_path.write_text(
@@ -781,76 +729,8 @@ def create_summary(project_root: Path) -> None:
         encoding="utf-8",
     )
 
-    print(f"Feedback summary created: {summary_path}")
-
-
-def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Create plain-text feedback requests and a single QMD feedback summary."
-    )
-
-    mode = parser.add_mutually_exclusive_group(required=True)
-    mode.add_argument(
-        "--request",
-        action="store_true",
-        help="Create feedback request email bodies and response templates.",
-    )
-    mode.add_argument(
-        "--summary",
-        action="store_true",
-        help="Create one feedback_summary.qmd from filled response templates.",
-    )
-
-    parser.add_argument(
-        "--project-root",
-        type=Path,
-        default=None,
-        help="Audit project root. Default: auto-detect from current directory.",
-    )
-
-    parser.add_argument(
-        "--include-sponsor",
-        action="store_true",
-        help="Also generate a request for sponsor. By default only auditees are used.",
-    )
-
-    parser.add_argument(
-        "--response-due-date",
-        default="",
-        help="Optional response due date to include in the request, e.g. 2026-04-15.",
-    )
-
-    parser.add_argument(
-        "--overwrite",
-        action="store_true",
-        help="Overwrite generated request text files.",
-    )
-
-    parser.add_argument(
-        "--reset-response-templates",
-        action="store_true",
-        help="Reset response YAML templates. This can delete entered feedback.",
-    )
-
-    args = parser.parse_args()
-    script_path = Path(__file__).resolve()
-
-    if args.project_root:
-        project_root = args.project_root.resolve()
-    else:
-        project_root = find_project_root([Path.cwd(), script_path.parent, script_path.parent.parent])
-
-    if args.request:
-        create_requests(
-            project_root=project_root,
-            include_sponsor=args.include_sponsor,
-            response_due_date=args.response_due_date,
-            overwrite_requests=args.overwrite,
-            reset_response_templates=args.reset_response_templates,
-        )
-    elif args.summary:
-        create_summary(project_root)
-
-
-if __name__ == "__main__":
-    main()
+    return {
+        "summary_path": str(summary_path),
+        "responses": len(responses),
+        "received": sum(1 for item in responses if response_received(item)),
+    }

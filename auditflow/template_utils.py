@@ -5,10 +5,9 @@ from pathlib import Path
 from string import Template
 from typing import Any
 
-try:
-    import yaml
-except ImportError as exc:
-    raise SystemExit("PyYAML is required. Install it with: pip install pyyaml") from exc
+from auditflow.yaml_io import write_text_if_missing, write_yaml_if_missing
+
+import yaml
 
 
 TEMPLATE_PACKAGE = "auditflow.templates"
@@ -47,35 +46,6 @@ def load_yaml_template(relative_path: str, default: Any | None = None) -> Any:
         default = {}
 
     return yaml.safe_load(read_template(relative_path)) or default
-
-
-def write_text_if_missing(path: Path, text: str, overwrite: bool = False) -> bool:
-    """Write text unless the file already exists and overwrite=False.
-
-    Returns True when a file was created or overwritten, False when the existing
-    file was kept.
-    """
-
-    if path.exists() and not overwrite:
-        return False
-
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(text, encoding="utf-8")
-    return True
-
-
-def write_yaml_if_missing(path: Path, data: Any, overwrite: bool = False) -> bool:
-    """Write YAML unless the file already exists and overwrite=False."""
-
-    if path.exists() and not overwrite:
-        return False
-
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        yaml.safe_dump(data, allow_unicode=True, sort_keys=False, width=120),
-        encoding="utf-8",
-    )
-    return True
 
 
 def write_yaml_template(

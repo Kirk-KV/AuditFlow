@@ -8,6 +8,8 @@ from typing import Any
 
 import yaml
 
+from auditflow.errors import AuditFlowError
+
 
 MANIFEST_RELATIVE_PATH = Path("04_evidence") / "evidence_manifest.yml"
 HASH_ALGORITHM = "sha256"
@@ -18,7 +20,7 @@ EXCLUDED_FILE_NAMES = {".gitkeep", ".DS_Store", "Thumbs.db", "desktop.ini"}
 VERSIONED_PATH_PREFIXES = ("02_raw_data/scripts/",)
 
 
-class EvidenceManifestError(ValueError):
+class EvidenceManifestError(AuditFlowError, ValueError):
     """Raised when evidence cannot be scanned or its manifest is invalid."""
 
 

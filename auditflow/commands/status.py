@@ -4,16 +4,21 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-import yaml
+from auditflow.errors import AuditFlowError
+from auditflow.yaml_io import read_optional_yaml_mapping
 
 
 def load_yaml(path: Path) -> dict[str, Any]:
-    if not path.exists():
-        return {}
+    """Read a project file for the status board.
+
+    Status is a read-only overview that must work on a half-finished project, so
+    an unreadable file degrades to "not filled in" rather than stopping the
+    command. `auditflow validate` is what reports the file as broken.
+    """
+
     try:
-        data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
-        return data if isinstance(data, dict) else {}
-    except Exception:
+        return read_optional_yaml_mapping(path)
+    except AuditFlowError:
         return {}
 
 

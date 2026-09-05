@@ -3,27 +3,13 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-import yaml
-
 from auditflow.localization import message, project_messages, read_project_language, render_localized_template
-from auditflow.template_utils import load_yaml_template, write_text_if_missing
-
-
-def load_yaml(path: Path, default: Any | None = None) -> Any:
-    if default is None:
-        default = {}
-    if not path.exists():
-        return default
-    with path.open("r", encoding="utf-8") as file:
-        return yaml.safe_load(file) or default
-
-
-def write_yaml_if_missing(path: Path, data: dict[str, Any], overwrite: bool = False) -> bool:
-    if path.exists() and not overwrite:
-        return False
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(yaml.safe_dump(data, allow_unicode=True, sort_keys=False, width=120), encoding="utf-8")
-    return True
+from auditflow.template_utils import load_yaml_template
+from auditflow.yaml_io import (
+    read_optional_yaml_mapping,
+    write_text_if_missing,
+    write_yaml_if_missing,
+)
 
 
 def get_nested(data: dict[str, Any], *keys: str, default: str = "") -> str:
@@ -168,9 +154,9 @@ def create_planning_files(project_root: Path, overwrite: bool = False) -> dict[s
     created: list[str] = []
     kept: list[str] = []
 
-    initial_data = load_yaml(project_root / "initial_data.yml", default={})
-    stakeholders = load_yaml(project_root / "00_admin" / "stakeholders.yml", default={})
-    team = load_yaml(project_root / "00_admin" / "team.yml", default={})
+    initial_data = read_optional_yaml_mapping(project_root / "initial_data.yml")
+    stakeholders = read_optional_yaml_mapping(project_root / "00_admin" / "stakeholders.yml")
+    team = read_optional_yaml_mapping(project_root / "00_admin" / "team.yml")
     language = read_project_language(project_root)
     messages = project_messages(project_root)
 

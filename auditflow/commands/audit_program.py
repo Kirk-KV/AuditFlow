@@ -1,41 +1,18 @@
 from __future__ import annotations
 
-import argparse
 from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
-import yaml
-
+from auditflow.ids import build_workpaper_ref, is_safe_workpaper_ref
 from auditflow.localization import load_messages, message, project_messages
+from auditflow.yaml_io import read_yaml_mapping, write_yaml
 
 
 MANUAL_FIELDS = [
     "test_hypothesis",
     "test_script",
 ]
-
-
-def load_yaml(path: Path) -> dict[str, Any]:
-    if not path.exists():
-        raise FileNotFoundError(f"File not found: {path}")
-
-    with path.open("r", encoding="utf-8") as file:
-        return yaml.safe_load(file) or {}
-
-
-def write_yaml(path: Path, data: dict[str, Any]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-
-    with path.open("w", encoding="utf-8") as file:
-        yaml.safe_dump(
-            data,
-            file,
-            sort_keys=False,
-            allow_unicode=True,
-            width=120,
-            default_flow_style=False,
-        )
 
 
 def normalize_id(value: Any) -> str | None:
@@ -108,12 +85,26 @@ def make_test_id(index: int) -> str:
     return f"T-{index:03d}"
 
 
-def make_workpaper_ref(entity_id: str | None, fallback_test_id: str) -> str:
-    normalized = normalize_id(entity_id)
-    if normalized:
-        return f"WP-{normalized}"
+def make_workpaper_ref(
+    entity_id: str | None,
+    fallback_test_id: str,
+    *,
+    taken: set[str],
+    preferred: str | None = None,
+) -> str:
+    """Return the file-name-safe workpaper reference for one program row.
 
-    return f"WP-{fallback_test_id}"
+    The reference is written into audit_program.yml and used verbatim as the
+    workpaper file name, so it is normalized here, at the point it is created,
+    rather than by each consumer.
+    """
+
+    return build_workpaper_ref(
+        control_id=normalize_id(entity_id),
+        test_id=fallback_test_id,
+        taken=taken,
+        preferred=preferred,
+    )
 
 
 def row_key(row: dict[str, Any]) -> str:
@@ -152,6 +143,7 @@ def build_control_program_row(
     risk: dict[str, Any],
     existing_row: dict[str, Any] | None,
     no_control_design: str,
+    taken_workpaper_refs: set[str],
 ) -> dict[str, Any]:
     control_id = get_control_id(control)
     test_id = make_test_id(index)
@@ -173,7 +165,12 @@ def build_control_program_row(
         "planning_approach": str(first_non_empty(control, "planning_approach", default="")),
         "test_hypothesis": "",
         "test_script": [],
-        "workpaper_ref": make_workpaper_ref(workpaper_entity_id, test_id),
+        "workpaper_ref": make_workpaper_ref(
+            workpaper_entity_id,
+            test_id,
+            taken=taken_workpaper_refs,
+            preferred=str((existing_row or {}).get("workpaper_ref") or "") or None,
+        ),
     }
 
     return merge_manual_fields(new_row, existing_row)
@@ -209,6 +206,14 @@ def build_program_rows(
     included_risk_ids = set(risks_by_id)
     existing_by_key = existing_rows_by_key(existing_program)
     controls_by_risk: dict[str, list[dict[str, Any]]] = {}
+    taken_workpaper_refs: set[str] = set()
+    # Reserve existing identities before new controls can claim their names.
+    preserved_refs: dict[str, str] = {}
+    for key, existing in existing_by_key.items():
+        ref = str(existing.get("workpaper_ref") or "")
+        if is_safe_workpaper_ref(ref) and ref.casefold() not in taken_workpaper_refs:
+            preserved_refs[key] = ref
+            taken_workpaper_refs.add(ref.casefold())
 
     rows = []
     test_index = 1
@@ -247,13 +252,18 @@ def build_program_rows(
                 "control_id": get_control_id(control),
                 "risk_id": risk_id,
             }
-            existing_row = existing_by_key.get(row_key(temp_row))
+            key = row_key(temp_row)
+            existing_row = existing_by_key.get(key)
+            preserved_ref = preserved_refs.pop(key, None)
+            if preserved_ref:
+                taken_workpaper_refs.remove(preserved_ref.casefold())
             row = build_control_program_row(
                 index=test_index,
                 control=control,
                 risk=risks_by_id[risk_id],
                 existing_row=existing_row,
                 no_control_design=message(messages, "audit_program.no_control_design"),
+                taken_workpaper_refs=taken_workpaper_refs,
             )
 
             rows.append(row)
@@ -325,11 +335,14 @@ def create_audit_program(project_root: Path, overwrite: bool = False) -> dict[st
     planning_decision_path = project_root / "01_planning" / "planning_decision.yml"
     audit_program_path = project_root / "03_audit_program" / "audit_program.yml"
 
-    planning_decision = load_yaml(planning_decision_path)
+    planning_decision = read_yaml_mapping(
+        planning_decision_path,
+        label="Planning decision (run 'auditflow create planning' first)",
+    )
 
     existing_program = None
     if audit_program_path.exists() and not overwrite:
-        existing_program = load_yaml(audit_program_path)
+        existing_program = read_yaml_mapping(audit_program_path, label="Audit program")
 
     audit_program = build_audit_program(
         planning_decision=planning_decision,

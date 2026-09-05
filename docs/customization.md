@@ -41,10 +41,14 @@ Keep `00_admin/ai.yml` limited to project choices. It must not contain endpoint 
 **Core validator rules**:
 
 * required project structure and YAML schemas are valid;
+* planning risks come from `initial_data.yml`, and program rows test included risks;
 * test, workpaper, and observation links are internally consistent;
 * declared analysis, output, and evidence files exist;
 * IDs that must be unique are not duplicated;
+* the report and archive still contain their `AUTO` markers and were generated from the current observations;
 * strict mode identifies incomplete finalization fields and fails on warnings.
+
+Risk and control identifiers are not pattern-checked, because they come from the company's own risk register and control framework. Identifiers AuditFlow generates itself, such as `test_id`, `workpaper_ref`, and `observation_id`, keep a fixed format.
 
 These are structural checks, not assurance that procedures, evidence, or conclusions are professionally sufficient. Add company-specific rules only where they support a real process.
 

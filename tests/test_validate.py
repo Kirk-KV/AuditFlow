@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import yaml
+import pytest
 
 from auditflow.commands.validate import validate_project
 
@@ -26,7 +27,34 @@ def make_project(tmp_path: Path) -> Path:
     (project / "05_workpapers").mkdir(parents=True)
     (project / "06_observations").mkdir(parents=True)
 
-    write_yaml(project / "initial_data.yml", {"audit": {"id": "A-001"}})
+    write_yaml(
+        project / "initial_data.yml",
+        {
+            "audit": {"id": "A-001", "title": "Test audit", "type": "assurance"},
+            "objectives": [{"id": "OBJ-001", "statement": "Assess purchase approval."}],
+            "scope": {"in_scope": ["Purchasing"]},
+            "risks": [
+                {
+                    "id": "R-001",
+                    "title": "Unauthorized purchase",
+                    "rationale": "Approval may be bypassed.",
+                }
+            ],
+        },
+    )
+    write_yaml(
+        project / "01_planning" / "planning_decision.yml",
+        {
+            "included_risks": [
+                {
+                    "id": "R-001",
+                    "title": "Unauthorized purchase",
+                    "rationale": "Approval may be bypassed.",
+                }
+            ],
+            "controls": [{"control_id": "C-001", "risk_id": "R-001", "description": "Approval"}],
+        },
+    )
     for file_name in ("stakeholders.yml", "team.yml", "decisions.yml", "timeline.yml"):
         write_yaml(project / "00_admin" / file_name, {})
 
@@ -151,6 +179,43 @@ def test_strict_validation_requires_workpaper_evidence_link(tmp_path: Path) -> N
     result = validate_project(project, strict=True)
 
     assert any("no local Markdown links" in message for message in result.warnings)
+
+
+@pytest.mark.parametrize("strict", [False, True])
+def test_empty_scope_rejects_existing_program(tmp_path: Path, strict: bool) -> None:
+    project = make_project(tmp_path)
+    write_yaml(project / "01_planning" / "planning_decision.yml", {
+        "included_risks": [],
+        "excluded_risks": [{"id": "R-001"}],
+        "controls": [{"control_id": "C-001", "risk_id": "R-001"}],
+    })
+    result = validate_project(project, strict=strict)
+    assert any("risk R-001 is not in" in error for error in result.errors)
+    assert any("which is not in included_risks" in warning for warning in result.warnings)
+
+
+@pytest.mark.parametrize("value", [None, "R-001", {"id": "R-001"}, ["R-001"]])
+def test_invalid_planning_risk_list_is_reported(tmp_path: Path, value: object) -> None:
+    project = make_project(tmp_path)
+    write_yaml(project / "01_planning" / "planning_decision.yml", {"included_risks": value})
+    assert any("included_risks must be a list" in error for error in validate_project(project).errors)
+
+
+def test_company_ids_are_valid_through_observations(tmp_path: Path) -> None:
+    project = make_project(tmp_path)
+    for relative in (
+        "initial_data.yml", "01_planning/planning_decision.yml",
+        "03_audit_program/audit_program.yml", "06_observations/OBS-001.yml",
+    ):
+        path = project / relative
+        path.write_text(path.read_text(encoding="utf-8").replace("R-001", "Р РёСЃРє.1"), encoding="utf-8")
+    path = project / "06_observations" / "OBS-001.yml"
+    observation = yaml.safe_load(path.read_text(encoding="utf-8"))
+    observation["control_id"] = "РљРѕРЅС‚СЂРѕР»СЊ/1"
+    write_yaml(path, observation)
+    result = validate_project(project, strict=True)
+    assert result.errors == []
+    assert result.warnings == []
 
 
 def test_links_in_code_and_external_links_are_not_evidence(tmp_path: Path) -> None:

@@ -9,9 +9,10 @@ from typing import Any, Protocol
 import httpx
 
 from auditflow.ai.config import ResolvedAIConfig
+from auditflow.errors import AuditFlowError
 
 
-class AIProviderError(RuntimeError):
+class AIProviderError(AuditFlowError, RuntimeError):
     """Raised when an AI provider cannot complete a request."""
 
 

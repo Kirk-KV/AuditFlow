@@ -2,11 +2,18 @@ from __future__ import annotations
 
 import html
 import re
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-import yaml
-
+from auditflow.blocks import (
+    REPORT_BLOCK_NAMES,
+    missing_block_names,
+    observations_digest,
+    replace_auto_blocks,
+    stamp_observations_digest,
+    update_front_matter,
+)
 from auditflow.localization import (
     load_messages,
     message,
@@ -15,31 +22,13 @@ from auditflow.localization import (
     read_project_language,
     translated_term,
 )
+from auditflow.yaml_io import read_optional_yaml_mapping
 
 
-AUTO_BLOCK_RE = re.compile(
-    r"<!-- AUTO:(?P<name>[A-Z0-9_]+) START -->.*?<!-- AUTO:(?P=name) END -->",
-    re.DOTALL,
-)
-
-FRONT_MATTER_RE = re.compile(r"\A---\n(?P<yaml>.*?)\n---\n?", re.DOTALL)
-
-
-def load_yaml(path: Path) -> dict[str, Any]:
-    if not path.exists():
-        return {}
-
-    with path.open("r", encoding="utf-8") as file:
-        data = yaml.safe_load(file) or {}
-
-    return data if isinstance(data, dict) else {}
-
-
-def load_yaml_list(path: Path) -> list[dict[str, Any]]:
-    data = load_yaml(path)
-    if isinstance(data, list):
-        return data
-    return []
+@dataclass(frozen=True)
+class ReportUpdate:
+    path: Path
+    missing_blocks: tuple[str, ...]
 
 
 def esc(value: Any) -> str:
@@ -121,37 +110,18 @@ def person_card(
     )
 
 
-def md_table(headers: list[str], rows: list[list[Any]]) -> str:
-    if not rows:
-        return "_No data available._"
+def ensure_report_css_reference(content: str, *, generated_from: str = "") -> str:
+    def update(front_matter: dict[str, Any]) -> None:
+        _apply_report_front_matter(front_matter, generated_from=generated_from)
 
-    header = "| " + " | ".join(headers) + " |"
-    separator = "| " + " | ".join(["---"] * len(headers)) + " |"
-    body = "\n".join(
-        "| " + " | ".join(text(cell).replace("\n", "<br>") for cell in row) + " |"
-        for row in rows
-    )
-    return "\n".join([header, separator, body])
+    return update_front_matter(content, update)
 
 
-def replace_auto_blocks(content: str, blocks: dict[str, str]) -> str:
-    def repl(match: re.Match[str]) -> str:
-        name = match.group("name")
-        replacement = blocks.get(name, "").strip()
-        return f"<!-- AUTO:{name} START -->\n{replacement}\n<!-- AUTO:{name} END -->"
-
-    return AUTO_BLOCK_RE.sub(repl, content)
-
-
-def ensure_report_css_reference(content: str) -> str:
-    match = FRONT_MATTER_RE.match(content)
-    if not match:
-        return content
-
-    front_matter = yaml.safe_load(match.group("yaml")) or {}
-    if not isinstance(front_matter, dict):
-        return content
-
+def _apply_report_front_matter(
+    front_matter: dict[str, Any],
+    *,
+    generated_from: str = "",
+) -> None:
     metadata_path = "../styles/quarto-html.yml"
     metadata_files = front_matter.get("metadata-files")
     if isinstance(metadata_files, str):
@@ -175,15 +145,8 @@ def ensure_report_css_reference(content: str) -> str:
     html_format.setdefault("smooth-scroll", True)
     html_format["css"] = "../styles/report.css"
 
-    body = content[match.end() :]
-    updated_front_matter = yaml.safe_dump(
-        front_matter,
-        sort_keys=False,
-        allow_unicode=True,
-        width=120,
-    ).strip()
-
-    return f"---\n{updated_front_matter}\n---\n\n{body.lstrip()}"
+    if generated_from:
+        stamp_observations_digest(front_matter, generated_from)
 
 
 def read_observations(project_root: Path) -> list[dict[str, Any]]:
@@ -194,7 +157,7 @@ def read_observations(project_root: Path) -> list[dict[str, Any]]:
         return observations
 
     for path in sorted(observations_dir.glob("OBS-*.yml")):
-        data = load_yaml(path)
+        data = read_optional_yaml_mapping(path)
         if data:
             data["_path"] = path
             observations.append(data)
@@ -203,21 +166,21 @@ def read_observations(project_root: Path) -> list[dict[str, Any]]:
 
 
 def read_audit_program_rows(project_root: Path) -> list[dict[str, Any]]:
-    data = load_yaml(project_root / "03_audit_program" / "audit_program.yml")
+    data = read_optional_yaml_mapping(project_root / "03_audit_program" / "audit_program.yml")
     rows = data.get("program_rows", [])
     return rows if isinstance(rows, list) else []
 
 
 def read_initial_data(project_root: Path) -> dict[str, Any]:
-    return load_yaml(project_root / "initial_data.yml")
+    return read_optional_yaml_mapping(project_root / "initial_data.yml")
 
 
 def read_team(project_root: Path) -> dict[str, Any]:
-    return load_yaml(project_root / "00_admin" / "team.yml")
+    return read_optional_yaml_mapping(project_root / "00_admin" / "team.yml")
 
 
 def read_stakeholders(project_root: Path) -> dict[str, Any]:
-    return load_yaml(project_root / "00_admin" / "stakeholders.yml")
+    return read_optional_yaml_mapping(project_root / "00_admin" / "stakeholders.yml")
 
 
 def audit_title(
@@ -246,23 +209,6 @@ def period(initial_data: dict[str, Any]) -> str:
     if start and end:
         return f"{start} — {end}"
     return start or end
-
-
-def lead_name(team: dict[str, Any]) -> str:
-    team_data = nested_dict(team, "team") or team
-    lead = team_data.get("engagement_lead", {})
-    return text(lead.get("name"))
-
-
-def reviewer_name(team: dict[str, Any]) -> str:
-    review = nested_dict(team, "review")
-    reviewer = review.get("reviewer") or team.get("reviewer", {})
-    return text(reviewer.get("name"))
-
-
-def sponsor_name(stakeholders: dict[str, Any]) -> str:
-    sponsor = stakeholders.get("sponsor", {})
-    return text(sponsor.get("name"))
 
 
 def build_cover(project_root: Path) -> str:
@@ -524,7 +470,7 @@ def build_blocks(project_root: Path) -> dict[str, str]:
     }
 
 
-def update_report_qmd(project_root: Path, reset_report: bool = False) -> Path:
+def update_report_qmd(project_root: Path, reset_report: bool = False) -> ReportUpdate:
     reporting_dir = project_root / "07_reporting"
     reporting_dir.mkdir(parents=True, exist_ok=True)
     report_path = reporting_dir / "report.qmd"
@@ -536,19 +482,12 @@ def update_report_qmd(project_root: Path, reset_report: bool = False) -> Path:
         )
 
     content = report_path.read_text(encoding="utf-8")
-    content = ensure_report_css_reference(content)
+    missing = missing_block_names(content, REPORT_BLOCK_NAMES)
+    content = ensure_report_css_reference(
+        content,
+        generated_from=observations_digest(project_root),
+    )
     content = replace_auto_blocks(content, build_blocks(project_root))
     report_path.write_text(content, encoding="utf-8")
 
-    return report_path
-
-
-def write_supporting_files(project_root: Path, overwrite_css: bool = False, overwrite_logo: bool = False) -> dict[str, str]:
-    """Compatibility shim.
-
-    Report styling is created by init_project.py in project-level styles/report.css.
-    """
-    return {
-        "css_path": str(project_root / "styles" / "report.css"),
-        "logo_path": "",
-    }
+    return ReportUpdate(path=report_path, missing_blocks=missing)

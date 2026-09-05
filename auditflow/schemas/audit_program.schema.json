@@ -46,7 +46,9 @@
           },
           "risk_id": {
             "type": "string",
-            "pattern": "^R-[0-9]{3,}$",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Risk identifier from the company's own risk register. AuditFlow does not impose a format.",
             "examples": ["R-001"]
           },
           "risk_title": {
@@ -58,7 +60,9 @@
           },
           "control_id": {
             "type": ["string", "null"],
-            "pattern": "^C-[0-9]{3,}$",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Control identifier from the company's own control framework. AuditFlow does not impose a format.",
             "examples": ["C-001"]
           },
           "control_description": {
@@ -104,7 +108,8 @@
             "properties": {
               "risk_id": {
                 "type": "string",
-                "pattern": "^R-[0-9]{3,}$"
+                "minLength": 1,
+                "maxLength": 100
               },
               "risk_title": {
                 "type": "string"

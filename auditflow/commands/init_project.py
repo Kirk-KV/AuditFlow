@@ -6,6 +6,7 @@ from typing import Any
 
 import yaml
 
+from auditflow.errors import AuditFlowFileError
 from auditflow.localization import (
     DEFAULT_LANGUAGE,
     language_settings,
@@ -13,6 +14,7 @@ from auditflow.localization import (
     read_localized_template,
 )
 from auditflow.template_utils import load_yaml_template, read_template
+from auditflow.yaml_io import write_text_if_missing, write_yaml_if_missing
 
 
 EVIDENCE_SUBFOLDERS = [
@@ -25,33 +27,12 @@ EVIDENCE_SUBFOLDERS = [
 ]
 
 
-def write_yaml_if_missing(path: Path, data: dict[str, Any], overwrite: bool = False) -> bool:
-    if path.exists() and not overwrite:
-        return False
-
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        yaml.safe_dump(data, allow_unicode=True, sort_keys=False, width=100),
-        encoding="utf-8",
-    )
-    return True
-
-
-def write_text_if_missing(path: Path, text: str, overwrite: bool = False) -> bool:
-    if path.exists() and not overwrite:
-        return False
-
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(text, encoding="utf-8")
-    return True
-
-
 def read_external_text(path: Path, label: str = "Text file") -> str:
     if not path.exists():
-        raise FileNotFoundError(f"{label} not found: {path}")
+        raise AuditFlowFileError(f"{label} not found: {path}")
 
     if not path.is_file():
-        raise ValueError(f"{label} path is not a file: {path}")
+        raise AuditFlowFileError(f"{label} path is not a file: {path}")
 
     return path.read_text(encoding="utf-8")
 

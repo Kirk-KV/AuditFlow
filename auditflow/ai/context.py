@@ -8,6 +8,8 @@ from typing import Any
 
 import yaml
 
+from auditflow.errors import AuditFlowError
+
 
 WORKPAPER_REF_PATTERN = re.compile(r"^WP-[A-Za-z0-9_-]+$")
 OBSERVATION_ID_PATTERN = re.compile(r"^OBS-\d{3,}$")
@@ -29,7 +31,7 @@ WORKPAPER_SECTIONS = {
 }
 
 
-class AIContextError(ValueError):
+class AIContextError(AuditFlowError, ValueError):
     """Raised when a safe observation context cannot be assembled."""
 
 

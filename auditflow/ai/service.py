@@ -11,6 +11,7 @@ import yaml
 from jsonschema import Draft202012Validator
 
 from auditflow.ai.config import ResolvedAIConfig, resolve_ai_config
+from auditflow.errors import AuditFlowError
 from auditflow.ai.context import (
     AIContextError,
     AuditProgramReviewContext,
@@ -50,7 +51,7 @@ from auditflow.ai.quality import (
 )
 
 
-class AIServiceError(RuntimeError):
+class AIServiceError(AuditFlowError, RuntimeError):
     """Raised when an AI task cannot proceed safely."""
 
 

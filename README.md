@@ -93,7 +93,7 @@ auditflow create report
 auditflow validate
 ```
 
-Use `auditflow validate` during drafting and `auditflow validate --strict` before sharing final materials. Validation checks structural integrity and traceability; it does not provide an automated opinion on audit quality.
+Use `auditflow validate` during drafting and `auditflow validate --strict` before sharing final materials. Validation follows the chain from the risks in `initial_data.yml` through the planning decision, program, workpapers, and observations to the generated report and archive, and reports a report that was written before the observations last changed. It checks structural integrity and traceability; it does not provide an automated opinion on audit quality.
 
 QMD documents can be previewed repeatedly with the Quarto extension in VS Code or `quarto preview`.
 

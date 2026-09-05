@@ -9,7 +9,15 @@ from urllib.parse import unquote, urlsplit
 
 import yaml
 
+from auditflow.blocks import (
+    ARCHIVE_BLOCK_NAMES,
+    REPORT_BLOCK_NAMES,
+    missing_block_names,
+    observations_digest,
+    stamped_observations_digest,
+)
 from auditflow.commands.evidence import EvidenceManifestError, load_evidence_manifest
+from auditflow.ids import is_safe_workpaper_ref
 
 
 REQUIRED_ADMIN_FILES = [
@@ -105,7 +113,17 @@ def validate_with_schema(
     data_path: Path,
     schema_name: str,
     result: ValidationResult,
+    as_warning: bool = False,
 ) -> None:
+    """Check a project file against a bundled JSON schema.
+
+    Files AuditFlow generates are reported as errors. Files the auditor fills in
+    by hand are reported with `as_warning=True` while drafting, because they ship
+    from `auditflow init` as blank placeholders and would otherwise fail
+    validation on a brand new project. Strict mode fails on warnings, so the same
+    checks still block finalization.
+    """
+
     if not data_path.exists():
         return
 
@@ -130,9 +148,10 @@ def validate_with_schema(
     validator = Draft202012Validator(schema, format_checker=FormatChecker())
     errors = sorted(validator.iter_errors(data), key=lambda item: item.path)
 
+    report = result.warning if as_warning else result.error
     for error in errors:
         path = ".".join(str(part) for part in error.path) or "<root>"
-        result.error(f"{data_path}: schema error at {path}: {error.message}")
+        report(f"{data_path}: schema error at {path}: {error.message}")
 
 
 def validate_required_structure(project_root: Path, result: ValidationResult) -> None:
@@ -258,6 +277,7 @@ def validate_audit_program(
     result: ValidationResult,
     *,
     strict: bool = False,
+    included_risk_ids: set[str] | None = None,
 ) -> list[dict[str, Any]]:
     audit_program_path = project_root / "03_audit_program" / "audit_program.yml"
     if not audit_program_path.exists():
@@ -289,7 +309,7 @@ def validate_audit_program(
     ]
     for duplicate in sorted(duplicate_values(test_ids)):
         result.error(f"03_audit_program/audit_program.yml: duplicate test_id: {duplicate}")
-    for duplicate in sorted(duplicate_values(workpaper_refs)):
+    for duplicate in sorted(duplicate_values([ref.casefold() for ref in workpaper_refs])):
         result.error(f"03_audit_program/audit_program.yml: duplicate workpaper_ref: {duplicate}")
 
     for index, row in enumerate(rows, start=1):
@@ -300,8 +320,21 @@ def validate_audit_program(
             )
             continue
 
+        row_risk_id = str(row.get("risk_id") or "").strip()
+        if row_risk_id and included_risk_ids is not None and row_risk_id not in included_risk_ids:
+            result.error(
+                f"Program row {row.get('test_id', index)}: risk {row_risk_id} is not in "
+                "01_planning/planning_decision.yml included_risks"
+            )
+
         workpaper_ref = str(row.get("workpaper_ref") or "")
-        if workpaper_ref:
+        if workpaper_ref and not is_safe_workpaper_ref(workpaper_ref):
+            result.error(
+                f"Program row {row.get('test_id', index)}: workpaper_ref {workpaper_ref} "
+                "cannot be used as a file name. Run 'auditflow create audit-program' "
+                "to regenerate valid references."
+            )
+        elif workpaper_ref:
             workpaper_path = project_root / "05_workpapers" / f"{workpaper_ref}.qmd"
             if not workpaper_path.exists():
                 result.warning(
@@ -473,6 +506,149 @@ def validate_observations(
         result.error(f"06_observations: duplicate observation_id: {duplicate}")
 
 
+def collect_ids(items: Any, *keys: str) -> set[str]:
+    found: set[str] = set()
+    if not isinstance(items, list):
+        return found
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        for key in keys:
+            value = str(item.get(key) or "").strip()
+            if value:
+                found.add(value)
+                break
+    return found
+
+
+def validate_initial_data(project_root: Path, result: ValidationResult) -> set[str]:
+    """Check the root audit descriptor and return the risk IDs it declares."""
+
+    initial_data_path = project_root / "initial_data.yml"
+    for schema_name in ("audit.schema.json", "risks.schema.json"):
+        validate_with_schema(
+            data_path=initial_data_path,
+            schema_name=schema_name,
+            result=result,
+            as_warning=True,
+        )
+
+    data = load_yaml_if_exists(initial_data_path, result)
+    if not isinstance(data, dict):
+        return set()
+    return collect_ids(data.get("risks"), "id")
+
+
+def validate_planning_decision(
+    project_root: Path,
+    declared_risk_ids: set[str],
+    result: ValidationResult,
+    *,
+    strict: bool = False,
+) -> set[str] | None:
+    """Check the Risk -> Control link and return the risk IDs taken into testing.
+
+    This is the first link of the traceability chain: every risk the audit
+    program tests should come from the risk assessment, and every control should
+    attach to a risk the audit actually took into scope.
+    """
+
+    planning_path = project_root / "01_planning" / "planning_decision.yml"
+    if not planning_path.exists():
+        result.warning("Planning decision not created yet: 01_planning/planning_decision.yml")
+        return None
+
+    data = load_yaml_if_exists(planning_path, result)
+    if not isinstance(data, dict):
+        result.error(f"{planning_path}: planning decision must be a YAML mapping")
+        return None
+
+    for field_name in ("included_risks", "excluded_risks", "controls"):
+        items = data.get(field_name, [])
+        if not isinstance(items, list) or any(not isinstance(item, dict) for item in items):
+            result.error(f"{planning_path}: {field_name} must be a list of mappings")
+            return None
+
+    included_ids = collect_ids(data.get("included_risks"), "id")
+    excluded_ids = collect_ids(data.get("excluded_risks"), "id")
+
+    if declared_risk_ids:
+        for risk_id in sorted((included_ids | excluded_ids) - declared_risk_ids):
+            result.warning(
+                f"{planning_path}: risk {risk_id} is not declared in initial_data.yml"
+            )
+        if strict:
+            for risk_id in sorted(declared_risk_ids - included_ids - excluded_ids):
+                result.warning(
+                    f"{planning_path}: risk {risk_id} from initial_data.yml is neither "
+                    "included nor excluded, so the scoping decision is not documented"
+                )
+
+    for risk_id in sorted(included_ids & excluded_ids):
+        result.error(
+            f"{planning_path}: risk {risk_id} is both included and excluded"
+        )
+
+    controls = data.get("controls")
+    if isinstance(controls, list):
+        for index, control in enumerate(controls, start=1):
+            if not isinstance(control, dict):
+                continue
+            control_risk = str(control.get("risk_id") or control.get("risk") or "").strip()
+            if not control_risk:
+                continue
+            if control_risk not in included_ids:
+                result.warning(
+                    f"{planning_path}: controls[{index}] references risk {control_risk}, "
+                    "which is not in included_risks, so it produces no audit program row"
+                )
+
+    return included_ids
+
+
+def validate_generated_document(
+    project_root: Path,
+    relative_path: str,
+    expected_blocks: tuple[str, ...],
+    result: ValidationResult,
+) -> None:
+    """Check that a generated QMD document can still receive generated content.
+
+    A deleted AUTO marker makes `auditflow create report` silently stop writing
+    that section, and a stale digest means the document predates the current
+    observations. Both leave a document that looks finished but no longer matches
+    the audit file it is supposed to be rebuilt from.
+    """
+
+    document_path = project_root / relative_path
+    if not document_path.exists():
+        return
+
+    try:
+        content = document_path.read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as exc:
+        result.error(f"Could not read {relative_path}: {exc}")
+        return
+
+    for name in missing_block_names(content, expected_blocks):
+        result.error(
+            f"{relative_path}: generated section AUTO:{name} has no marker, so its "
+            "content is missing from the document"
+        )
+
+    stamped = stamped_observations_digest(content)
+    if not stamped:
+        result.warning(
+            f"{relative_path}: no generation stamp, so it cannot be checked against "
+            "06_observations. Regenerate it to record one."
+        )
+    elif stamped != observations_digest(project_root):
+        result.warning(
+            f"{relative_path}: observations changed after this document was "
+            "generated. Regenerate it before sharing."
+        )
+
+
 def validate_evidence_manifest(project_root: Path, result: ValidationResult) -> None:
     manifest_path = project_root / "04_evidence" / "evidence_manifest.yml"
     if not manifest_path.exists():
@@ -490,8 +666,33 @@ def validate_project(project_root: Path, *, strict: bool = False) -> ValidationR
     for file_name in REQUIRED_ADMIN_FILES:
         load_yaml(project_root / "00_admin" / file_name, result)
 
-    program_rows = validate_audit_program(project_root, result, strict=strict)
+    declared_risk_ids = validate_initial_data(project_root, result)
+    included_risk_ids = validate_planning_decision(
+        project_root,
+        declared_risk_ids,
+        result,
+        strict=strict,
+    )
+
+    program_rows = validate_audit_program(
+        project_root,
+        result,
+        strict=strict,
+        included_risk_ids=included_risk_ids,
+    )
     validate_observations(project_root, program_rows, result, strict=strict)
     validate_evidence_manifest(project_root, result)
+    validate_generated_document(
+        project_root,
+        "07_reporting/report.qmd",
+        REPORT_BLOCK_NAMES,
+        result,
+    )
+    validate_generated_document(
+        project_root,
+        "09_archive/audit_story.qmd",
+        ARCHIVE_BLOCK_NAMES,
+        result,
+    )
 
     return result

@@ -15,7 +15,7 @@ condition: 'The audit identified 12 split-purchase candidate groups. After revie
   threshold and combined values exceeding the threshold.
 
   '
-criteria: 'The procurement policy prohibits splitting purchases to remain below approval thresholds".
+criteria: 'The procurement policy prohibits splitting purchases to remain below approval thresholds.
 
   '
 cause: 'No formal control or periodic monitoring process is defined for detecting purchases that may be split below approval

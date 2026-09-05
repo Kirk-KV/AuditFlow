@@ -1,11 +1,13 @@
 ---
-title: "Audit Story"
+title: Audit Story
 metadata-files:
-  - ../styles/quarto-html.yml
+- ../styles/quarto-html.yml
 format:
   html:
     smooth-scroll: true
     css: audit_story.css
+auditflow:
+  observations_digest: 43390d9c6d2dced260a71c12382ac49fad202823ca7e172b6b11688f98a12ff3
 ---
 
 <!-- AUTO:COVER START -->
@@ -94,9 +96,9 @@ Add a short narrative explaining what changed from initial plan to final conclus
 <!-- AUTO:OBSERVATIONS_OUTCOME START -->
 | ID | Title | Severity | Status | Workpaper |
 | --- | --- | --- | --- | --- |
-| OBS-001 | Purchase orders released before required approval | High | draft | WP-C-001 |
-| OBS-002 | Weak duplicate invoice and payment review | Medium | draft | WP-C-003 |
-| OBS-003 | No formal monitoring of split purchases below approval thresholds | Medium | draft | WP-R-003-NO-CONTROL |
+| OBS-001 | Purchase orders released before required approval | High | Draft | WP-C-001 |
+| OBS-002 | Weak duplicate invoice and payment review | Medium | Draft | WP-C-003 |
+| OBS-003 | No formal monitoring of split purchases below approval thresholds | Medium | Draft | WP-R-003-NO-CONTROL |
 <!-- AUTO:OBSERVATIONS_OUTCOME END -->
 
 # Evidence and document map
@@ -104,34 +106,33 @@ Add a short narrative explaining what changed from initial plan to final conclus
 <!-- AUTO:EVIDENCE_MAP START -->
 | File | Notes |
 | --- | --- |
-| 04_evidence\01_regulations\procurement_process_regulation.md |  |
-| 04_evidence\02_raw_data\approval_matrix.csv |  |
-| 04_evidence\02_raw_data\approval_workflow.csv |  |
-| 04_evidence\02_raw_data\goods_receipts.csv |  |
-| 04_evidence\02_raw_data\invoices.csv |  |
-| 04_evidence\02_raw_data\payments.csv |  |
-| 04_evidence\02_raw_data\purchase_orders.csv |  |
-| 04_evidence\02_raw_data\scripts\__pycache__\procurement_analysis.cpython-311.pyc |  |
-| 04_evidence\02_raw_data\scripts\extract_procurement_data.sql |  |
-| 04_evidence\02_raw_data\scripts\procurement_analysis.py |  |
-| 04_evidence\02_raw_data\suppliers.csv |  |
-| 04_evidence\02_raw_data\users.csv |  |
-| 04_evidence\03_correspondence\candidate_review_dispositions.csv |  |
-| 04_evidence\03_correspondence\procurement_follow_up_summary.md |  |
-| 04_evidence\99_generated\planning_dataset_overview.csv |  |
-| 04_evidence\99_generated\planning_date_ranges.csv |  |
-| 04_evidence\99_generated\planning_linkage_checks.csv |  |
-| 04_evidence\99_generated\planning_po_volume_by_month.csv |  |
-| 04_evidence\99_generated\t001_release_before_approval_candidates.csv |  |
-| 04_evidence\99_generated\t001_release_before_approval_review.csv |  |
-| 04_evidence\99_generated\t002_approval_authority_exceptions.csv |  |
-| 04_evidence\99_generated\t003_duplicate_invoice_candidate_records.csv |  |
-| 04_evidence\99_generated\t003_duplicate_invoice_groups.csv |  |
-| 04_evidence\99_generated\t003_duplicate_payment_review.csv |  |
-| 04_evidence\99_generated\t003_repeated_payment_amount_groups.csv |  |
-| 04_evidence\99_generated\t004_split_purchase_candidates.csv |  |
-| 04_evidence\99_generated\t004_split_purchase_review.csv |  |
-| 04_evidence\evidence_manifest.yml |  |
+| 04_evidence/01_regulations/procurement_process_regulation.md |  |
+| 04_evidence/02_raw_data/approval_matrix.csv |  |
+| 04_evidence/02_raw_data/approval_workflow.csv |  |
+| 04_evidence/02_raw_data/goods_receipts.csv |  |
+| 04_evidence/02_raw_data/invoices.csv |  |
+| 04_evidence/02_raw_data/payments.csv |  |
+| 04_evidence/02_raw_data/purchase_orders.csv |  |
+| 04_evidence/02_raw_data/scripts/extract_procurement_data.sql |  |
+| 04_evidence/02_raw_data/scripts/procurement_analysis.py |  |
+| 04_evidence/02_raw_data/suppliers.csv |  |
+| 04_evidence/02_raw_data/users.csv |  |
+| 04_evidence/03_correspondence/candidate_review_dispositions.csv |  |
+| 04_evidence/03_correspondence/procurement_follow_up_summary.md |  |
+| 04_evidence/99_generated/planning_dataset_overview.csv |  |
+| 04_evidence/99_generated/planning_date_ranges.csv |  |
+| 04_evidence/99_generated/planning_linkage_checks.csv |  |
+| 04_evidence/99_generated/planning_po_volume_by_month.csv |  |
+| 04_evidence/99_generated/t001_release_before_approval_candidates.csv |  |
+| 04_evidence/99_generated/t001_release_before_approval_review.csv |  |
+| 04_evidence/99_generated/t002_approval_authority_exceptions.csv |  |
+| 04_evidence/99_generated/t003_duplicate_invoice_candidate_records.csv |  |
+| 04_evidence/99_generated/t003_duplicate_invoice_groups.csv |  |
+| 04_evidence/99_generated/t003_duplicate_payment_review.csv |  |
+| 04_evidence/99_generated/t003_repeated_payment_amount_groups.csv |  |
+| 04_evidence/99_generated/t004_split_purchase_candidates.csv |  |
+| 04_evidence/99_generated/t004_split_purchase_review.csv |  |
+| 04_evidence/evidence_manifest.yml |  |
 <!-- AUTO:EVIDENCE_MAP END -->
 
 # Lessons learned

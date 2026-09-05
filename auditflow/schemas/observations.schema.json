@@ -48,7 +48,8 @@
     },
     "risk_id": {
       "type": "string",
-      "pattern": "^R-[0-9]{3,}$",
+      "minLength": 1,
+      "maxLength": 100,
       "examples": ["R-001"]
     },
     "risk_title": {
@@ -57,7 +58,8 @@
     },
     "control_id": {
       "type": ["string", "null"],
-      "pattern": "^C-[0-9]{3,}$",
+      "minLength": 1,
+      "maxLength": 100,
       "examples": ["C-001"]
     },
     "control_description": {

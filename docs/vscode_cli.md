@@ -181,6 +181,8 @@ AI output is written separately under `ai_outputs/`; source workpapers, observat
 
 `auditflow validate` checks project structure, schemas, unique IDs, links between the program and observations, and local Markdown links from workpapers into `04_evidence`.
 
+It also checks both ends of the traceability chain. At the start, risks in `01_planning/planning_decision.yml` must come from `initial_data.yml`, and every audit program row must test a risk the planning decision included. At the end, `07_reporting/report.qmd` and `09_archive/audit_story.qmd` must still contain their `AUTO` markers, and their recorded generation stamp must match the current `06_observations`. A report written before the observations last changed is reported as out of date.
+
 Use `auditflow validate --strict` before final sharing. Strict mode requires at least one valid evidence link per workpaper, adds finalization-oriented checks, and treats warnings as failures. Other local and external links are ignored. Neither mode confirms audit quality, evidence sufficiency, or the correctness of conclusions.
 
 ## Rendering QMD Documents
