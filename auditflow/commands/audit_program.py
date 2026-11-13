@@ -1,18 +1,32 @@
 from __future__ import annotations
 
+import json
 from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
+from auditflow.blocks import missing_block_names
+from auditflow.document_tables import html_table, refresh_table_document
 from auditflow.ids import build_workpaper_ref, is_safe_workpaper_ref
-from auditflow.localization import load_messages, message, project_messages
-from auditflow.yaml_io import read_yaml_mapping, write_yaml
+from auditflow.localization import (
+    load_messages,
+    message,
+    read_project_language,
+    render_localized_template,
+)
+from auditflow.yaml_io import read_optional_yaml_mapping, read_yaml_mapping, write_yaml
 
 
 MANUAL_FIELDS = [
     "test_hypothesis",
     "test_script",
 ]
+
+PROGRAM_TABLE_FIELDS = (
+    "test_id", "risk_id", "risk_title", "risk_reasoning", "control_id",
+    "control_description", "control_owner", "design_assessment", "planning_approach",
+    "test_hypothesis", "test_script", "workpaper_ref",
+)
 
 
 def normalize_id(value: Any) -> str | None:
@@ -334,6 +348,9 @@ def build_audit_program(
 def create_audit_program(project_root: Path, overwrite: bool = False) -> dict[str, Any]:
     planning_decision_path = project_root / "01_planning" / "planning_decision.yml"
     audit_program_path = project_root / "03_audit_program" / "audit_program.yml"
+    document_path = audit_program_path.with_suffix(".qmd")
+    language = read_project_language(project_root)
+    messages = load_messages(language)
 
     planning_decision = read_yaml_mapping(
         planning_decision_path,
@@ -347,13 +364,35 @@ def create_audit_program(project_root: Path, overwrite: bool = False) -> dict[st
     audit_program = build_audit_program(
         planning_decision=planning_decision,
         existing_program=existing_program,
-        messages=project_messages(project_root),
+        messages=messages,
     )
 
+    if document_path.exists():
+        content = document_path.read_bytes().decode("utf-8")
+    else:
+        initial = read_optional_yaml_mapping(project_root / "initial_data.yml")
+        audit = initial.get("audit")
+        title = audit.get("title") if isinstance(audit, dict) else None
+        title = str(title or message(messages, "planning.audit_default"))
+        document_title = f"{message(messages, 'audit_program.document_title')} — {title}"
+        content = render_localized_template(
+            "audit_program.qmd",
+            {"title": json.dumps(document_title, ensure_ascii=False)},
+            language,
+        )
+    rows = audit_program["program_rows"]
+    table = html_table(
+        message(messages, "audit_program.table_headers"),
+        [[row.get(field) for field in PROGRAM_TABLE_FIELDS] for row in rows],
+        message(messages, "planning.approach.empty"),
+    )
     write_yaml(audit_program_path, audit_program)
+    refresh_table_document(document_path, content, "AUDIT_PROGRAM", table)
 
     return {
         "path": str(audit_program_path),
+        "document_path": str(document_path),
+        "missing_blocks": missing_block_names(content, ("AUDIT_PROGRAM",)),
         "rows": len(audit_program["program_rows"]),
         "manual_fields_preserved": bool(existing_program and not overwrite),
     }

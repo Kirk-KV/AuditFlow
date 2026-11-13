@@ -3,11 +3,19 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from auditflow.blocks import missing_block_names
+from auditflow.commands.audit_program import (
+    first_non_empty,
+    get_description,
+    get_owner,
+    get_risk_reasoning,
+    get_risk_title,
+)
+from auditflow.document_tables import html_table, html_text, mapping_rows, refresh_table_document
 from auditflow.localization import message, project_messages, read_project_language, render_localized_template
 from auditflow.template_utils import load_yaml_template
 from auditflow.yaml_io import (
     read_optional_yaml_mapping,
-    write_text_if_missing,
     write_yaml_if_missing,
 )
 
@@ -148,6 +156,42 @@ def build_notes_block(initial_data: dict[str, Any], messages: dict[str, Any]) ->
     return "\n\n".join(parts)
 
 
+def planning_approach_table(decision: dict[str, Any], messages: dict[str, Any]) -> str:
+    labels = message(messages, "planning.approach")
+    empty = labels["empty"]
+    risks = [
+        [row.get("id"), get_risk_title(row), labels[scope], get_risk_reasoning(row)]
+        for scope in ("included", "excluded")
+        for row in mapping_rows(decision.get(f"{scope}_risks"))
+        if row.get("id") or get_risk_title(row) or get_risk_reasoning(row)
+    ]
+    controls = [
+        [
+            first_non_empty(row, "control_id", "id"),
+            first_non_empty(row, "risk_id", "risk"),
+            get_description(row),
+            get_owner(row),
+            row.get("design_assessment"),
+            row.get("planning_approach"),
+        ]
+        for row in mapping_rows(decision.get("controls"))
+    ]
+    tests = [
+        [
+            row.get("id"), row.get("risk_id"), row.get("control_id"),
+            first_non_empty(row, "test_objective", "title"),
+        ]
+        for row in mapping_rows(decision.get("recommended_tests"))
+    ]
+    sections = [(labels["risks"], risks), (labels["controls"], controls), (labels["tests"], tests)]
+    parts = [f'<p><strong>{html_text(labels["conclusion"])}</strong> '
+             f'{html_text(decision.get("overall_conclusion") or empty)}</p>']
+    for section, rows in sections:
+        parts.append(f'<h3>{html_text(section["title"])}</h3>')
+        parts.append(html_table(section["headers"], rows, empty))
+    return "\n".join(parts)
+
+
 def create_planning_files(project_root: Path, overwrite: bool = False) -> dict[str, Any]:
     planning_dir = project_root / "01_planning"
     planning_dir.mkdir(parents=True, exist_ok=True)
@@ -185,21 +229,37 @@ def create_planning_files(project_root: Path, overwrite: bool = False) -> dict[s
 
     planning_document = planning_dir / "planning_document.qmd"
     planning_decision = planning_dir / "planning_decision.yml"
-    rendered_planning_document = render_localized_template(
-        "planning_document.qmd",
-        context,
-        language,
-    )
-
-    if write_text_if_missing(planning_document, rendered_planning_document, overwrite=overwrite):
-        created.append(str(planning_document.relative_to(project_root)))
-    else:
-        kept.append(str(planning_document.relative_to(project_root)))
-
     decision_template = load_yaml_template("planning_decision.yml")
     if write_yaml_if_missing(planning_decision, decision_template, overwrite=overwrite):
         created.append(str(planning_decision.relative_to(project_root)))
     else:
         kept.append(str(planning_decision.relative_to(project_root)))
 
-    return {"planning_dir": planning_dir, "created": created, "kept": kept}
+    decision = read_optional_yaml_mapping(planning_decision)
+    new_document = overwrite or not planning_document.exists()
+    if new_document:
+        content = render_localized_template("planning_document.qmd", context, language)
+    else:
+        content = planning_document.read_bytes().decode("utf-8")
+        if content.rstrip().endswith(message(messages, "planning.approach.legacy_footer")):
+            approach_heading = message(messages, "planning.approach.heading")
+            content += f"\n\n{approach_heading}\n\n"
+            content += "<!-- AUTO:PLANNING_APPROACH START -->\n<!-- AUTO:PLANNING_APPROACH END -->\n"
+    changed = refresh_table_document(
+        planning_document, content, "PLANNING_APPROACH", planning_approach_table(decision, messages),
+    )
+    relative = str(planning_document.relative_to(project_root))
+    updated = []
+    if new_document:
+        created.append(relative)
+    elif changed:
+        updated.append(relative)
+    else:
+        kept.append(relative)
+    return {
+        "planning_dir": planning_dir,
+        "created": created,
+        "updated": updated,
+        "kept": kept,
+        "missing_blocks": missing_block_names(content, ("PLANNING_APPROACH",)),
+    }

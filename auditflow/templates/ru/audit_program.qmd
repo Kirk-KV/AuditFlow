@@ -1,0 +1,13 @@
+---
+title: $title
+metadata-files:
+  - ../styles/quarto-html.yml
+format:
+  html:
+    page-layout: full
+---
+
+Внесите изменения в `audit_program.yml` и повторите `auditflow create audit-program`, чтобы обновить таблицу.
+
+<!-- AUTO:AUDIT_PROGRAM START -->
+<!-- AUTO:AUDIT_PROGRAM END -->

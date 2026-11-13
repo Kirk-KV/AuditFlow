@@ -197,7 +197,9 @@ def create_planning_command(
     result = create_planning_files(project_root, overwrite=overwrite)
     typer.echo(f"Planning directory: {result['planning_dir']}")
     typer.echo(f"Created: {len(result['created'])}")
+    typer.echo(f"Updated: {len(result['updated'])}")
     typer.echo(f"Kept existing: {len(result['kept'])}")
+    _echo_missing_blocks(result["missing_blocks"], "01_planning/planning_document.qmd")
     record_event(
         project_root,
         event="planning_created",
@@ -211,10 +213,12 @@ def create_audit_program_command(
     project: Optional[Path] = project_option(),
     overwrite: bool = typer.Option(False, help="Overwrite existing manual fields in audit_program.yml."),
 ) -> None:
-    """Create or update 03_audit_program/audit_program.yml."""
+    """Create or update the audit program YAML and its QMD table."""
     project_root = require_project(project)
     result = create_audit_program(project_root, overwrite=overwrite)
     typer.echo(f"Audit program generated: {result['path']}")
+    typer.echo(f"Audit program document: {result['document_path']}")
+    _echo_missing_blocks(result["missing_blocks"], "03_audit_program/audit_program.qmd")
     typer.echo(f"Rows: {result['rows']}")
     if result["manual_fields_preserved"]:
         typer.echo("Manual fields preserved.")
@@ -235,6 +239,7 @@ def create_workpapers_command(
     project_root = require_project(project)
     result = generate_workpapers(project_root, overwrite=overwrite)
     typer.echo(f"Workpapers created: {result['created']}")
+    typer.echo(f"Workpapers updated: {result['updated']}")
     typer.echo(f"Workpapers skipped: {result['skipped']}")
     typer.echo(f"Rows without workpaper_ref: {result.get('missing_workpaper_ref', 0)}")
     typer.echo(f"Output directory: {result['workpapers_dir']}")
@@ -301,8 +306,8 @@ def _echo_missing_blocks(missing: tuple[str, ...], document: str) -> None:
     for name in missing:
         typer.echo(f"- AUTO:{name}")
     typer.echo(
-        "Restore the '<!-- AUTO:NAME START -->' and '<!-- AUTO:NAME END -->' "
-        "comment pair, or regenerate the document with --reset-report/--reset-archive."
+        "Add or restore the '<!-- AUTO:NAME START -->' and '<!-- AUTO:NAME END -->' "
+        "comment pair in the document, then rerun the command."
     )
 
 
