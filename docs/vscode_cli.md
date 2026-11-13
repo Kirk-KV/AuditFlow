@@ -119,10 +119,12 @@ Creates observation YAML files from completed workpaper observation proposal blo
 06_observations/OBS-*.yml
 ```
 
-Rerunning refreshes the title from the workpaper proposal and related identifiers
-from the audit program. It preserves manual content such as the severity,
+The workpaper proposal supplies the title when an observation is first created.
+Edit the title in the observation YAML as the finding develops. Rerunning
+refreshes linked audit program fields and preserves the title, severity,
 narrative, and management action plan. Use `--clean-stale` to remove observations
-whose source no longer proposes one.
+whose source no longer proposes one. `--overwrite` recreates the observation
+from its sources and discards manual edits.
 
 Useful options:
 

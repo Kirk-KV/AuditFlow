@@ -4,6 +4,13 @@ from pathlib import Path
 from typing import Any
 
 from auditflow.blocks import missing_block_names
+from auditflow.commands.audit_program import (
+    first_non_empty,
+    get_description,
+    get_owner,
+    get_risk_reasoning,
+    get_risk_title,
+)
 from auditflow.document_tables import html_table, html_text, mapping_rows, refresh_table_document
 from auditflow.localization import message, project_messages, read_project_language, render_localized_template
 from auditflow.template_utils import load_yaml_template
@@ -153,19 +160,27 @@ def planning_approach_table(decision: dict[str, Any], messages: dict[str, Any]) 
     labels = message(messages, "planning.approach")
     empty = labels["empty"]
     risks = [
-        [row.get("id"), row.get("title"), labels[scope], row.get("rationale")]
+        [row.get("id"), get_risk_title(row), labels[scope], get_risk_reasoning(row)]
         for scope in ("included", "excluded")
         for row in mapping_rows(decision.get(f"{scope}_risks"))
-        if any(row.get(key) for key in ("id", "title", "rationale"))
+        if row.get("id") or get_risk_title(row) or get_risk_reasoning(row)
     ]
     controls = [
-        [row.get("control_id") or row.get("id"), row.get("risk_id") or row.get("risk"),
-         row.get("control_description") or row.get("description"), row.get("control_owner") or row.get("owner"),
-         row.get("design_assessment"), row.get("planning_approach")]
+        [
+            first_non_empty(row, "control_id", "id"),
+            first_non_empty(row, "risk_id", "risk"),
+            get_description(row),
+            get_owner(row),
+            row.get("design_assessment"),
+            row.get("planning_approach"),
+        ]
         for row in mapping_rows(decision.get("controls"))
     ]
     tests = [
-        [row.get(key) for key in ("id", "risk_id", "control_id", "test_objective")]
+        [
+            row.get("id"), row.get("risk_id"), row.get("control_id"),
+            first_non_empty(row, "test_objective", "title"),
+        ]
         for row in mapping_rows(decision.get("recommended_tests"))
     ]
     sections = [(labels["risks"], risks), (labels["controls"], controls), (labels["tests"], tests)]

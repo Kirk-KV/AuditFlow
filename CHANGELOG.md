@@ -5,7 +5,8 @@
 - Added localized tables for planning decisions and the audit program, with
   `planning_approach` available in the starter control definition.
 - Refresh workpaper titles and generated observation fields while preserving
-  workpaper bodies and manually authored observation content.
+  workpaper bodies, existing observation titles, and other manually authored
+  observation content.
 - Render Markdown lists, emphasis, and line breaks in report observation details.
 
 

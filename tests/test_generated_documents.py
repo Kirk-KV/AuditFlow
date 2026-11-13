@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from html import escape
 from pathlib import Path
 
 import pytest
@@ -123,6 +124,27 @@ def test_refreshing_workpaper_title_preserves_other_metadata_and_body(tmp_path: 
     assert workpaper.read_bytes() == actual
 
 
+def test_planning_tables_show_procurement_example_field_aliases(tmp_path: Path) -> None:
+    create_initial_project(tmp_path)
+    create_planning_files(tmp_path)
+    example = (
+        Path(__file__).resolve().parents[1] / "examples" / "procurement_audit"
+        / "01_planning" / "planning_decision.yml"
+    )
+    decision = read_yaml_mapping(example)
+    planning = tmp_path / "01_planning"
+    write_yaml(planning / "planning_decision.yml", decision)
+    create_planning_files(tmp_path)
+    rendered = (planning / "planning_document.qmd").read_text(encoding="utf-8")
+
+    for section, field in (
+        ("included_risks", "reasoning"), ("excluded_risks", "reasoning"),
+        ("controls", "control"), ("recommended_tests", "title"),
+    ):
+        for row in decision[section]:
+            assert f"<td>{escape(row[field].strip())}</td>" in rendered
+
+
 def test_observation_refresh_and_markdown_keep_manual_findings(tmp_path: Path) -> None:
     project = make_reported_project(tmp_path)
     workpaper = project / "05_workpapers" / "WP-C-001.qmd"
@@ -131,17 +153,24 @@ def test_observation_refresh_and_markdown_keep_manual_findings(tmp_path: Path) -
     ), encoding="utf-8")
     path = project / "06_observations" / "OBS-001.yml"
     data = read_yaml_mapping(path)
+    assert data["title"] == "Approval was absent"
+    data["title"] = "Late approval after release"
     data["status"] = "final"
     data["risk_effect"] = "- **First risk**\n- Second risk"
     data["condition"] = "First line\nSecond line\n\n<em>Plain text</em>"
     data["management_action_plan"] = [{"action": "Review approvals"}]
     data["custom_field"] = "Reviewer note"
     write_yaml(path, data)
+    program_path = project / "03_audit_program" / "audit_program.yml"
+    program = read_yaml_mapping(program_path)
+    program["program_rows"][0]["control_owner"] = "Accounts payable"
+    write_yaml(program_path, program)
     options = {"audit_project_root": project, "overwrite": False, "clean_stale": False}
     assert generate_observations(**options)["updated"] == 1
-    assert read_yaml_mapping(path) == {**data, "title": "Approval was late"}
+    assert read_yaml_mapping(path) == {**data, "control_owner": "Accounts payable"}
     assert generate_observations(**options)["skipped_existing"] == 1
     report = update_report_qmd(project).path.read_text(encoding="utf-8")
+    assert "Late approval after release" in report
     assert "<li><strong>First risk</strong></li>" in report
     assert "<li>Second risk</li>" in report
     assert "First line<br />\nSecond line" in report
