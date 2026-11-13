@@ -134,5 +134,10 @@ xxxx
 
 ---
 
-Подход к аудиту аудитор заполняет вручную в `planning_decision.yml` на основании приведенного выше анализа.
+## 8. Предлагаемый подход к аудиту
+
+Заполните `planning_decision.yml` на основании анализа выше, затем повторите `auditflow create planning`.
+
+<!-- AUTO:PLANNING_APPROACH START -->
+<!-- AUTO:PLANNING_APPROACH END -->
 

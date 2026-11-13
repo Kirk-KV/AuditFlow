@@ -81,15 +81,24 @@ Creates:
 01_planning/planning_decision.yml
 ```
 
+Fill in `planning_decision.yml`, including `controls[].planning_approach`, then
+rerun the command to refresh the risk, control, and test tables in the planning
+document. In a customized legacy document, add an `AUTO:PLANNING_APPROACH`
+START/END comment pair where the tables should appear.
+
 ## `auditflow create audit-program`
 
 Creates or updates:
 
 ```text
 03_audit_program/audit_program.yml
+03_audit_program/audit_program.qmd
 ```
 
-The command reads `01_planning/planning_decision.yml`.
+The command reads `01_planning/planning_decision.yml`. Edit hypotheses and test
+procedures in the program YAML, then rerun without `--overwrite` to refresh
+the QMD table and preserve those fields. For a custom QMD, add an
+`AUTO:AUDIT_PROGRAM` START/END comment pair where the table should appear.
 
 ## `auditflow create workpapers`
 
@@ -99,6 +108,9 @@ Creates one workpaper per audit program row:
 05_workpapers/WP-*.qmd
 ```
 
+Rerunning updates the existing QMD title from the audit program and preserves
+the body. Use `--overwrite` only to recreate the whole workpaper.
+
 ## `auditflow create observations`
 
 Creates observation YAML files from completed workpaper observation proposal blocks:
@@ -106,6 +118,11 @@ Creates observation YAML files from completed workpaper observation proposal blo
 ```text
 06_observations/OBS-*.yml
 ```
+
+Rerunning refreshes the title from the workpaper proposal and related identifiers
+from the audit program. It preserves manual content such as the severity,
+narrative, and management action plan. Use `--clean-stale` to remove observations
+whose source no longer proposes one.
 
 Useful options:
 
@@ -127,6 +144,10 @@ The generated report references:
 ```text
 ../styles/report.css
 ```
+
+The observation fields `criteria`, `condition`, `cause`, `risk_effect`, and
+`recommendation` support Markdown. Use a YAML literal block (`|`) for
+multi-line text and lists.
 
 ## `auditflow feedback request`
 

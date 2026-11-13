@@ -24,6 +24,7 @@ controls:
     description: ""
     owner: ""
     design_assessment: ""
+    planning_approach: ""
 
 recommended_tests:
   - id: ""

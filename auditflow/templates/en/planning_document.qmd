@@ -131,4 +131,9 @@ xxxx
 
 ---
 
-The audit approach is filled in by the auditor in the planned_decision.yml (by hand, based on the analysis above).
+## 8. Proposed audit approach
+
+Update `planning_decision.yml` based on the analysis above, then rerun `auditflow create planning`.
+
+<!-- AUTO:PLANNING_APPROACH START -->
+<!-- AUTO:PLANNING_APPROACH END -->

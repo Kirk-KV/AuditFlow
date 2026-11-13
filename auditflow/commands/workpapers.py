@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+import json
+import re
 from pathlib import Path
 from typing import Any
+
+import yaml
 
 from auditflow.errors import AuditFlowDataError
 from auditflow.ids import require_safe_workpaper_ref
@@ -12,6 +16,9 @@ from auditflow.localization import (
     render_localized_template,
 )
 from auditflow.yaml_io import read_yaml_mapping
+
+
+FRONT_MATTER = re.compile(r"\A\ufeff?---[ \t]*\r?\n(.*?)^---[ \t]*\r?$", re.MULTILINE | re.DOTALL)
 
 
 def text_value(value: Any) -> str:
@@ -32,6 +39,44 @@ def workpaper_title(row: dict[str, Any], default_title: str = "Workpaper") -> st
     return subject
 
 
+def sync_workpaper_title(path: Path, title: str) -> bool:
+    """Replace the title value and keep the rest of the file byte-for-byte."""
+    content = path.read_bytes().decode("utf-8")
+    header = FRONT_MATTER.match(content)
+    if not header:
+        return False
+    try:
+        metadata = yaml.safe_load(header[1])
+        document = yaml.compose(header[1], Loader=yaml.SafeLoader)
+    except yaml.YAMLError:
+        return False
+    if not isinstance(metadata, dict) or not isinstance(document, yaml.MappingNode):
+        return False
+    if metadata.get("title") == title:
+        return False
+    titles = [value for key, value in document.value
+              if isinstance(key, yaml.ScalarNode) and key.value == "title"]
+    if len(titles) != 1 or not isinstance(titles[0], yaml.ScalarNode):
+        return False
+    node = titles[0]
+    if node.start_mark is None or node.end_mark is None:
+        return False
+    start = header.start(1) + node.start_mark.index
+    end = header.start(1) + node.end_mark.index
+    old_value = content[start:end]
+    # An alias can point elsewhere, and replacing an anchor would break its aliases.
+    line_start = content.rfind("\n", 0, start) + 1
+    if (
+        not re.fullmatch(r"""["']?title["']?:[ \t]*""", content[line_start:start])
+        or old_value.startswith("&")
+    ):
+        return False
+    line_ending = "\r\n" if old_value.endswith("\r\n") else "\n" if old_value.endswith("\n") else ""
+    replacement = json.dumps(title, ensure_ascii=False) + line_ending
+    path.write_bytes((content[:start] + replacement + content[end:]).encode("utf-8"))
+    return True
+
+
 def build_workpaper_qmd(
     row: dict[str, Any],
     *,
@@ -46,7 +91,7 @@ def build_workpaper_qmd(
     return render_localized_template(
         "workpaper.qmd",
         {
-            "title": workpaper_title(row, default_title=default_title).replace('"', "'"),
+            "title": json.dumps(workpaper_title(row, default_title=default_title), ensure_ascii=False),
             "workpaper_ref": workpaper_ref,
         },
         language,
@@ -72,6 +117,7 @@ def generate_workpapers(project_root: Path, overwrite: bool = False) -> dict[str
         )
 
     created = 0
+    updated = 0
     skipped = 0
     missing_workpaper_ref = 0
     seen_refs: dict[str, str] = {}
@@ -103,18 +149,22 @@ def generate_workpapers(project_root: Path, overwrite: bool = False) -> dict[str
         validated_rows.append((row, workpaper_ref))
 
     # Validate all references before overwriting any auditor-owned file.
+    default_title = message(messages, "workpaper.default_title")
     for row, workpaper_ref in validated_rows:
         target = workpapers_dir / f"{workpaper_ref}.qmd"
 
         if target.exists() and not overwrite:
-            skipped += 1
+            if sync_workpaper_title(target, workpaper_title(row, default_title)):
+                updated += 1
+            else:
+                skipped += 1
             continue
 
         target.write_text(
             build_workpaper_qmd(
                 row,
                 language=language,
-                default_title=message(messages, "workpaper.default_title"),
+                default_title=default_title,
             ),
             encoding="utf-8",
         )
@@ -122,6 +172,7 @@ def generate_workpapers(project_root: Path, overwrite: bool = False) -> dict[str
 
     return {
         "created": created,
+        "updated": updated,
         "skipped": skipped,
         "missing_workpaper_ref": missing_workpaper_ref,
         "workpapers_dir": str(workpapers_dir),

@@ -14,6 +14,7 @@ from auditflow.cli import app
 from auditflow.commands.audit_program import create_audit_program
 from auditflow.commands.init_project import create_initial_project
 from auditflow.commands.planning import create_planning_files
+from auditflow.commands.report import update_report_qmd
 from auditflow.commands.workpapers import generate_workpapers
 from auditflow.localization import (
     DEFAULT_LANGUAGE,
@@ -24,6 +25,7 @@ from auditflow.localization import (
 
 
 LOCALIZED_TEMPLATES = {
+    "audit_program.qmd",
     "audit_story.qmd",
     "evidence_readme.md",
     "feedback_readme.md",
@@ -290,17 +292,27 @@ def test_russian_qmd_renders_when_quarto_is_available(tmp_path: Path) -> None:
                     "risk_id": "R-001",
                     "description": "Контроль",
                     "owner": "Владелец",
+                    "planning_approach": "Проверить выборку",
                 }
             ],
         },
     )
+    create_planning_files(project)
     create_audit_program(project)
     generate_workpapers(project)
+    write_yaml(project / "06_observations" / "OBS-001.yml", {
+        "title": "Наблюдение",
+        "risk_effect": "- Риск для закупок\n- Риск для бюджета",
+    })
+    update_report_qmd(project)
 
-    for document in (
-        "01_planning/planning_document.qmd",
-        "05_workpapers/WP-C-001.qmd",
-    ):
+    documents = {
+        "01_planning/planning_document.qmd": "Проверить выборку",
+        "03_audit_program/audit_program.qmd": "Проверить выборку",
+        "05_workpapers/WP-C-001.qmd": "Контроль",
+        "07_reporting/report.qmd": "<li>Риск для закупок</li>",
+    }
+    for document, expected in documents.items():
         subprocess.run(
             [quarto, "render", document],
             cwd=project,
@@ -308,4 +320,4 @@ def test_russian_qmd_renders_when_quarto_is_available(tmp_path: Path) -> None:
             capture_output=True,
             text=True,
         )
-        assert (project / Path(document).with_suffix(".html")).exists()
+        assert expected in (project / Path(document).with_suffix(".html")).read_text(encoding="utf-8")

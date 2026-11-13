@@ -16,8 +16,26 @@ planning:
   rationale: Rationale
   required_attention: Required attention
   keep_in_mind: Keep in mind
+  approach:
+    heading: "## 8. Proposed audit approach"
+    legacy_footer: The audit approach is filled in by the auditor in the planned_decision.yml (by hand, based on the analysis above).
+    conclusion: Overall conclusion
+    included: Include
+    excluded: Exclude
+    empty: Not documented.
+    risks:
+      title: Risk decisions
+      headers: [Risk ID, Risk, Decision, Rationale]
+    controls:
+      title: Controls
+      headers: [Control ID, Risk ID, Description, Owner, Design assessment, Planned approach]
+    tests:
+      title: Recommended tests
+      headers: [Test ID, Risk ID, Control ID, Test objective]
 
 audit_program:
+  document_title: Audit program
+  table_headers: [Test ID, Risk ID, Risk, Rationale, Control ID, Description, Owner, Design assessment, Planned approach, Test hypothesis, Test procedure, Workpaper]
   no_control_design: No control is identified in planning_decision.yml.
   no_control_warning: No valid control id is identified for this included risk in planning_decision.yml.
   note: >-

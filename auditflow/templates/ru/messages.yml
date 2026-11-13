@@ -17,7 +17,26 @@ planning:
   required_attention: Требует внимания
   keep_in_mind: Следует учитывать
 
+  approach:
+    heading: "## 8. Предлагаемый подход к аудиту"
+    legacy_footer: Подход к аудиту аудитор заполняет вручную в `planning_decision.yml` на основании приведенного выше анализа.
+    conclusion: Общее заключение
+    included: Включить
+    excluded: Исключить
+    empty: Не задокументировано.
+    risks:
+      title: Решения по рискам
+      headers: [ID риска, Риск, Решение, Обоснование]
+    controls:
+      title: Контроли
+      headers: [ID контроля, ID риска, Описание, Владелец, Оценка дизайна, Планируемый подход]
+    tests:
+      title: Рекомендуемые тесты
+      headers: [ID теста, ID риска, ID контроля, Цель теста]
+
 audit_program:
+  document_title: Программа аудита
+  table_headers: [ID теста, ID риска, Риск, Обоснование, ID контроля, Описание, Владелец, Оценка дизайна, Планируемый подход, Гипотеза, Процедура тестирования, Рабочий документ]
   no_control_design: В planning_decision.yml не указан контроль.
   no_control_warning: Для включенного риска в planning_decision.yml не указан корректный ID контроля.
   note: >-

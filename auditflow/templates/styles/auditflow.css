@@ -60,6 +60,33 @@ tbody tr:nth-child(even) {
     background-color: #FAFAFA;
 }
 
+.scroll-table-container {
+    max-height: 75vh;
+    overflow: auto;
+    margin-block: 1rem;
+    border: 1px solid var(--af-border, #d9d9d9);
+}
+
+.scroll-table-container table {
+    min-width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.scroll-table-container th,
+.scroll-table-container td {
+    min-width: 6rem;
+    padding: 0.5rem;
+    vertical-align: top;
+}
+
+.scroll-table-container thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: var(--af-surface, #f7f9fb);
+}
+
 /* Code */
 
 details {

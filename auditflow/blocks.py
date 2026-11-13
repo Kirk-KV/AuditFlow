@@ -54,9 +54,13 @@ def missing_block_names(content: str, expected: tuple[str, ...]) -> tuple[str, .
     return tuple(name for name in expected if name not in present)
 
 
-def replace_auto_blocks(content: str, blocks: dict[str, str]) -> str:
+def replace_auto_blocks(
+    content: str, blocks: dict[str, str], *, keep_unknown: bool = False,
+) -> str:
     def repl(match: re.Match[str]) -> str:
         name = match.group("name")
+        if keep_unknown and name not in blocks:
+            return match.group()
         replacement = blocks.get(name, "").strip()
         return f"<!-- AUTO:{name} START -->\n{replacement}\n<!-- AUTO:{name} END -->"
 

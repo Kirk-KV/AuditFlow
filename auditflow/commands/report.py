@@ -6,6 +6,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from markdown_it import MarkdownIt
+
 from auditflow.blocks import (
     REPORT_BLOCK_NAMES,
     missing_block_names,
@@ -315,6 +317,15 @@ def build_detailed_observations(project_root: Path) -> str:
         return message(messages, "report.no_observations")
 
     blocks = []
+    markdown = MarkdownIt("commonmark", {"html": False, "breaks": True})
+    placeholder = message(messages, "report.to_be_completed")
+
+    def narrative(value: Any) -> str:
+        source = text(value)
+        if not source:
+            return f"<p>{esc(placeholder)}</p>"
+        # Keep literal backticks in code blocks from closing the QMD raw fence.
+        return markdown.render(source).strip().replace("`", "&#96;")
 
     for obs in observations:
         obs_id = text(obs.get("observation_id"))
@@ -365,22 +376,22 @@ def build_detailed_observations(project_root: Path) -> str:
 <strong>{esc(message(messages, "report.workpaper"))}:</strong> {esc(text(obs.get("source_workpaper")))}
 </div>
 <h4>{esc(message(messages, "report.criteria"))}</h4>
-<p>{esc(text(obs.get("criteria")) or message(messages, "report.to_be_completed"))}</p>
+{narrative(obs.get("criteria"))}
 <h4>{esc(message(messages, "report.condition"))}</h4>
-<p>{esc(text(obs.get("condition")) or message(messages, "report.to_be_completed"))}</p>
+{narrative(obs.get("condition"))}
 <div class="two-column-section">
 <div>
 <h4>{esc(message(messages, "report.cause"))}</h4>
-<p>{esc(text(obs.get("cause")) or message(messages, "report.to_be_completed"))}</p>
+{narrative(obs.get("cause"))}
 </div>
 <div>
 <h4>{esc(message(messages, "report.risk_effect"))}</h4>
-<p>{esc(text(obs.get("risk_effect")) or message(messages, "report.to_be_completed"))}</p>
+{narrative(obs.get("risk_effect"))}
 </div>
 </div>
 <h4>{esc(message(messages, "report.recommendation"))}</h4>
 <div class="recommendation-box">
-<p>{esc(text(obs.get("recommendation")) or message(messages, "report.to_be_completed"))}</p>
+{narrative(obs.get("recommendation"))}
 </div>
 {map_html}
 </div>

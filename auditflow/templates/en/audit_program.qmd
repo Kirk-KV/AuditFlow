@@ -1,0 +1,13 @@
+---
+title: $title
+metadata-files:
+  - ../styles/quarto-html.yml
+format:
+  html:
+    page-layout: full
+---
+
+Edit the program in `audit_program.yml` and rerun `auditflow create audit-program` to refresh this table.
+
+<!-- AUTO:AUDIT_PROGRAM START -->
+<!-- AUTO:AUDIT_PROGRAM END -->

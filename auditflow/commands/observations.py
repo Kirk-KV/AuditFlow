@@ -23,6 +23,11 @@ FENCED_YAML_PATTERN = re.compile(
 
 OBS_ID_PATTERN = re.compile(r"^OBS-(\d{3,})$", re.IGNORECASE)
 
+GENERATED_FIELDS = (
+    "title", "test_id", "risk_id", "risk_title", "control_id", "control_description",
+    "control_owner", "source_workpaper", "source_file",
+)
+
 
 def load_yaml_text(text: str, source: Path) -> dict[str, Any]:
     data = yaml.safe_load(text) or {}
@@ -140,6 +145,9 @@ def read_existing_observations(
     used_ids: set[str] = set()
 
     for path in existing_observation_files(observations_dir):
+        file_id = safe_obs_id(path.stem)
+        if file_id:
+            used_ids.add(file_id)
         try:
             obs = read_yaml_mapping(path, label="Observation")
         except AuditFlowDataError:
@@ -280,12 +288,8 @@ def generate_observations(
         else:
             observation_id = next_observation_id(used_ids)
 
-        target_path = observations_dir / f"{observation_id}.yml"
+        target_path = existing["path"] if existing else observations_dir / f"{observation_id}.yml"
         generated_workpapers.add(workpaper_ref)
-
-        if target_path.exists() and not overwrite:
-            skipped_existing += 1
-            continue
 
         observation = build_observation(
             observation_id=observation_id,
@@ -294,6 +298,13 @@ def generate_observations(
             program_row=program_row,
             title=title,
         )
+
+        if existing and not overwrite:
+            previous = existing["data"]
+            observation = {**previous, **{key: observation[key] for key in GENERATED_FIELDS}}
+            if observation == previous:
+                skipped_existing += 1
+                continue
 
         write_yaml(target_path, observation)
 
